@@ -13,6 +13,10 @@ function onOpen() {
 
 
 
+function getMapsApiKey() {
+  return PropertiesService.getScriptProperties().getProperty("GOOGLE_MAPS_API_KEY");
+}
+
 
 function testApiKeyAccess() {
   const apiKey = PropertiesService.getScriptProperties().getProperty("GOOGLE_MAPS_API_KEY");

@@ -2,6 +2,7 @@
 
 pkgs.mkShell {
   buildInputs = [
+    pkgs.google-cloud-sdk
     pkgs.nodejs
     pkgs.yarn
   ];
