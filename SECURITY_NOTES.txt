@@ -1,0 +1,80 @@
+
+: <<'SECURITY_WARNING'
+
+================================================================================
+⚠️  SECURITY NOTICE: Temporary Relaxation of IAM Domain Restrictions
+================================================================================
+
+This script *temporarily disables* the organization policy:
+
+    constraints/iam.allowedPolicyMemberDomains
+
+by setting:
+
+    listPolicy:
+      allValues: ALLOW
+
+This allows IAM roles (such as billing.user) to be granted to any external
+Google account, including @gmail.com or non-managed domains.
+
+--------------------------------------------------------------------------------
+🔒 SECURITY IMPLICATIONS:
+--------------------------------------------------------------------------------
+
+- ✅ Necessary if you need to assign roles to accounts *outside* your verified
+  Google Workspace domain(s).
+
+- ❌ While relaxed, *any IAM-admin user* could assign roles to accounts outside
+  your control, potentially creating an organizational security vulnerability.
+
+--------------------------------------------------------------------------------
+🛡️ HOW TO CLOSE THIS SECURITY HOLE AFTER TESTING:
+--------------------------------------------------------------------------------
+
+Option 1 — ✅ *Preferred (via CLI)*
+
+1. Identify your verified domain(s):
+   Run:
+     gcloud domains list-user-verified
+
+   Example output:
+     datalackey.com
+
+2. Re-apply the restricted policy with only your trusted domain(s):
+   Create a file `/tmp/org-policy.yaml`:
+     constraint: constraints/iam.allowedPolicyMemberDomains
+     listPolicy:
+       allowedValues:
+         - domain:datalackey.com
+
+   Then apply it:
+     gcloud resource-manager org-policies set-policy /tmp/org-policy.yaml \
+       --organization=YOUR_ORG_ID
+
+   This will restrict future IAM role grants to users under your verified domain.
+
+Option 2 — 🖱️ *Manual via Google Cloud Console UI*
+
+1. Go to: [Organization Policies](https://console.cloud.google.com/iam-admin/orgpolicies)
+2. Select your Organization (top dropdown, if needed)
+3. Search for: **`allowedPolicyMemberDomains`**
+4. Click **Edit**
+5. Change policy from "Allow all domains" ➜ to "Allow only these domains"
+6. Enter:
+     `domain:datalackey.com`
+   (Replace with your actual verified domain(s))
+7. Click **Save**
+
+--------------------------------------------------------------------------------
+✔️ Summary Recommendation:
+--------------------------------------------------------------------------------
+
+- Use this policy relaxation sparingly.
+- Always revert back to allowed domains after setup/testing.
+- Audit IAM bindings periodically via:
+    gcloud projects get-iam-policy <PROJECT_ID>
+
+================================================================================
+
+SECURITY_WARNING
+
