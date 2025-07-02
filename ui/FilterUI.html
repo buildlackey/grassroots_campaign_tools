@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Places Autocomplete Test</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 2em;
+        max-width: 500px;
+        margin: auto;
+      }
+      input {
+        width: 100%;
+        font-size: 16px;
+        padding: 8px;
+        margin-top: 10px;
+      }
+      pre {
+        margin-top: 1em;
+        padding: 1em;
+        background: #f6f6f6;
+        border: 1px solid #ccc;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Autocomplete Test</h2>
+    <label for="address">Start typing an address:</label>
+    <input id="address" type="text" placeholder="e.g. 206 Hamilton Ave, Mountain View, CA">
+
+    <pre id="log"></pre>
+
+    <script>
+      const log = msg => {
+        document.getElementById("log").textContent += msg + "\n";
+        console.log(msg);
+      };
+
+      function initAutocomplete() {
+        const input = document.getElementById("address");
+        const autocomplete = new google.maps.places.Autocomplete(input, {
+          types: ['geocode'],
+          componentRestrictions: { country: "us" }
+        });
+
+        autocomplete.addListener('place_changed', () => {
+          const place = autocomplete.getPlace();
+          log("📍 Place selected: " + JSON.stringify(place));
+        });
+
+        log("🚀 Autocomplete initialized");
+      }
+    </script>
+
+    <!-- 👇 Insert your actual key here -->
+    <script async defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD80mpRvYtoSLESYRqoKFgs3wtSKOV2tmk&libraries=places&callback=initAutocomplete">
+    </script>
+  </body>
+</html>
+
+
