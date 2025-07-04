@@ -1,0 +1,24 @@
+🛠️ Automated Workflow: Creating a Google Sheet + Binding a Script
+This flow automates the creation of a Google Sheet and links it to a pushable Apps Script project using clasp. It uses a temporary "shim" Apps Script project to programmatically create the Sheet.
+
+🔁 Why Use a "Shim" Script?
+We need a way to create a new Sheet entirely from the command line. Google Sheets themselves don’t expose a convenient way to auto-attach a bound script unless a Sheet already exists. So:
+
+We create a standalone Apps Script project (the shim).
+
+That shim executes SpreadsheetApp.create(...) to create the Sheet.
+
+The newly created Sheet will automatically be bound to its own Apps Script project — separate from the shim.
+
+We then discard the shim, and begin working with the script that is bound to the new Sheet.
+
+❌ Why the Shim Is Not Bound to a GCP Project
+The shim script only calls SpreadsheetApp.create(), which:
+
+Works fine using the default internal GCP project Google provides.
+
+Doesn’t require API key, billing, quotas, logging, or special scopes.
+
+Keeps the workflow lightweight and portable.
+
+So there’s no n

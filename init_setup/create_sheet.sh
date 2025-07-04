@@ -1,8 +1,59 @@
+#!/usr/bin/env bash
+set -euo pipefail
 
-MAKE SURE TO CALL>
-    bash  verify_project_ownership.sh
-    as part of script.
 
+
+PROJECT_NAME="create-sheet-shim"
+SCRIPT_TITLE="Create Sheet Shim"
+TMP_DIR="/tmp/${PROJECT_NAME}_$$"
+FUNC_NAME="createSheetAndLogId"
+
+
+#   Verify prerequisites, then copy needed clasp files
+#
+bash  verify_project_ownership_and_apps_script_api_enabled.sh   
+
+
+mkdir -p "$TMP_DIR"
+cp ~/.clasprc.json "$TMP_DIR/"
+cd "$TMP_DIR"
+echo "setting up shim to create sheet in  $TMP_DIR"
+
+# 1. Create new standalone script project
+clasp create --title "$SCRIPT_TITLE" --type standalone > /dev/null
+
+# 2. Inject the createSheet function
+cat > Code.js <<EOF
+function ${FUNC_NAME}() {
+  const sheet = SpreadsheetApp.create("Campaign Autocomplete Sheet");
+  Logger.log("✅ Created sheet: " + sheet.getUrl());
+}
+EOF
+
+exit 
+# 3. Push code to Apps Script project
+clasp push > /dev/null
+
+
+
+exit 
+
+# 1. Create new standalone script project
+clasp create --title "$SCRIPT_TITLE" --type standalone > /dev/null
+
+# 2. Inject the createSheet function
+cat > Code.js <<EOF
+function ${FUNC_NAME}() {
+  const sheet = SpreadsheetApp.create("Campaign Autocomplete Sheet");
+  Logger.log("✅ Created sheet: " + sheet.getUrl());
+}
+EOF
+
+
+
+
+
+exit 
 
 echo https://console.cloud.google.com/apis/library/sheets.googleapis.com?project=$PROJECT_ID
 
@@ -18,58 +69,6 @@ echo "🔐 Authenticating with extra scopes for Apps Script API..."
 
 
 
-##  need to do the PATCH step, but before that we have to setup a test user.
-
-✅ STEP 1: Open Your Google Cloud Console Project
-Go to the Google Cloud Console.
-
-In the top nav bar, make sure you're in the correct project (e.g. distancetools300). If not, click the dropdown and switch to it.
-
-✅ STEP 2: Configure the OAuth Consent Screen
-From the left-hand menu, go to “APIs & Services” → “OAuth consent screen”.
-
-For User Type, choose "External" (if not already set).
-
-Fill in required fields:
-
-App name: something like Grassroots Campaign Tools
-
-User support email: your Gmail (grassrootscampaign.10@gmail.com)
-
-Developer contact email: same as above
-
-Click Save and Continue on each section:
-
-You can leave Scopes and Test Users empty for now (you’ll add them in the next step)
-
-You do not need to publish the app — stay in Testing mode
-
-✅ STEP 3: Add Yourself as a Test User
-On the Test Users tab, click “Add Users”
-
-Enter your Gmail address: grassrootscampaign.10@gmail.com
-
-Click Save
-
-✅ This allows you (and any other added Gmail addresses) to bypass the full OAuth verification process and still use sensitive scopes like:
-
-`https
-
-
-
-
-
-at this step> 
-    Edit your OAuth consent screen,
-    Add test users, and
-    (Optionally) confirm scopes.
-
-
-Adding users:
-
-try directly typing url in browser:
-
-https://console.cloud.google.com/apis/credentials/consent?project=distancetools300
 
 
 
@@ -77,23 +76,6 @@ https://console.cloud.google.com/apis/credentials/consent?project=distancetools3
 
 
 
-
-
-
-
-##   PATCH things
-Why We Use a PATCH Call to the Apps Script API
-Google Apps Script projects are not automatically linked to a specific [Google Cloud Platform (GCP) project] when created via the Apps Script UI or clasp. By default, they are associated with an internal, hidden default project. To enable advanced Google Cloud features (e.g. billing, quotas, IAM roles, logging, API key use), you must explicitly link your Apps Script project to a visible GCP project.
-
-This is done by associating the Apps Script project (script ID) to a GCP project (project ID) using the Apps Script REST API.
-
-
-Without this association, some services (like Maps API, Gmail API, or custom OAuth flows) fail silently or give generic “not authorized” errors.
-
-Associating the project ensures you:
-    Get usage metered and billed to the correct account.
-    Can access the script’s metrics, logs, and quotas in the GCP Console.
-    Can apply IAM policies to restrict or delegate usage.
 
 
 

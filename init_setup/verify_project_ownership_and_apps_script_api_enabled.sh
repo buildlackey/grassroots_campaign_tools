@@ -1,5 +1,5 @@
-############################################################
-# assert_project_owner_or_editor
+############################################################################
+#  USAGE:  bash verify_project_ownership_and_apps_script_api_enabled.sh
 #
 # Purpose:
 #   Ensures that the currently active `gcloud` account has
@@ -19,8 +19,7 @@
 #   - Reads the current gcloud active account
 #   - Checks if the account is an Owner or Editor of PROJECT_ID
 #   - Exits with an error if not
-############################################################
-
+############################################################################
 
 
 function assert_project_owner_or_editor() {

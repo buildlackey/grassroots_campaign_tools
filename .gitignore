@@ -1,3 +1,10 @@
-node_modules/
+maps_config.env
+combined_upload.txt  # throw-away intermediate work file
+
 .clasp.json
 .clasprc.json 
+
+
+
+node_modules/
+

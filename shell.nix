@@ -8,10 +8,12 @@ pkgs.mkShell {
   ];
 
   shellHook = ''
-    export PATH="./node_modules/.bin:$PATH"
+    ROOT=$(git rev-parse --show-toplevel)
+    export PATH="$ROOT/node_modules/.bin:$PATH"
 
-    if [ ! -f ./node_modules/.bin/clasp ]; then
+    if [ ! -f "$ROOT/node_modules/.bin/clasp" ]; then
       echo "⚙️  Installing clasp locally via npm..."
+      cd "$ROOT"
       npm install @google/clasp
     fi
   '';
