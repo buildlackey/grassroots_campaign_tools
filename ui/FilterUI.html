@@ -6,19 +6,34 @@
       body {
         font-family: sans-serif;
         padding: 1em;
-        width: 100%;
+        max-width: 400px;
         box-sizing: border-box;
       }
-      input[type=range] {
-        width: 100%;
+
+      label {
+        display: block;
+        margin-top: 12px;
+        font-weight: bold;
       }
-      h2 {
-        font-size: 16px;
+
+      input[type="text"],
+      input[type="range"] {
+        width: 100%;
+        margin-top: 4px;
+        padding: 6px;
+        box-sizing: border-box;
+      }
+
+      #distanceVal {
+        font-weight: bold;
       }
     </style>
   </head>
   <body>
-    <h2>Distance Slider Example</h2>
+    <h2>Filter by Address + Distance</h2>
+
+    <label for="address">Address (Type-ahead):</label>
+    <input id="address" type="text" placeholder="Start typing an address..." autocomplete="off">
 
     <label for="distance">Max Distance (miles):</label>
     <input type="range" id="distance" min="1" max="100" value="10" oninput="updateSlider(this.value)">
@@ -28,6 +43,27 @@
       function updateSlider(val) {
         document.getElementById("distanceVal").innerText = val;
       }
+
+      function initAutocomplete() {
+        const input = document.getElementById("address");
+        const autocomplete = new google.maps.places.Autocomplete(input, {
+          types: ['geocode'],
+          componentRestrictions: { country: "us" }
+        });
+
+        autocomplete.addListener('place_changed', () => {
+          const place = autocomplete.getPlace();
+          console.log("📍 Selected place:", place);
+        });
+      }
+
+      // Load Maps Places API script dynamically
+      const script = document.createElement('script');
+      script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyB3j-KGpQJjAdXuum5r6mB4NARHjA4W16w&libraries=places&callback=initAutocomplete";
+      script.async = true;
+      script.defer = true;
+      script.onerror = () => alert("❌ Failed to load Google Maps API.");
+      document.head.appendChild(script);
     </script>
   </body>
 </html>
