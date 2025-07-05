@@ -5,27 +5,41 @@
     <style>
       body {
         font-family: sans-serif;
-        padding: 1em;
-        max-width: 400px;
+        padding: 1.5em;
+        max-width: 700px; /* ⬅️ matches .setWidth(700) from Code.gs */
+        margin: auto;
         box-sizing: border-box;
+      }
+
+      h2 {
+        font-size: 20px;
+        margin-bottom: 1em;
       }
 
       label {
         display: block;
-        margin-top: 12px;
+        margin-top: 14px;
         font-weight: bold;
       }
 
       input[type="text"],
       input[type="range"] {
         width: 100%;
-        margin-top: 4px;
-        padding: 6px;
+        margin-top: 6px;
+        padding: 8px;
+        font-size: 16px;
         box-sizing: border-box;
       }
 
       #distanceVal {
         font-weight: bold;
+      }
+
+      button {
+        margin-top: 24px;
+        padding: 10px 16px;
+        font-size: 16px;
+        cursor: pointer;
       }
     </style>
   </head>
@@ -38,6 +52,8 @@
     <label for="distance">Max Distance (miles):</label>
     <input type="range" id="distance" min="1" max="100" value="10" oninput="updateSlider(this.value)">
     <div>Selected: <span id="distanceVal">10</span> miles</div>
+
+    <button onclick="submitForm()">Submit</button>
 
     <script>
       function updateSlider(val) {
@@ -57,7 +73,18 @@
         });
       }
 
-      // Load Maps Places API script dynamically
+      function submitForm() {
+        const address = document.getElementById("address").value.trim();
+        const distance = document.getElementById("distance").value;
+
+        if (!address) {
+          alert("❌ Please enter an address.");
+          return;
+        }
+
+        alert(`📍 Address: ${address}\n📏 Distance: ${distance} miles`);
+      }
+
       const script = document.createElement('script');
       script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyB3j-KGpQJjAdXuum5r6mB4NARHjA4W16w&libraries=places&callback=initAutocomplete";
       script.async = true;

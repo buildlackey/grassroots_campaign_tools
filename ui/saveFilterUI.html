@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      label {
+        display: block;
+        margin-top: 10px;
+        font-weight: bold;
+      }
+      input, select {
+        width: 100%;
+        padding: 6px;
+        margin-top: 4px;
+        box-sizing: border-box;
+      }
+      #error {
+        color: red;
+        margin-top: 10px;
+        display: none;
+      }
+      button {
+        margin-top: 20px;
+      }
+      pre#debug {
+        font-size: 12px;
+        color: #555;
+        background: #f9f9f9;
+        padding: 8px;
+        border-radius: 4px;
+        margin-top: 20px;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <label for="address">Enter The Address:</label>
+    <input type="text" id="address" placeholder="Start typing..." autocomplete="off">
+
+    <label for="distance">Max Distance (miles):</label>
+    <input type="range" id="distance" min="1" max="100" value="10" oninput="updateSlider(this.value)">
+    <div>Selected: <span id="distanceVal">10</span> miles</div>
+
+    <div id="error">Address not found. Please try again.</div>
+    <button onclick="submitForm()">Filter</button>
+
+    <pre id="debug"></pre>
+
+    <!-- 👇 Moved script block here -->
+    <script>
+      const DEBUG_KEY = "AIzaSyB3j-KGpQJjAdXuum5r6mB4NARHjA4W16w"; // 👈 Replace this
+
+      function logToDom(msg) {
+        document.getElementById("debug").textContent += msg + "\n";
+        console.log(msg);
+      }
+
+      function updateSlider(val) {
+        document.getElementById("distanceVal").innerText = val;
+      }
+
+      function submitForm() {
+        const addr = document.getElementById("address").value.trim();
+        const dist = document.getElementById("distance").value;
+
+        if (!addr) {
+          showError("Please enter a valid address.");
+          return;
+        }
+
+        logToDom("📤 Submit clicked: " + addr + " (" + dist + " miles)");
+      }
+
+      function showError(msg) {
+        const e = document.getElementById("error");
+        e.innerText = msg;
+        e.style.display = "block";
+        logToDom("❌ " + msg);
+      }
+
+      function initAutocomplete() {
+        logToDom("🚀 initAutocomplete() running");
+        const input = document.getElementById("address");
+
+        try {
+          const autocomplete = new google.maps.places.Autocomplete(input, {
+            types: ['geocode'],
+            componentRestrictions: { country: "us" }
+          });
+
+          autocomplete.addListener('place_changed', () => {
+            const place = autocomplete.getPlace();
+            logToDom("📍 Place selected: " + JSON.stringify(place));
+          });
+
+        } catch (e) {
+          showError("💥 Failed to initialize autocomplete: " + e.message);
+        }
+      }
+
+      // ✅ Load Maps manually with hardcoded key
+      const tag = document.createElement('script');
+      tag.src = `https://maps.googleapis.com/maps/api/js?key=${DEBUG_KEY}&libraries=places`;
+      tag.async = true;
+      tag.defer = true;
+
+      tag.onload = function () {
+        logToDom("✅ Maps script loaded");
+        initAutocomplete();
+      };
+
+      tag.onerror = function () {
+        showError("❌ Failed to load Maps JavaScript API");
+      };
+
+      document.head.appendChild(tag);
+    </script>
+  </body>
+</html>
+
