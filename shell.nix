@@ -2,8 +2,8 @@
 
 pkgs.mkShell {
   buildInputs = [
-    pkgs.google-cloud-sdk
     pkgs.nodejs
+    pkgs.google-cloud-sdk
     pkgs.yarn
   ];
 
@@ -11,10 +11,10 @@ pkgs.mkShell {
     ROOT=$(git rev-parse --show-toplevel)
     export PATH="$ROOT/node_modules/.bin:$PATH"
 
-    if [ ! -f "$ROOT/node_modules/.bin/clasp" ]; then
-      echo "⚙️  Installing clasp locally via npm..."
+    if [ ! -x "$ROOT/node_modules/.bin/clasp" ]; then
+      echo "⚙️  Installing clasp@3.x via npm..."
       cd "$ROOT"
-      npm install @google/clasp
+      npm install @google/clasp@3.0.3-alpha
     fi
   '';
 }

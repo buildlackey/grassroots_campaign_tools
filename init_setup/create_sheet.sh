@@ -1,109 +1,89 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+CONFIG_FILE="$(git rev-parse --show-toplevel)/maps_config.env"
+DEBUG=false
+SHEET_NAME=""
 
+print_help() {
+  cat <<EOF
+Usage: $0 -n SHEET_NAME [-D]
 
-PROJECT_NAME="create-sheet-shim"
-SCRIPT_TITLE="Create Sheet Shim"
-TMP_DIR="/tmp/${PROJECT_NAME}_$$"
-FUNC_NAME="createSheetAndLogId"
+Options:
+  -n SHEET_NAME   Required. Must be a unique, never-before-used name.
+  -D              Enable debug output (traces API responses and intermediate values).
+  -h              Show this help message.
 
-
-#   Verify prerequisites, then copy needed clasp files
-#
-bash  verify_project_ownership_and_apps_script_api_enabled.sh   
-
-
-mkdir -p "$TMP_DIR"
-cp ~/.clasprc.json "$TMP_DIR/"
-cd "$TMP_DIR"
-echo "setting up shim to create sheet in  $TMP_DIR"
-
-# 1. Create new standalone script project
-clasp create --title "$SCRIPT_TITLE" --type standalone > /dev/null
-
-# 2. Inject the createSheet function
-cat > Code.js <<EOF
-function ${FUNC_NAME}() {
-  const sheet = SpreadsheetApp.create("Campaign Autocomplete Sheet");
-  Logger.log("✅ Created sheet: " + sheet.getUrl());
-}
+Example:
+  $0 -n test-sheet-$(date +%s) -D
 EOF
-
-exit 
-# 3. Push code to Apps Script project
-clasp push > /dev/null
-
-
-
-exit 
-
-# 1. Create new standalone script project
-clasp create --title "$SCRIPT_TITLE" --type standalone > /dev/null
-
-# 2. Inject the createSheet function
-cat > Code.js <<EOF
-function ${FUNC_NAME}() {
-  const sheet = SpreadsheetApp.create("Campaign Autocomplete Sheet");
-  Logger.log("✅ Created sheet: " + sheet.getUrl());
 }
-EOF
 
+while getopts ":n:Dh" opt; do
+  case ${opt} in
+    n)
+      SHEET_NAME="$OPTARG"
+      ;;
+    D)
+      DEBUG=true
+      ;;
+    h)
+      print_help
+      exit 0
+      ;;
+    \?)
+      echo "❌ Invalid option: -$OPTARG" >&2
+      print_help
+      exit 1
+      ;;
+    :)
+      echo "❌ Option -$OPTARG requires an argument." >&2
+      print_help
+      exit 1
+      ;;
+  esac
+done
 
+if [[ -z "$SHEET_NAME" ]]; then
+  echo "❌ You must specify a sheet name with -n" >&2
+  print_help
+  exit 1
+fi
 
+echo "📝 Go to: https://sheets.new and create a new sheet."
+echo "📛 Name it exactly: '$SHEET_NAME'"
+read -p "✅ Press Enter when you're done: "
 
+# 🔐 Ensure clasp is logged in
+if ! jq -e '.tokens.default.access_token' ~/.clasprc.json >/dev/null 2>&1; then
+  echo "🔐 Running clasp login..."
+  clasp login
+fi
 
-exit 
+# 🔑 Extract access token
+ACCESS_TOKEN=$(jq -r '.tokens.default.access_token' ~/.clasprc.json)
 
-echo https://console.cloud.google.com/apis/library/sheets.googleapis.com?project=$PROJECT_ID
+# 🔍 Query Drive API for Sheet details
+[[ "$DEBUG" == "true" ]] && echo "🔎 Searching for spreadsheet named '$SHEET_NAME'..."
+SHEET_DETAILS=$(curl -s \
+  -H "Authorization: Bearer $ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files?q=name%3D'${SHEET_NAME}'%20and%20mimeType%3D'application%2Fvnd.google-apps.spreadsheet'")
 
-echo verify you see 'Manage'  {If not “Enable”. If not enabled, click "Enable"}.
+[[ "$DEBUG" == "true" ]] && echo "$SHEET_DETAILS" | jq
 
-echo https://console.cloud.google.com/apis/library/drive.googleapis.com?project=$PROJECT_ID
+# 📥 Extract Sheet ID
+SHEET_ID=$(echo "$SHEET_DETAILS" | jq -r '.files[0].id')
 
-echo https://console.cloud.google.com/apis/library/script.googleapis.com?project=$PROJECT_ID
+# 🧯 Handle not found
+if [[ -z "$SHEET_ID" || "$SHEET_ID" == "null" ]]; then
+  echo "❌ Could not find a spreadsheet named '$SHEET_NAME'."
+  exit 1
+fi
 
+echo "✅ Found Sheet ID: $SHEET_ID"
 
-
-echo "🔐 Authenticating with extra scopes for Apps Script API..."
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-need special authentication...
-
-gcloud auth application-default login \
-  --scopes="https://www.googleapis.com/auth/script.projects,https://www.googleapis.com/auth/cloud-platform"
-
-ACCESS_TOKEN=$(gcloud auth application-default print-access-token)
-
-
-
-EXTRA API's   -- maybe important step to workaround elusive oauth screen.
-
-gcloud services enable \
-  script.googleapis.com \
-  oauth2.googleapis.com \
-  cloudresourcemanager.googleapis.com \
-  iamcredentials.googleapis.com \
-  drive.googleapis.com \
-  --project=distancetools300
-
-
-
-
-
-
-
-
+# 🧾 Append to maps_config.env
+echo "SHEET_NAME=\"$SHEET_NAME\"" >> "$CONFIG_FILE"
+echo "SHEET_ID=\"$SHEET_ID\"" >> "$CONFIG_FILE"
+echo "🧷 Added SHEET_NAME and SHEET_ID to $CONFIG_FILE"
 
