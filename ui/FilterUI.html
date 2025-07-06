@@ -99,32 +99,27 @@
         alert(`📍 Address: ${address}\n📏 Distance: ${distance} miles`);
       }
 
-      // Minimal Skeleton for Promise-based API Key Fetching (Step 1)
-      const debugPromise = new Promise(resolve => {
-        google.script.run
-          .withSuccessHandler(enabled => {
-            DEBUG_MODE = enabled;
-            logToDom("🪵 Debug mode enabled: " + DEBUG_MODE);
-            resolve(); // Ensure we return
-          })
-          .withFailureHandler(err => {
-            logToDom("⚠️ Failed to retrieve DEBUG flag: " + err.message);
-            resolve(); // Ensure we return
-          })
-          .getDebug();
-      });
-
-      debugPromise.then(() => {
-        logToDom("📶 Debug setup complete.");
-      });
-
-      // Still using hardcoded API key + callback for now
+      // ✅ Hardcoded Maps API script load (working version)
       const script = document.createElement('script');
       script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyB3j-KGpQJjAdXuum5r6mB4NARHjA4W16w&libraries=places&callback=initAutocomplete";
       script.async = true;
       script.defer = true;
       script.onerror = () => alert("❌ Failed to load Google Maps API.");
       document.head.appendChild(script);
+
+      // ✅ Scaffold-only: add promise to fetch API key (not used yet)
+      const fetchApiKeyPromise = new Promise(resolve => {
+        google.script.run
+          .withSuccessHandler(key => {
+            resolve(key); // Do not log or use yet
+          })
+          .withFailureHandler(err => {
+            resolve(null); // No logging yet
+          })
+          .getMapsApiKey();
+      });
+
+      // No use of fetchApiKeyPromise yet — just introduced
     </script>
   </body>
 </html>
