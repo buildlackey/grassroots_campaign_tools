@@ -99,7 +99,7 @@
         alert(`📍 Address: ${address}\n📏 Distance: ${distance} miles`);
       }
 
-      // ✅ Known working code: load Maps API using hardcoded key
+      // ✅ Known working Maps API load using hardcoded key
       const script = document.createElement('script');
       script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyB3j-KGpQJjAdXuum5r6mB4NARHjA4W16w&libraries=places&callback=initAutocomplete";
       script.async = true;
@@ -107,7 +107,7 @@
       script.onerror = () => alert("❌ Failed to load Google Maps API.");
       document.head.appendChild(script);
 
-      // ✅ Just add the promise + safe logging, do not use it yet
+      // ✅ Add promise fetch for API key, safely log it
       const fetchApiKeyPromise = new Promise(resolve => {
         google.script.run
           .withSuccessHandler(key => {
@@ -119,8 +119,8 @@
           .getMapsApiKey();
       });
 
-      fetchApiKeyPromise.then(() => {
-        logToDom("🔍 [PROMISE] API key fetch promise resolved.");
+      fetchApiKeyPromise.then(key => {
+        logToDom("🔑 [PROMISE] API key value: " + JSON.stringify(key));
       });
     </script>
   </body>
