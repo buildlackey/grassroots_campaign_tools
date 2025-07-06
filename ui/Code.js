@@ -1,6 +1,6 @@
 function onOpen() {
   SpreadsheetApp.getUi()
-    .createMenu('📍 Distance Filter3')
+    .createMenu('📍 Distance Filter5')
     .addItem('Filter By Distance', 'showAutocompleteDialog')
     .addItem('Add Lat/Long Info', 'populateLatLong')
     .addToUi();
@@ -13,6 +13,12 @@ function showAutocompleteDialog() {
   SpreadsheetApp.getUi().showModalDialog(html, 'Filter by Distance');
 }
 
+
+function getDebug() {
+  const raw = PropertiesService.getScriptProperties().getProperty("DEBUG");
+  // Any value other than the exact string "false" (case-insensitive) counts as true
+  return String(raw).toLowerCase() !== "false";
+}
 
 function getMapsApiKey() {
   const key = PropertiesService.getScriptProperties().getProperty("GOOGLE_MAPS_API_KEY");

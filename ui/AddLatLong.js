@@ -98,7 +98,7 @@ function populateLatLong() {
         sheet.getRange(i + 1, latCol + 1).setValue(loc.lat);
         sheet.getRange(i + 1, longCol + 1).setValue(loc.lng);
         updatedCount++;
-        Utilities.sleep(200); // be polite to the API
+        Utilities.sleep(100); // be polite to the API
       } else {
         Logger.log(`⚠️ Geocoding failed at row ${i + 1}: ${json.status}`);
       }
