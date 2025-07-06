@@ -56,6 +56,7 @@
 
     <script>
       let DEBUG_MODE = false;
+      let autocomplete;
 
       function logToDom(msg) {
         if (!DEBUG_MODE) return;
@@ -69,11 +70,23 @@
         document.getElementById("distanceVal").innerText = val;
       }
 
+      function haversineMiles(lat1, lon1, lat2, lon2) {
+        const R = 3959;
+        const toRad = deg => (deg * Math.PI) / 180;
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lon2 - lon1);
+        const a =
+          Math.sin(dLat / 2) ** 2 +
+          Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+          Math.sin(dLon / 2) ** 2;
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+      }
+
       function initAutocomplete() {
         logToDom("🚀 initAutocomplete() entered");
-
         const input = document.getElementById("address");
-        const autocomplete = new google.maps.places.Autocomplete(input, {
+        autocomplete = new google.maps.places.Autocomplete(input, {
           types: ['geocode'],
           componentRestrictions: { country: "us" }
         });
@@ -87,19 +100,50 @@
       }
 
       function submitForm() {
-        const address = document.getElementById("address").value.trim();
-        const distance = document.getElementById("distance").value;
+        const addressInput = document.getElementById("address");
+        const distInput = document.getElementById("distance");
+
+        if (!addressInput || !distInput) {
+          logToDom("❌ Input elements not found in DOM.");
+          return;
+        }
+
+        const address = addressInput.value.trim();
+        const distanceMiles = parseFloat(distInput.value);
 
         if (!address) {
           alert("❌ Please enter an address.");
           return;
         }
 
-        logToDom(`📤 Submit clicked:\nAddress = ${address}\nDistance = ${distance}`);
-        alert(`📍 Address: ${address}\n📏 Distance: ${distance} miles`);
+        const place = autocomplete?.getPlace?.();
+        logToDom("📍 autocomplete.getPlace():\n" + JSON.stringify(place, null, 2));
+
+        if (!place?.geometry?.location) {
+          alert("❌ Please select an address from the suggestions.");
+          return;
+        }
+
+        const userLat = place.geometry.location.lat();
+        const userLng = place.geometry.location.lng();
+
+        google.script.run
+          .withSuccessHandler(candidates => {
+            logToDom(`📤 Checking ${candidates.length} candidates within ${distanceMiles} mi of (${userLat.toFixed(5)}, ${userLng.toFixed(5)})`);
+
+            for (const c of candidates) {
+              const d = haversineMiles(userLat, userLng, c.lat, c.lng);
+              const result = d <= distanceMiles ? "✅ qualified" : "❌ too far";
+              logToDom(`${c.address}: ${d.toFixed(2)} mi → ${result}`);
+            }
+          })
+          .withFailureHandler(err => {
+            logToDom("❌ Failed to fetch candidates.");
+            console.error(err);
+          })
+          .getCandidates();
       }
 
-      // ✅ Step 1: Fetch DEBUG flag
       const debugPromise = new Promise(resolve => {
         google.script.run
           .withSuccessHandler(enabled => {
@@ -114,7 +158,6 @@
           .getDebug();
       });
 
-      // ✅ Step 2: Fetch API key and load script (using string concatenation)
       const apiKeyPromise = new Promise(resolve => {
         google.script.run
           .withSuccessHandler(key => resolve(key))
