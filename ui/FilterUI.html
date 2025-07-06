@@ -99,7 +99,7 @@
         alert(`📍 Address: ${address}\n📏 Distance: ${distance} miles`);
       }
 
-      // ✅ Working version: load Maps with hardcoded key
+      // ✅ Current hardcoded key method (still active)
       const script = document.createElement('script');
       script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyB3j-KGpQJjAdXuum5r6mB4NARHjA4W16w&libraries=places&callback=initAutocomplete";
       script.async = true;
@@ -107,7 +107,7 @@
       script.onerror = () => alert("❌ Failed to load Google Maps API.");
       document.head.appendChild(script);
 
-      // ✅ NEW: fetch API key using Promise (with safe construction only)
+      // ✅ Promise version (constructing but NOT injecting the script element)
       const fetchApiKeyPromise = new Promise(resolve => {
         google.script.run
           .withSuccessHandler(key => resolve(key))
@@ -125,10 +125,16 @@
           const constructedSrc = "https://maps.googleapis.com/maps/api/js?key=" +
             encodeURIComponent(key) + "&libraries=places&callback=initAutocomplete";
 
-          logToDom("🔧 [PROMISE] Constructed script URL:");
-          logToDom(constructedSrc);
+          const newScript = document.createElement("script");
+          newScript.src = constructedSrc;
+          newScript.async = true;
+          newScript.defer = true;
+          newScript.onerror = () => logToDom("❌ [PROMISE] Script failed to load");
+          newScript.onload = () => logToDom("✅ [PROMISE] Script tag created successfully");
+
+          logToDom("🧪 [PROMISE] Constructed <script> element — not yet attached");
         } else {
-          logToDom("⚠️ [PROMISE] Skipping script construction due to missing key");
+          logToDom("⚠️ [PROMISE] Skipping script creation due to missing key");
         }
       });
     </script>
