@@ -82,7 +82,6 @@
           const place = autocomplete.getPlace();
           const json = JSON.stringify(place, null, 2);
           const preview = json.length > 200 ? json.slice(0, 200) + "..." : json;
-
           logToDom("📍 Place selected (preview):\n" + preview);
         });
       }
@@ -100,17 +99,17 @@
         alert(`📍 Address: ${address}\n📏 Distance: ${distance} miles`);
       }
 
-      // ✅ Step 1: Promise version of debug flag
+      // Minimal Skeleton for Promise-based API Key Fetching (Step 1)
       const debugPromise = new Promise(resolve => {
         google.script.run
           .withSuccessHandler(enabled => {
             DEBUG_MODE = enabled;
             logToDom("🪵 Debug mode enabled: " + DEBUG_MODE);
-            resolve();
+            resolve(); // Ensure we return
           })
           .withFailureHandler(err => {
-            console.warn("⚠️ Failed to retrieve DEBUG flag:", err.message);
-            resolve(); // don't block anything
+            logToDom("⚠️ Failed to retrieve DEBUG flag: " + err.message);
+            resolve(); // Ensure we return
           })
           .getDebug();
       });
@@ -119,7 +118,7 @@
         logToDom("📶 Debug setup complete.");
       });
 
-      // ✅ Still using hardcoded API key + callback
+      // Still using hardcoded API key + callback for now
       const script = document.createElement('script');
       script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyB3j-KGpQJjAdXuum5r6mB4NARHjA4W16w&libraries=places&callback=initAutocomplete";
       script.async = true;
@@ -129,5 +128,4 @@
     </script>
   </body>
 </html>
-
 
