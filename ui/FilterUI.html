@@ -4,28 +4,44 @@
     <base target="_top">
     <style>
       body {
-        font-family: Arial, sans-serif;
-        padding: 20px;
-      }
-      label {
-        display: block;
-        margin-top: 10px;
-        font-weight: bold;
-      }
-      input, select {
-        width: 100%;
-        padding: 6px;
-        margin-top: 4px;
+        font-family: sans-serif;
+        padding: 1.5em;
+        max-width: 700px; /* ⬅️ matches .setWidth(700) from Code.gs */
+        margin: auto;
         box-sizing: border-box;
       }
-      #error {
-        color: red;
-        margin-top: 10px;
-        display: none;
+
+      h2 {
+        font-size: 20px;
+        margin-bottom: 1em;
       }
+
+      label {
+        display: block;
+        margin-top: 14px;
+        font-weight: bold;
+      }
+
+      input[type="text"],
+      input[type="range"] {
+        width: 100%;
+        margin-top: 6px;
+        padding: 8px;
+        font-size: 16px;
+        box-sizing: border-box;
+      }
+
+      #distanceVal {
+        font-weight: bold;
+      }
+
       button {
-        margin-top: 20px;
+        margin-top: 24px;
+        padding: 10px 16px;
+        font-size: 16px;
+        cursor: pointer;
       }
+
       pre#debug {
         font-size: 12px;
         color: #555;
@@ -38,21 +54,23 @@
     </style>
   </head>
   <body>
-    <label for="address">Enter The Address:</label>
-    <input type="text" id="address" placeholder="Start typing..." autocomplete="off">
+    <h2>Filter by Address + Distance</h2>
+
+    <label for="address">Address (Type-ahead):</label>
+    <input id="address" type="text" placeholder="Start typing an address..." autocomplete="off">
 
     <label for="distance">Max Distance (miles):</label>
     <input type="range" id="distance" min="1" max="100" value="10" oninput="updateSlider(this.value)">
     <div>Selected: <span id="distanceVal">10</span> miles</div>
 
-    <div id="error">Address not found. Please try again.</div>
-    <button onclick="submitForm()">Filter</button>
+    <button onclick="submitForm()">Submit</button>
 
     <pre id="debug"></pre>
 
     <script>
-      function logToDom(msg) {
-        document.getElementById("debug").textContent += msg + "\n";
+      const logToDom = (msg) => {
+        const debugElement = document.getElementById("debug");
+        debugElement.textContent += msg + "\n";
         console.log(msg);
       }
 
@@ -60,29 +78,28 @@
         document.getElementById("distanceVal").innerText = val;
       }
 
-      function submitForm() {
-        const addr = document.getElementById("address").value.trim();
-        const dist = document.getElementById("distance").value;
+      // 🚀 Fetch API key securely via Apps Script
+      function loadMapsAPI() {
+        google.script.run
+          .withSuccessHandler(function(key) {
+            const tag = document.createElement("script");
 
-        if (!addr) {
-          showError("Please enter a valid address.");
-          return;
-        }
-
-        logToDom("📤 Submit clicked: " + addr + " (" + dist + " miles)");
-      }
-
-      function showError(msg) {
-        const e = document.getElementById("error");
-        e.innerText = msg;
-        e.style.display = "block";
-        logToDom("❌ " + msg);
+            logToDom("about to get src");
+            tag.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places&callback=initAutocomplete`;
+            logToDom("got src");
+            tag.async = true;
+            tag.defer = true;
+            tag.onerror = () => alert("❌ Failed to load Google Maps API.");
+            document.head.appendChild(tag);
+          })
+          .withFailureHandler(err => alert("❌ Failed to load Maps API key: " + err.message))
+          .getMapsApiKey();
       }
 
       function initAutocomplete() {
         logToDom("🚀 initAutocomplete() running");
-        const input = document.getElementById("address");
 
+        const input = document.getElementById("address");
         try {
           const autocomplete = new google.maps.places.Autocomplete(input, {
             types: ['geocode'],
@@ -95,26 +112,14 @@
           });
 
         } catch (e) {
-          showError("💥 Failed to initialize autocomplete: " + e.message);
+          logToDom("❌ Failed to initialize autocomplete: " + e.message);
         }
       }
 
-      // 👇 Securely load the Maps JS API using key from script properties
-      function loadMapsScript(apiKey) {
-        const tag = document.createElement('script');
-        tag.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initAutocomplete`;
-        tag.async = true;
-        tag.defer = true;
-        tag.onerror = () => showError("❌ Failed to load Google Maps API");
-        document.head.appendChild(tag);
-      }
-
-      // 🚀 Fetch API key securely from Apps Script backend
-      google.script.run
-        .withSuccessHandler(loadMapsScript)
-        .withFailureHandler(err => showError("❌ Could not retrieve Maps API key: " + err.message))
-        .getMapsApiKey();
+      // Load Maps API and trigger autocomplete on successful API key fetch
+      loadMapsAPI();
     </script>
   </body>
 </html>
+
 
