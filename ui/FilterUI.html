@@ -99,7 +99,7 @@
         alert(`📍 Address: ${address}\n📏 Distance: ${distance} miles`);
       }
 
-      // Fetch DEBUG flag
+      // ✅ Step 1: Fetch DEBUG flag
       const debugPromise = new Promise(resolve => {
         google.script.run
           .withSuccessHandler(enabled => {
@@ -114,7 +114,7 @@
           .getDebug();
       });
 
-      // Fetch API key and insert hardcoded script (for testing)
+      // ✅ Step 2: Fetch API key and load script (using string concatenation)
       const apiKeyPromise = new Promise(resolve => {
         google.script.run
           .withSuccessHandler(key => resolve(key))
@@ -128,17 +128,23 @@
       apiKeyPromise.then(key => {
         logToDom("✅ Got API key from server");
 
-        const script = document.createElement("script");
-        script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyB3j-KGpQJjAdXuum5r6mB4NARHjA4W16w&libraries=places&callback=initAutocomplete";
-        script.async = true;
-        script.defer = true;
-        script.onload = () => logToDom("✅ Maps API script loaded");
-        script.onerror = () => {
-          logToDom("❌ Failed to load Maps API script");
-          alert("❌ Maps API load failure");
-        };
+        if (typeof key === 'string') {
+          const url = "https://maps.googleapis.com/maps/api/js?key=" + key + "&libraries=places&callback=initAutocomplete";
 
-        document.head.appendChild(script);
+          const script = document.createElement("script");
+          script.src = url;
+          script.async = true;
+          script.defer = true;
+          script.onload = () => logToDom("✅ Maps API script loaded");
+          script.onerror = () => {
+            logToDom("❌ Failed to load Maps API script");
+            alert("❌ Maps API load failure");
+          };
+
+          document.head.appendChild(script);
+        } else {
+          logToDom("⚠️ Skipping Maps API script load due to missing key");
+        }
       });
     </script>
   </body>
