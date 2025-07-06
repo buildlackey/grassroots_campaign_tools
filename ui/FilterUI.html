@@ -107,7 +107,7 @@
       script.onerror = () => alert("❌ Failed to load Google Maps API.");
       document.head.appendChild(script);
 
-      // ✅ NEW: fetch API key using Promise (with failure logging)
+      // ✅ NEW: fetch API key using Promise (with safe construction only)
       const fetchApiKeyPromise = new Promise(resolve => {
         google.script.run
           .withSuccessHandler(key => resolve(key))
@@ -120,6 +120,16 @@
 
       fetchApiKeyPromise.then(key => {
         logToDom("✅ [PROMISE] API key result: " + JSON.stringify(key));
+
+        if (typeof key === 'string') {
+          const constructedSrc = "https://maps.googleapis.com/maps/api/js?key=" +
+            encodeURIComponent(key) + "&libraries=places&callback=initAutocomplete";
+
+          logToDom("🔧 [PROMISE] Constructed script URL:");
+          logToDom(constructedSrc);
+        } else {
+          logToDom("⚠️ [PROMISE] Skipping script construction due to missing key");
+        }
       });
     </script>
   </body>
