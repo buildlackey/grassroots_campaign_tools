@@ -1,6 +1,6 @@
 function onOpen() {
   SpreadsheetApp.getUi()
-    .createMenu('📍 Distance Filter5')
+    .createMenu('📍 Distance Filter9')
     .addItem('Filter By Distance', 'showAutocompleteDialog')
     .addItem('Add Lat/Long Info', 'populateLatLong')
     .addToUi();

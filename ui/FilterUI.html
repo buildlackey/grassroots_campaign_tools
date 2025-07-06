@@ -82,21 +82,8 @@
           const place = autocomplete.getPlace();
           const json = JSON.stringify(place, null, 2);
           const preview = json.length > 200 ? json.slice(0, 200) + "..." : json;
-
           logToDom("📍 Place selected (preview):\n" + preview);
         });
-      }
-
-      function fetchDebugFlag() {
-        google.script.run
-          .withSuccessHandler(function(enabled) {
-            DEBUG_MODE = enabled;
-            logToDom("🪵 Debug mode enabled: " + DEBUG_MODE);
-          })
-          .withFailureHandler(function(err) {
-            console.warn("Failed to retrieve DEBUG flag:", err.message);
-          })
-          .getDebug();
       }
 
       function submitForm() {
@@ -112,15 +99,47 @@
         alert(`📍 Address: ${address}\n📏 Distance: ${distance} miles`);
       }
 
-      // Load Maps Places API script dynamically
-      const script = document.createElement('script');
-      script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyB3j-KGpQJjAdXuum5r6mB4NARHjA4W16w&libraries=places&callback=initAutocomplete";
-      script.async = true;
-      script.defer = true;
-      script.onerror = () => alert("❌ Failed to load Google Maps API.");
-      document.head.appendChild(script);
+      // Fetch DEBUG flag
+      const debugPromise = new Promise(resolve => {
+        google.script.run
+          .withSuccessHandler(enabled => {
+            DEBUG_MODE = enabled;
+            logToDom("🪵 Debug mode enabled: " + DEBUG_MODE);
+            resolve();
+          })
+          .withFailureHandler(err => {
+            console.warn("⚠️ Failed to retrieve DEBUG flag:", err.message);
+            resolve();
+          })
+          .getDebug();
+      });
 
-      fetchDebugFlag();  // Start logging setup
+      // Fetch API key and insert hardcoded script (for testing)
+      const apiKeyPromise = new Promise(resolve => {
+        google.script.run
+          .withSuccessHandler(key => resolve(key))
+          .withFailureHandler(err => {
+            logToDom("❌ Failed to get Maps API key: " + JSON.stringify(err.message));
+            resolve(null);
+          })
+          .getMapsApiKey();
+      });
+
+      apiKeyPromise.then(key => {
+        logToDom("✅ Got API key from server");
+
+        const script = document.createElement("script");
+        script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyB3j-KGpQJjAdXuum5r6mB4NARHjA4W16w&libraries=places&callback=initAutocomplete";
+        script.async = true;
+        script.defer = true;
+        script.onload = () => logToDom("✅ Maps API script loaded");
+        script.onerror = () => {
+          logToDom("❌ Failed to load Maps API script");
+          alert("❌ Maps API load failure");
+        };
+
+        document.head.appendChild(script);
+      });
     </script>
   </body>
 </html>
