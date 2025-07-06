@@ -52,6 +52,9 @@ fi
 
 echo "📝 Go to: https://sheets.new and create a new sheet."
 echo "📛 Name it exactly: '$SHEET_NAME'"
+echo "🚨 Next step: Open Extensions menu item, then → Apps Script."
+echo "📌 Then rename the project associated with the script (e.g. 'Some New Random Name'), then save ."
+echo "🕓 Wait 5–10 seconds, so changes can propagate enough to run the next automation script."
 read -p "✅ Press Enter when you're done: "
 
 # 🔐 Ensure clasp is logged in
