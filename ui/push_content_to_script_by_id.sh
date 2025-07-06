@@ -1,16 +1,22 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# 🔁 Force logout of all credentials before continuing
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-echo "🚪 Forcing logout of all previous credentials..."
-bash "$SCRIPT_DIR/../init_setup/full_log_out.sh"
+FIRST_TIME=false
 
+# Parse flags
+while [[ "$#" -gt 0 ]]; do
+  case $1 in
+    -f|--first-time) FIRST_TIME=true ;;
+    *) echo "❌ Unknown parameter: $1" ; exit 1 ;;
+  esac
+  shift
+done
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GIT_ROOT="$(git rev-parse --show-toplevel)"
 CONFIG_FILE="$GIT_ROOT/maps_config.env"
 UI_DIR="$GIT_ROOT/ui"
 
-# Load config
 if [[ ! -f "$CONFIG_FILE" ]]; then
   echo "❌ Missing config file: $CONFIG_FILE"
   exit 1
@@ -23,36 +29,34 @@ if [[ -z "${SCRIPT_ID:-}" || -z "${MAPS_API_KEY:-}" || -z "${PROJECT_ID:-}" ]]; 
   exit 1
 fi
 
-# Re-authenticate clasp
-echo "🔐 Logging in to clasp..."
-clasp login
+if [[ "$FIRST_TIME" == true ]]; then
+  echo "🚪 First-time setup mode: forcing fresh auth"
+  bash "$SCRIPT_DIR/../init_setup/full_log_out.sh"
 
-# Re-authenticate gcloud CLI
-echo "🔐 Logging in to gcloud..."
-gcloud auth login
+  echo "🔐 Logging in to clasp..."
+  clasp login
 
-# ✅ Set project for ADC flow before login
-echo "🧾 Pre-setting project for ADC..."
-gcloud config set project "$PROJECT_ID"
+  echo "🔐 Logging in to gcloud..."
+  gcloud auth login
 
-# ✅ Remove stale ADC token before new login
-echo "🧹 Clearing old ADC token..."
-rm -f "$HOME/.config/gcloud/application_default_credentials.json"
+  echo "🧾 Setting project for ADC"
+  gcloud config set project "$PROJECT_ID"
 
-# ✅ Login to ADC with correct project context
-echo "🔐 Logging in to Application Default Credentials (ADC)..."
-gcloud auth application-default login
+  echo "🧹 Clearing old ADC token"
+  rm -f "$HOME/.config/gcloud/application_default_credentials.json"
 
-# Create temp working dir
+  echo "🔐 Logging in to ADC"
+  gcloud auth application-default login
+fi
+
+# Create and switch to temp working dir
 TMP_DIR="$(mktemp -d /tmp/clasp_push_XXXX)"
 echo "🚧 Working in: $TMP_DIR"
-
-# Clone script project
 cd "$TMP_DIR"
+
 echo "📥 Cloning script ID: $SCRIPT_ID"
 clasp clone "$SCRIPT_ID" >/dev/null
 
-# Copy UI files explicitly
 echo "📦 Copying files from $UI_DIR"
 for file in "$UI_DIR"/*.js "$UI_DIR"/*.gs "$UI_DIR"/*.html; do
   if [[ -f "$file" ]]; then
@@ -61,38 +65,34 @@ for file in "$UI_DIR"/*.js "$UI_DIR"/*.gs "$UI_DIR"/*.html; do
   fi
 done
 
-# Inject Init.js to set API key
-echo "🛠️ Creating temporary Init.js with setApiKey()"
-cat <<EOF > "$TMP_DIR/Init.js"
+if [[ "$FIRST_TIME" == true ]]; then
+  echo "🛠️ Injecting Init.js for API key setup"
+  cat <<EOF > "$TMP_DIR/Init.js"
 function setApiKey() {
   const key = "${MAPS_API_KEY}";
   PropertiesService.getScriptProperties().setProperty("GOOGLE_MAPS_API_KEY", key);
   Logger.log("✅ Script property set.");
 }
 EOF
+fi
 
-# Push full project (including Init.js)
-echo "🚀 Pushing code to Google..."
+echo "🚀 Pushing project to Apps Script"
 clasp push
 
-# Manual follow-up instructions
-echo ""
-echo "⚠️  Remote execution was skipped to avoid fragile auth problems."
-echo "🔧 You must now manually open Init.js & run 'setApiKey()' ONCE in Script Editor:"
-echo ""
-echo "🔗 https://script.google.com/home/projects/$SCRIPT_ID/edit"
-echo "→ Select function: setApiKey"
-echo "→ Click ▶ Run (in editor)"
-echo ""
-read -rp "✅ Press ENTER after you’ve done this..."
+if [[ "$FIRST_TIME" == true ]]; then
+  echo ""
+  echo "🔧 Please run setApiKey() ONCE in the Script Editor:"
+  echo "🔗 https://script.google.com/home/projects/$SCRIPT_ID/edit"
+  echo "→ Select function: setApiKey"
+  echo "→ Click ▶ Run (in editor)"
+  echo ""
+  read -rp "✅ Press ENTER once complete..."
 
-# Clean up Init.js and re-push to remove the key from source
-echo "🧹 Cleaning up Init.js and re-pushing"
-rm -f "$TMP_DIR/Init.js"
-clasp push
+  echo "🧹 Removing Init.js and re-pushing"
+  rm -f "$TMP_DIR/Init.js"
+  clasp push
+fi
 
-echo ""
-echo "✅ All done!"
+echo "✅ Done."
 echo "🧭 View your script: https://script.google.com/home/projects/$SCRIPT_ID/edit"
-
 
