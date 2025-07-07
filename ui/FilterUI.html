@@ -70,19 +70,6 @@
         document.getElementById("distanceVal").innerText = val;
       }
 
-      function haversineMiles(lat1, lon1, lat2, lon2) {
-        const R = 3959;
-        const toRad = deg => (deg * Math.PI) / 180;
-        const dLat = toRad(lat2 - lat1);
-        const dLon = toRad(lon2 - lon1);
-        const a =
-          Math.sin(dLat / 2) ** 2 +
-          Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-          Math.sin(dLon / 2) ** 2;
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
-      }
-
       function initAutocomplete() {
         logToDom("🚀 initAutocomplete() entered");
         const input = document.getElementById("address");
@@ -128,20 +115,21 @@
         const userLng = place.geometry.location.lng();
 
         google.script.run
-          .withSuccessHandler(candidates => {
-            logToDom(`📤 Checking ${candidates.length} candidates within ${distanceMiles} mi of (${userLat.toFixed(5)}, ${userLng.toFixed(5)})`);
-
-            for (const c of candidates) {
-              const d = haversineMiles(userLat, userLng, c.lat, c.lng);
-              const result = d <= distanceMiles ? "✅ qualified" : "❌ too far";
-              logToDom(`${c.address}: ${d.toFixed(2)} mi → ${result}`);
+          .withSuccessHandler(result => {
+            if (!result.matched) {
+              alert("❌ No matching candidates found within selected radius.");
+              logToDom("❌ No candidates qualified.");
+            } else {
+              alert(`✅ ${result.count} candidates saved to sheet: ${result.sheetName}`);
+              logToDom(`✅ Matches written to sheet: ${result.sheetName}`);
             }
           })
           .withFailureHandler(err => {
-            logToDom("❌ Failed to fetch candidates.");
+            logToDom("❌ Failed to run match filter.");
             console.error(err);
+            alert("❌ Error running match filter.");
           })
-          .getCandidates();
+          .filterAndWriteMatches(userLat, userLng, distanceMiles);
       }
 
       const debugPromise = new Promise(resolve => {

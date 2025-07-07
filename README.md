@@ -1,3 +1,10 @@
+USER NOTES:
+
+If you don't have a gmail.com account, then you can create a google account that will allow you to view spreadsheet via:
+
+    https://accounts.google.com/signupwithoutgmail
+
+
 Initial project set-up assumes you have installed required dependencies (frameworks, etc).
 
 Current development flow assumes you are on Nixos-based Linux (but we could provide support for other
