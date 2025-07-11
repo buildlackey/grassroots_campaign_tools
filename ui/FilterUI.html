@@ -116,7 +116,10 @@
 
         google.script.run
           .withSuccessHandler(result => {
-            if (!result.matched) {
+            if (result.cancelled) {
+              alert("⚠️ Operation cancelled. The existing 'Filtered Results' sheet was left unchanged.");
+              logToDom("🚫 User cancelled overwrite.");
+            } else if (!result.matched) {
               alert("❌ No matching candidates found within selected radius.");
               logToDom("❌ No candidates qualified.");
             } else {
@@ -180,4 +183,3 @@
     </script>
   </body>
 </html>
-
