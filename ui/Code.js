@@ -1,6 +1,6 @@
 function onOpen() {
   SpreadsheetApp.getUi()
-    .createMenu('📍 Distance Filter8')
+    .createMenu('📍 Distance Filter0')
     .addItem('Filter By Distance', 'showAutocompleteDialog')
     .addItem('Add Lat/Long Info', 'populateLatLong')
     .addToUi();
@@ -134,4 +134,7 @@ function haversineMiles(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
+function include(filename) {
+  return HtmlService.createHtmlOutputFromFile(filename).getContent();
+}
 
