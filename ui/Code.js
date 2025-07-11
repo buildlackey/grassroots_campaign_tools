@@ -1,6 +1,6 @@
 function onOpen() {
   SpreadsheetApp.getUi()
-    .createMenu('📍 Distance Filter4')
+    .createMenu('📍 Distance Filter8')
     .addItem('Filter By Distance', 'showAutocompleteDialog')
     .addItem('Add Lat/Long Info', 'populateLatLong')
     .addToUi();
@@ -8,8 +8,8 @@ function onOpen() {
 
 function showAutocompleteDialog() {
   const html = HtmlService.createHtmlOutputFromFile('FilterUI')
-    .setWidth(700)
-    .setHeight(500);
+    .setWidth(420)
+    .setHeight(420);
   SpreadsheetApp.getUi().showModalDialog(html, 'Filter by Distance');
 }
 
@@ -54,6 +54,11 @@ function getCandidates() {
 }
 
 function filterAndWriteMatches(lat0, lng0, radiusMiles) {
+  Logger.log("✅ filterAndWriteMatches() called with:");
+  Logger.log("   lat0 = %s", lat0);
+  Logger.log("   lng0 = %s", lng0);
+  Logger.log("   radius = %s miles", radiusMiles);
+
   const result = filterMatchingRows(lat0, lng0, radiusMiles);
   if (result.rows.length === 0) {
     return { matched: false };

@@ -38,6 +38,41 @@
         white-space: pre-wrap;
         display: none;
       }
+
+      #customAlert {
+        display: none;
+        position: fixed;
+        top: 30%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+        z-index: 9999;
+        max-width: 320px;
+        text-align: center;
+      }
+
+      #toast {
+        visibility: hidden;
+        min-width: 220px;
+        background-color: #323232;
+        color: #fff;
+        text-align: center;
+        border-radius: 4px;
+        padding: 12px 16px;
+        position: fixed;
+        z-index: 9999;
+        left: 50%;
+        bottom: 30px;
+        transform: translateX(-50%);
+        font-size: 14px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        transition: visibility 0s, opacity 0.4s ease-in-out;
+        opacity: 0;
+      }
     </style>
   </head>
   <body>
@@ -54,18 +89,29 @@
 
     <pre id="debug"></pre>
 
+    <div id="customAlert">
+      <div id="customAlertMessage" style="white-space: pre-wrap; font-size: 15px;"></div>
+      <button onclick="hideAlert()" style="margin-top: 16px;">OK</button>
+    </div>
+
+    <div id="toast"></div>
+
     <script>
       let DEBUG_MODE = false;
       let autocomplete;
 
       function logToDom(msg) {
         if (!DEBUG_MODE) return;
+  
+        console.log(msg); // always send to browser console
+  
         const dbg = document.getElementById("debug");
-        dbg.style.display = "block";
-        dbg.textContent += msg + "\n";
-        console.log(msg);
+        if (dbg) {
+          dbg.style.display = "block";
+          dbg.textContent += msg + "\n";
+        }
       }
-
+  
       function updateSlider(val) {
         document.getElementById("distanceVal").innerText = val;
       }
@@ -86,54 +132,82 @@
         });
       }
 
-      function submitForm() {
-        const addressInput = document.getElementById("address");
-        const distInput = document.getElementById("distance");
+      function showAlert(message) {
+        document.getElementById("customAlertMessage").textContent = message;
+        document.getElementById("customAlert").style.display = "block";
+      }
 
-        if (!addressInput || !distInput) {
-          logToDom("❌ Input elements not found in DOM.");
-          return;
-        }
+      function hideAlert() {
+        document.getElementById("customAlert").style.display = "none";
+      }
 
-        const address = addressInput.value.trim();
-        const distanceMiles = parseFloat(distInput.value);
+      function showToast(message, duration = 4000) {
+        const toast = document.getElementById("toast");
+        toast.textContent = message;
+        toast.style.visibility = "visible";
+        toast.style.opacity = "1";
 
-        if (!address) {
-          alert("❌ Please enter an address.");
-          return;
-        }
+        setTimeout(() => {
+          toast.style.opacity = "0";
+          toast.style.visibility = "hidden";
+        }, duration);
+      }
 
-        const place = autocomplete?.getPlace?.();
-        logToDom("📍 autocomplete.getPlace():\n" + JSON.stringify(place, null, 2));
+    function submitForm() {
+      const addressInput = document.getElementById("address");
+      const distInput = document.getElementById("distance");
 
-        if (!place?.geometry?.location) {
-          alert("❌ Please select an address from the suggestions.");
-          return;
-        }
+      if (!addressInput || !distInput) {
+        logToDom("❌ Input elements not found in DOM.");
+        return;
+      }
 
-        const userLat = place.geometry.location.lat();
-        const userLng = place.geometry.location.lng();
+      const address = addressInput.value.trim();
+      const distanceMiles = parseFloat(distInput.value);
 
-        google.script.run
+      if (!address) {
+        showAlert("❌ Please enter an address.");
+        return;
+      }
+
+      const place = autocomplete?.getPlace?.();
+      logToDom("📍 autocomplete.getPlace():\n" + JSON.stringify(place, null, 2));
+
+      if (!place?.geometry?.location) {
+        showAlert("❌ Please select an address from the suggestions.");
+        return;
+      }
+
+      const userLat = place.geometry.location.lat();
+      const userLng = place.geometry.location.lng();
+
+
+      google.script.run
           .withSuccessHandler(result => {
             if (result.cancelled) {
-              alert("⚠️ Operation cancelled. The existing 'Filtered Results' sheet was left unchanged.");
+              showToast("⚠️ Operation cancelled. The existing 'Filtered Results' sheet was left unchanged.");
               logToDom("🚫 User cancelled overwrite.");
+              // do NOT close dialog
             } else if (!result.matched) {
-              alert("❌ No matching candidates found within selected radius.");
+              showAlert("❌ No matching candidates found within selected radius.");
               logToDom("❌ No candidates qualified.");
+              // do NOT close dialog
             } else {
-              alert(`✅ ${result.count} candidates saved to sheet: ${result.sheetName}`);
+              showToast(`✅ ${result.count} candidates saved to sheet: ${result.sheetName}`);
               logToDom(`✅ Matches written to sheet: ${result.sheetName}`);
+              google.script.host.close();  // ✅ Only close after successful match
             }
           })
           .withFailureHandler(err => {
             logToDom("❌ Failed to run match filter.");
             console.error(err);
-            alert("❌ Error running match filter.");
+            showAlert("❌ Error running match filter.");
+            // do NOT close dialog
           })
           .filterAndWriteMatches(userLat, userLng, distanceMiles);
-      }
+    }
+
+
 
       const debugPromise = new Promise(resolve => {
         google.script.run
@@ -172,7 +246,7 @@
           script.onload = () => logToDom("✅ Maps API script loaded");
           script.onerror = () => {
             logToDom("❌ Failed to load Maps API script");
-            alert("❌ Maps API load failure");
+            showAlert("❌ Maps API load failure");
           };
 
           document.head.appendChild(script);
@@ -183,3 +257,5 @@
     </script>
   </body>
 </html>
+
+

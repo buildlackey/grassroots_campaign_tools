@@ -15,11 +15,7 @@ function populateLatLong() {
     return;
   }
   const headersRaw = data[headerRowIndex];
-
-  Logger.log("🧠 Raw headers: " + JSON.stringify(headersRaw));
-
   const headers = headersRaw.map(h => h.toString().trim().toLowerCase());
-  Logger.log("🔍 Normalized headers: " + JSON.stringify(headers));
 
   function fuzzyFind(headers, options) {
     for (let i = 0; i < headers.length; i++) {
@@ -28,7 +24,6 @@ function populateLatLong() {
     return -1;
   }
 
-  Logger.log("🔎 Looking for lat/lng columns...");
   const latCol = fuzzyFind(headers, ["lat", "latitude"]);
   const longCol = fuzzyFind(headers, ["long", "lng", "lon", "longitude"]);
 
@@ -40,7 +35,7 @@ function populateLatLong() {
     return;
   }
 
-  // 👇 Enhanced logic for selecting address column
+  // Attempt to find address column
   let addressCol = headers.findIndex(h => h.includes("address"));
 
   if (addressCol === -1) {
@@ -55,22 +50,22 @@ function populateLatLong() {
 
     const input = res.getResponseText().trim();
 
-    if (/^[A-Za-z]$/.test(input)) {  // column letter
+    if (/^[A-Za-z]$/.test(input)) {
       addressCol = input.toUpperCase().charCodeAt(0) - 65;
-    } else {                         // header name
+    } else {
       addressCol = headers.findIndex(h => h === input.toLowerCase());
+    }
+
+    // 🔧 Fixed error handling — show original input if invalid
+    if (addressCol < 0 || addressCol >= headers.length || !headersRaw[addressCol]) {
+      SpreadsheetApp.getUi().alert(
+        `❌ Address column not found for input: '${input}'\n` +
+        "Headers available: " + headersRaw.join(", ")
+      );
+      return;
     }
   }
 
-  if (addressCol < 0 || addressCol >= headers.length || !headersRaw[addressCol]) {
-    SpreadsheetApp.getUi().alert(
-      "❌ Address column '" + addressCol + "' not found.\n" +
-      "Headers available: " + headersRaw.join(", ")
-    );
-    return;
-  }
-
-  // ✅ Helper to validate number fields
   function isValidNumber(n) {
     return typeof n === 'number' && !isNaN(n);
   }
@@ -83,7 +78,6 @@ function populateLatLong() {
     const lat = row[latCol];
     const lng = row[longCol];
 
-    // ✅ Skip only if both lat and long are valid numbers
     if (!address || (isValidNumber(lat) && isValidNumber(lng))) continue;
 
     const geoUrl = "https://maps.googleapis.com/maps/api/geocode/json?address=" +
@@ -98,7 +92,7 @@ function populateLatLong() {
         sheet.getRange(i + 1, latCol + 1).setValue(loc.lat);
         sheet.getRange(i + 1, longCol + 1).setValue(loc.lng);
         updatedCount++;
-        Utilities.sleep(100); // be polite to the API
+        Utilities.sleep(100); // polite API delay
       } else {
         Logger.log(`⚠️ Geocoding failed at row ${i + 1}: ${json.status}`);
       }
@@ -109,3 +103,5 @@ function populateLatLong() {
 
   SpreadsheetApp.getUi().alert(`✅ Finished. ${updatedCount} rows updated with lat/long.`);
 }
+
+
