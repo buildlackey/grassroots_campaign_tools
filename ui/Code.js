@@ -1,6 +1,6 @@
 function onOpen() {
   SpreadsheetApp.getUi()
-    .createMenu('📍 Distance Filter2')
+    .createMenu('📍 Distance Filter4')
     .addItem('Filter By Distance', 'showAutocompleteDialog')
     .addItem('Add Lat/Long Info', 'populateLatLong')
     .addToUi();
@@ -55,18 +55,38 @@ function getCandidates() {
 
 function filterAndWriteMatches(lat0, lng0, radiusMiles) {
   const result = filterMatchingRows(lat0, lng0, radiusMiles);
-
   if (result.rows.length === 0) {
     return { matched: false };
   }
 
-  const sheetName = `${radiusMiles}.mile.matches.${Math.floor(Date.now() / 1000)}`;
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const outSheet = ss.insertSheet(sheetName);
+  const sheetName = "Filtered Results";
+  const existingSheet = ss.getSheetByName(sheetName);
+
+  if (existingSheet) {
+    const ui = SpreadsheetApp.getUi();
+    const response = ui.alert(
+      `Sheet "${sheetName}" already exists`,
+      "Do you want to overwrite it?",
+      ui.ButtonSet.OK_CANCEL
+    );
+    if (response !== ui.Button.OK) {
+      return { matched: false, cancelled: true };
+    }
+    existingSheet.clearContents();
+    var outSheet = existingSheet;
+  } else {
+    var outSheet = ss.insertSheet(sheetName);
+  }
+
   outSheet.appendRow(result.headers);
   result.rows.forEach(row => outSheet.appendRow(row));
 
-  return { matched: true, sheetName, count: result.rows.length };
+  return {
+    matched: true,
+    sheetName,
+    count: result.rows.length
+  };
 }
 
 function filterMatchingRows(lat0, lng0, radiusMiles) {
