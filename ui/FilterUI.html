@@ -3,73 +3,33 @@
   <head>
     <base target="_top">
     <style>
-      body {
-        font-family: sans-serif;
-        padding: 1em;
-        max-width: 400px;
-        box-sizing: border-box;
-      }
-
-      label {
-        display: block;
-        margin-top: 12px;
-        font-weight: bold;
-      }
-
-      input[type="text"],
-      input[type="range"] {
-        width: 100%;
-        margin-top: 4px;
-        padding: 6px;
-        box-sizing: border-box;
-      }
-
-      #distanceVal {
-        font-weight: bold;
-      }
-
-      pre#debug {
-        font-size: 12px;
-        color: #333;
-        background: #f0f0f0;
-        padding: 10px;
-        border-radius: 4px;
-        margin-top: 20px;
-        white-space: pre-wrap;
-        display: none;
-      }
-
-      pre#dump {
-        font-size: 11px;
-        white-space: pre-wrap;
-        background: #eee;
-        margin-top: 10px;
-        padding: 10px;
-      }
+      body { font-family: sans-serif; padding: 1em; }
+      #debug, #raw { white-space: pre-wrap; background: #eee; padding: 0.5em; font-size: 12px; }
     </style>
   </head>
   <body>
-    <h2>Filter by Address + Distance</h2>
+    <h2>Minimal Eval from DOM Test</h2>
 
-    <label for="address">Address:</label>
-    <input id="address" type="text" placeholder="Type an address">
+    <div id="debug">[INIT] Loaded</div>
+    <hr>
+    <div id="raw-js" style="display: none;">
+function log(msg) {
+  const dbg = document.getElementById("debug");
+  dbg.textContent += "\\n" + msg;
+}
+log("✅ Eval’d code ran!");
+    </div>
 
-    <label for="distance">Max Distance:</label>
-    <input id="distance" type="range" min="1" max="100" value="10" oninput="updateSlider(this.value)">
-    <div>Selected: <span id="distanceVal">10</span> miles</div>
+    <script>
+      const raw = document.getElementById("raw-js").textContent;
+      document.getElementById("debug").textContent += "\n[DEBUG] Extracted raw:\n" + raw;
 
-    <button onclick="submitForm()">Submit</button>
-
-    <pre id="debug"></pre>
-    <pre id="dump"></pre>
-
-    <!-- Inject server-provided FilterUICode.html -->
-    <script type="text/javascript">
-      const js = <?!= JSON.stringify(include("FilterUICode")) ?>;
-      document.getElementById("dump").textContent = js;
-      eval(js);
+      try {
+        eval(raw);
+      } catch (err) {
+        document.getElementById("debug").textContent += "\n❌ Eval failed: " + err.message;
+      }
     </script>
   </body>
 </html>
-
 
