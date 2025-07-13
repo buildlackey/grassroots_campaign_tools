@@ -58,8 +58,8 @@
       #toast {
         visibility: hidden;
         min-width: 220px;
-        background-color: #323232;
-        color: #fff;
+        background-color: white;
+        color: #333;
         text-align: center;
         border-radius: 4px;
         padding: 12px 16px;
@@ -195,7 +195,7 @@
             } else {
               showToast(`✅ ${result.count} candidates saved to sheet: ${result.sheetName}`);
               logToDom(`✅ Matches written to sheet: ${result.sheetName}`);
-              google.script.host.close();  // ✅ Only close after successful match
+              setTimeout(() => google.script.host.close(), 2000);  // wait and then only close after successful match
             }
           })
           .withFailureHandler(err => {
