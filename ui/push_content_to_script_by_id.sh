@@ -16,7 +16,6 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# 🔁 Force logout of all credentials before continuing if first-time
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GIT_ROOT="$(git rev-parse --show-toplevel)"
 CONFIG_FILE="$GIT_ROOT/maps_config.env"
@@ -60,21 +59,45 @@ fi
 TMP_DIR="$(mktemp -d /tmp/clasp_push_XXXX)"
 echo "🚧 Working in: $TMP_DIR"
 
-# Clone script project
 cd "$TMP_DIR"
 echo "📥 Cloning script ID: $SCRIPT_ID"
 clasp clone "$SCRIPT_ID" >/dev/null
 
-# Copy UI files explicitly
+# Copy UI files, but SKIP FilterUICode.js (to avoid pushing it separately)
 echo "📦 Copying files from $UI_DIR"
-for file in "$UI_DIR"/*.js "$UI_DIR"/*.gs "$UI_DIR"/*.html; do
-  if [[ -f "$file" ]]; then
-    echo "📄 Copying: $file"
-    cp "$file" "$TMP_DIR/"
-  fi
+for file in "$UI_DIR"/*.html "$UI_DIR"/*.js; do
+  [[ "$(basename "$file")" == "FilterUICode.js" ]] && continue
+  echo "📄 Copying: $file"
+  cp "$file" "$TMP_DIR/"
 done
 
-# Conditionally add Init.js if first-time
+# 🔁 Inject FilterUICode.js into FilterUI.html
+FILTER_UI_FILE="$TMP_DIR/FilterUI.html"
+JS_FILE="$UI_DIR/FilterUICode.js"
+INJECTION_PATTERN="Inject FilterUICode.js"
+
+if [[ ! -f "$FILTER_UI_FILE" ]]; then
+  echo "❌ Cannot find FilterUI.html at $FILTER_UI_FILE"
+  exit 1
+fi
+
+if [[ ! -f "$JS_FILE" ]]; then
+  echo "❌ Cannot find FilterUICode.js at $JS_FILE"
+  exit 1
+fi
+
+if ! grep -q "$INJECTION_PATTERN" "$FILTER_UI_FILE"; then
+  echo "❌ Could not find any line containing: '$INJECTION_PATTERN'"
+  exit 1
+fi
+
+echo "🧬 Injecting contents of FilterUICode.js into FilterUI.html..."
+sed -i.bak -e "/$INJECTION_PATTERN/{
+  r $JS_FILE
+  d
+}" "$FILTER_UI_FILE"
+
+# Add Init.js only if this is the first-time run
 if [[ "$FIRST_TIME" == true ]]; then
   echo "🛠️  Injecting Init.js for first-time setup"
   cat <<EOF > "$TMP_DIR/Init.js"

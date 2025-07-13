@@ -129,4 +129,6 @@ function haversineMiles(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-
+function include(filename) {
+  return HtmlService.createHtmlOutputFromFile(filename).getContent();
+}
