@@ -1,0 +1,35 @@
+
+INFO on maps API key:
+    ✅ What to Tell Users About Getting a Google Maps API Key
+    To use this extension, you’ll need a free Google Maps API key.
+
+    🔑 Follow these general steps:
+
+    Go to https://console.cloud.google.com/
+
+    Create a new project (or reuse an existing one).
+
+    Enable the following APIs:
+
+    Maps JavaScript API
+
+    Geocoding API
+
+    Create credentials (API key) under:
+
+    ☰ Menu →  APIs & Services → Credentials
+
+    Restrict the key (optional but recommended):
+
+    Under Application Restrictions, choose: HTTP referrers (web sites)
+
+    Add: https://script.google.com/*
+
+    Under API Restrictions, allow only the two APIs listed above.
+
+    📄 For help:
+    Google’s official docs:
+    👉 https://developers.google.com/maps/gmp-get-started
+
+
+
