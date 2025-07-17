@@ -2,11 +2,11 @@
 set -euo pipefail
 
 # === Parse args ===
-FIRST_TIME=false
+SKIP_INIT=false
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    -f|--first-time)
-      FIRST_TIME=true
+    -u|--update)
+      SKIP_INIT=true
       shift
       ;;
     *)
@@ -19,7 +19,7 @@ done
 # === Paths ===
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/utils.sh"
-GIT_ROOT="$(git rev-parse --show-toplevel)"
+GIT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
 CONFIG_FILE="$GIT_ROOT/maps_config.env"
 TS_DIR="$GIT_ROOT/ui2"
 
@@ -31,12 +31,19 @@ if [[ ! -f "$CONFIG_FILE" ]]; then
   echo "❌ Missing config file: $CONFIG_FILE"
   exit 1
 fi
-
 source "$CONFIG_FILE"
 
 if [[ -z "${SCRIPT_ID:-}" || -z "${MAPS_API_KEY:-}" ]]; then
-  echo "❌ SCRIPT_ID, MAPS_API_KEY, or PROJECT_ID not set in $CONFIG_FILE"
+  echo "❌ SCRIPT_ID or MAPS_API_KEY not set in $CONFIG_FILE"
   exit 1
+fi
+
+# === Ensure clasp is globally installed ===
+if ! command -v clasp >/dev/null 2>&1; then
+  echo "🔧 clasp not found. Installing globally..."
+  npm install -g clasp
+else
+  echo "✅ clasp is already installed globally"
 fi
 
 # === Build TypeScript ===
@@ -44,7 +51,7 @@ echo "🔧 Building TypeScript from: $TS_DIR"
 cd "$TS_DIR"
 
 if [[ ! -d "node_modules" ]]; then
-  echo "📦 Installing dependencies..."
+  echo "📦 Installing local dependencies... all except clasp"
   npm install
 fi
 
@@ -70,12 +77,9 @@ echo "📦 Copying built TypeScript output"
 cp "$BUILD_DIR/Code.js" "$TMP_DIR/"
 cp "$TS_DIR/appsscript.json" "$TMP_DIR/"
 
-
-
-
-# === Optionally generate Init.js ===
-if [[ "$FIRST_TIME" == true ]]; then
-  echo "🛠️  Injecting Init.js for first-time setup"
+# === Inject Init.js for setting script properties ===
+if [[ "$SKIP_INIT" == false ]]; then
+  echo "🧬 Creating Init.js to set script properties..."
   cat <<EOF > "$TMP_DIR/Init.js"
 function initialSetup() {
   const key = "$MAPS_API_KEY";
@@ -83,9 +87,10 @@ function initialSetup() {
   PropertiesService.getScriptProperties().setProperty("DEBUG", "false");
   Logger.log("✅ Script properties set: GOOGLE_MAPS_API_KEY + DEBUG");
 }
+initialSetup();
 EOF
 else
-  echo "🧹 Removing Init.js if it exists (not first-time run)"
+  echo "🧹 Skipping Init.js generation (--update mode)"
   rm -f "$TMP_DIR/Init.js"
 fi
 
@@ -93,17 +98,10 @@ fi
 echo "🚀 Pushing project to Apps Script"
 clasp push --force
 
-if [[ "$FIRST_TIME" == true ]]; then
-  echo ""
-  echo "🔧 Please run initialSetup() ONCE in the Script Editor:"
-  echo ""
-  echo "🔗 https://script.google.com/home/projects/$SCRIPT_ID/edit"
-  echo "→ Select function: initialSetup"
-  echo "→ Click ▶ Run (in editor)"
-  echo ""
-  read -rp "✅ Press ENTER after you’ve done this..."
+# === Clean up sensitive Init.js after push ===
+if [[ "$SKIP_INIT" == false ]]; then
+  echo "🧽 Cleaning up Init.js"
+  rm -f "$TMP_DIR/Init.js"
 fi
 
 echo "✅ Done syncing project."
-
-
