@@ -3,12 +3,11 @@ const GasPlugin = require("gas-webpack-plugin");
 const entry = "./build/index.js";
 
 module.exports = {
-  // we always use dev mode because bundle size is unimportant - code runs server-side
-  mode: "development",
+  mode: "development", // same as your working version
   context: __dirname,
   entry,
   output: {
-    path: __dirname,
+    path: __dirname + "/build",
     filename: "Code.js",
   },
   plugins: [
@@ -18,3 +17,4 @@ module.exports = {
   ],
   devtool: false,
 };
+
