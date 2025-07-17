@@ -97,110 +97,94 @@ echo "✅ Project $PROJECT_ID created, fully unlocked, and ready for downstream 
 #!/usr/bin/env bash
 set -euo pipefail
 
+CONFIG_FILE="$(git rev-parse --show-toplevel)/maps_config.env"
+DEBUG=false
+SHEET_NAME=""
 
+print_help() {
+  cat <<EOF
+Usage: $0 -n SHEET_NAME [-D]
 
-PROJECT_NAME="create-sheet-shim"
-SCRIPT_TITLE="Create Sheet Shim"
-TMP_DIR="/tmp/${PROJECT_NAME}_$$"
-FUNC_NAME="createSheetAndLogId"
+Options:
+  -n SHEET_NAME   Required. Must be a unique, never-before-used name.
+  -D              Enable debug output (traces API responses and intermediate values).
+  -h              Show this help message.
 
-
-#   Verify prerequisites, then copy needed clasp files
-#
-bash  verify_project_ownership_and_apps_script_api_enabled.sh   
-cp ~/.clasprc.json "$TMP_DIR/"
-
-
-mkdir -p "$TMP_DIR"
-cd "$TMP_DIR"
-echo "setting up shim to create sheet in  $TMP_DIR"
-
-# 1. Create new standalone script project
-clasp create --title "$SCRIPT_TITLE" --type standalone > /dev/null
-
-# 2. Inject the createSheet function
-cat > Code.js <<EOF
-function ${FUNC_NAME}() {
-  const sheet = SpreadsheetApp.create("Campaign Autocomplete Sheet");
-  Logger.log("✅ Created sheet: " + sheet.getUrl());
-}
+Example:
+  $0 -n test-sheet-$(date +%s) -D
 EOF
-
-# 3. Push code to Apps Script project
-clasp push > /dev/null
-
-
-
-exit 
-
-# 1. Create new standalone script project
-clasp create --title "$SCRIPT_TITLE" --type standalone > /dev/null
-
-# 2. Inject the createSheet function
-cat > Code.js <<EOF
-function ${FUNC_NAME}() {
-  const sheet = SpreadsheetApp.create("Campaign Autocomplete Sheet");
-  Logger.log("✅ Created sheet: " + sheet.getUrl());
 }
-EOF
 
+while getopts ":n:Dh" opt; do
+  case ${opt} in
+    n)
+      SHEET_NAME="$OPTARG"
+      ;;
+    D)
+      DEBUG=true
+      ;;
+    h)
+      print_help
+      exit 0
+      ;;
+    \?)
+      echo "❌ Invalid option: -$OPTARG" >&2
+      print_help
+      exit 1
+      ;;
+    :)
+      echo "❌ Option -$OPTARG requires an argument." >&2
+      print_help
+      exit 1
+      ;;
+  esac
+done
 
+if [[ -z "$SHEET_NAME" ]]; then
+  echo "❌ You must specify a sheet name with -n" >&2
+  print_help
+  exit 1
+fi
 
+echo "📝 Go to: https://sheets.new and create a new sheet."
+echo "📛 Name it exactly: '$SHEET_NAME'"
+echo "🚨 Next step: Open Extensions menu item, then → Apps Script."
+echo "📌 Then rename the project associated with the script (e.g. 'Some New Random Name'), then save ."
+echo "🕓 Wait 5–10 seconds, so changes can propagate enough to run the next automation script."
+read -p "✅ Press Enter when you're done: "
 
+# 🔐 Ensure clasp is logged in
+if ! jq -e '.tokens.default.access_token' ~/.clasprc.json >/dev/null 2>&1; then
+  echo "🔐 Running clasp login..."
+  clasp login
+fi
 
-exit 
+# 🔑 Extract access token
+ACCESS_TOKEN=$(jq -r '.tokens.default.access_token' ~/.clasprc.json)
 
-echo https://console.cloud.google.com/apis/library/sheets.googleapis.com?project=$PROJECT_ID
+# 🔍 Query Drive API for Sheet details
+[[ "$DEBUG" == "true" ]] && echo "🔎 Searching for spreadsheet named '$SHEET_NAME'..."
+SHEET_DETAILS=$(curl -s \
+  -H "Authorization: Bearer $ACCESS_TOKEN" \
+  "https://www.googleapis.com/drive/v3/files?q=name%3D'${SHEET_NAME}'%20and%20mimeType%3D'application%2Fvnd.google-apps.spreadsheet'")
 
-echo verify you see 'Manage'  {If not “Enable”. If not enabled, click "Enable"}.
+[[ "$DEBUG" == "true" ]] && echo "$SHEET_DETAILS" | jq
 
-echo https://console.cloud.google.com/apis/library/drive.googleapis.com?project=$PROJECT_ID
+# 📥 Extract Sheet ID
+SHEET_ID=$(echo "$SHEET_DETAILS" | jq -r '.files[0].id')
 
-echo https://console.cloud.google.com/apis/library/script.googleapis.com?project=$PROJECT_ID
+# 🧯 Handle not found
+if [[ -z "$SHEET_ID" || "$SHEET_ID" == "null" ]]; then
+  echo "❌ Could not find a spreadsheet named '$SHEET_NAME'."
+  exit 1
+fi
 
+echo "✅ Found Sheet ID: $SHEET_ID"
 
-
-echo "🔐 Authenticating with extra scopes for Apps Script API..."
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-need special authentication...
-
-gcloud auth application-default login \
-  --scopes="https://www.googleapis.com/auth/script.projects,https://www.googleapis.com/auth/cloud-platform"
-
-ACCESS_TOKEN=$(gcloud auth application-default print-access-token)
-
-
-
-EXTRA API's   -- maybe important step to workaround elusive oauth screen.
-
-gcloud services enable \
-  script.googleapis.com \
-  oauth2.googleapis.com \
-  cloudresourcemanager.googleapis.com \
-  iamcredentials.googleapis.com \
-  drive.googleapis.com \
-  --project=distancetools300
-
-
-
-
-
-
-
-
+# 🧾 Append to maps_config.env
+echo "SHEET_NAME=\"$SHEET_NAME\"" >> "$CONFIG_FILE"
+echo "SHEET_ID=\"$SHEET_ID\"" >> "$CONFIG_FILE"
+echo "🧷 Added SHEET_NAME and SHEET_ID to $CONFIG_FILE"
 
 
 
@@ -209,53 +193,45 @@ gcloud services enable \
 #  run as . full_log_out.sh
 export GOOGLE_APPLICATION_CREDENTIALS=
 gcloud auth revoke --all
-rm service-account-key.json 
+rm -f service-account-key.json 
 gcloud config unset account
 gcloud config unset project
 rm -rf ~/.config/gcloud
+rm -f ~/.config/gcloud/application_default_credentials.json
 
 rm -rf ~/.mozilla/firefox
 rm -rf ~/.cache/mozilla/firefox
 
-rm -f ~/.config/gcloud/application_default_credentials.json
+clasp logout
+rm -f ~/.clasprc.json       # <- This is clasp’s global auth token
+rm -rf ~/.clasp-*           # <- In case of clasp env profiles (not always present)
 
 
 
-===== FILE: maps_config.env =====
 
-PROJECT_ID="distancetools600"
-MAPS_API_KEY="AIzaSyD80mpRvYtoSLESYRqoKFgs3wtSKOV2tmk"
-SHEET_URL=https://docs.google.com/spreadsheets/d/1bALP_iP-qP7DA9y14cXe14n-EUAOxnLCPxlgEVsSEFA
-SHEET_ID=1bALP_iP-qP7DA9y14cXe14n-EUAOxnLCPxlgEVsSEFA
+===== FILE: shell.nix =====
 
+{ pkgs ? import <nixpkgs> {} }:
 
+pkgs.mkShell {
+  buildInputs = [
+    pkgs.nodejs
+    pkgs.google-cloud-sdk
+    pkgs.yarn
+  ];
 
-===== FILE: sheet_creation_notes.txt =====
+  shellHook = ''
+    ROOT=$(git rev-parse --show-toplevel)
+    export PATH="$ROOT/node_modules/.bin:$PATH"
 
-🛠️ Automated Workflow: Creating a Google Sheet + Binding a Script
-This flow automates the creation of a Google Sheet and links it to a pushable Apps Script project using clasp. It uses a temporary "shim" Apps Script project to programmatically create the Sheet.
+    if [ ! -x "$ROOT/node_modules/.bin/clasp" ]; then
+      echo "⚙️  Installing clasp@3.x via npm..."
+      cd "$ROOT"
+      npm install @google/clasp@3.0.3-alpha
+    fi
+  '';
+}
 
-🔁 Why Use a "Shim" Script?
-We need a way to create a new Sheet entirely from the command line. Google Sheets themselves don’t expose a convenient way to auto-attach a bound script unless a Sheet already exists. So:
-
-We create a standalone Apps Script project (the shim).
-
-That shim executes SpreadsheetApp.create(...) to create the Sheet.
-
-The newly created Sheet will automatically be bound to its own Apps Script project — separate from the shim.
-
-We then discard the shim, and begin working with the script that is bound to the new Sheet.
-
-❌ Why the Shim Is Not Bound to a GCP Project
-The shim script only calls SpreadsheetApp.create(), which:
-
-Works fine using the default internal GCP project Google provides.
-
-Doesn’t require API key, billing, quotas, logging, or special scopes.
-
-Keeps the workflow lightweight and portable.
-
-So there’s no n
 
 
 ===== FILE: verify_project_ownership_and_apps_script_api_enabled.sh =====
