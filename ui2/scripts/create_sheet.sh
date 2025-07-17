@@ -91,8 +91,10 @@ SHEET_ID=$(echo "$SCRIPT_INFO" | jq -r '.parentId')
 }
 
 
+SHEET_URL="https://docs.google.com/spreadsheets/d/${SHEET_ID}"
 echo "✅ SCRIPT_ID = $SCRIPT_ID"
 echo "✅ SHEET_ID  = $SHEET_ID"
+echo "✅ SHEET_URL  = $SHEET_URL"
 
 # === Update maps_config.env ===
 update_env_var() {
@@ -108,6 +110,8 @@ update_env_var() {
 echo "💾 Updating $CONFIG_FILE..."
 update_env_var SCRIPT_ID "$SCRIPT_ID"
 update_env_var SHEET_ID "$SHEET_ID"
+update_env_var SHEET_URL "$SHEET_URL"
+
 
 echo "🎉 Done. You can now run:"
 echo "   cd $PROJECT_ROOT"
