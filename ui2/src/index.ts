@@ -12,7 +12,7 @@ function onOpen(
 ): void {
   SpreadsheetApp.getUi()
     .createMenu("🔧 Example Menu")
-    .addItem("May Hello", "hayHello")
+    .addItem("Way Hello", "hayHello")
     .addToUi();
 }
 
