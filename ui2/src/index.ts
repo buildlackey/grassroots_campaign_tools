@@ -1,6 +1,6 @@
-function sayHello(): void {
+function hayHello(): void {
   const name = Session.getActiveUser().getEmail().split("@")[0];
-  SpreadsheetApp.getActiveSpreadsheet().toast(`Hello, ${name}! 👋`, "Greeting");
+  SpreadsheetApp.getActiveSpreadsheet().toast(`Yo...Hello, ${name}! 👋`, "Greeting");
 }
 
 function onOpen(
@@ -12,7 +12,7 @@ function onOpen(
 ): void {
   SpreadsheetApp.getUi()
     .createMenu("🔧 Example Menu")
-    .addItem("Say Hello", "sayHello")
+    .addItem("May Hello", "hayHello")
     .addToUi();
 }
 
@@ -32,5 +32,5 @@ function doPost(_e: GoogleAppsScript.Events.DoPost): void {
   console.log(_e);
 }
 
-export { onOpen, onEdit, onInstall, doGet, doPost, sayHello };
+export { onOpen, onEdit, onInstall, doGet, doPost, hayHello };
 

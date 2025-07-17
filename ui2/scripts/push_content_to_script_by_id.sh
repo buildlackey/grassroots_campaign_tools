@@ -26,6 +26,10 @@ TS_DIR="$GIT_ROOT/ui2"
 # === Ensure login ===
 ensure_login
 
+# === Run project bootstrap to ensure dependencies are installed ===
+bash "$SCRIPT_DIR/bootstrap.sh"
+
+
 # === Load config ===
 if [[ ! -f "$CONFIG_FILE" ]]; then
   echo "❌ Missing config file: $CONFIG_FILE"
