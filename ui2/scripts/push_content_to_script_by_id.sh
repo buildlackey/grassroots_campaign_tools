@@ -21,7 +21,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/utils.sh"
 GIT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
 CONFIG_FILE="$GIT_ROOT/maps_config.env"
-TS_DIR="$GIT_ROOT/ui2"
+UI_DIR="$GIT_ROOT/ui2"
+BUILD_DIR="$UI_DIR/build"
+SRC_DIR="$UI_DIR/src"
 
 # === Ensure login ===
 ensure_login
@@ -51,8 +53,8 @@ else
 fi
 
 # === Build TypeScript ===
-echo "🔧 Building TypeScript from: $TS_DIR"
-cd "$TS_DIR"
+echo "🔧 Building TypeScript from: $UI_DIR"
+cd "$UI_DIR"
 
 if [[ ! -d "node_modules" ]]; then
   echo "📦 Installing local dependencies... all except clasp"
@@ -62,11 +64,6 @@ fi
 echo "🛠️  Running build..."
 npm run build
 
-BUILD_DIR="$TS_DIR/build"
-if [[ ! -f "$BUILD_DIR/Code.js" ]]; then
-  echo "❌ Build failed or missing output files"
-  exit 1
-fi
 
 # === Clone target Apps Script project ===
 TMP_DIR="$(mktemp -d /tmp/clasp_push_XXXX)"
@@ -78,8 +75,17 @@ clasp clone "$SCRIPT_ID" >/dev/null
 
 # === Copy compiled TS output ===
 echo "📦 Copying built TypeScript output"
-cp "$BUILD_DIR/Code.js" "$TMP_DIR/"
-cp "$TS_DIR/appsscript.json" "$TMP_DIR/"
+cp "$SRC_DIR/Code.js" "$TMP_DIR/"
+cp "$UI_DIR/appsscript.json" "$TMP_DIR/"
+
+if [[ -f "$BUILD_DIR/FilterUI.html" ]]; then
+  echo "📥 Copying FilterUI.html"
+  cp "$BUILD_DIR/FilterUI.html" "$TMP_DIR/"
+else
+  echo "⚠️  ERROR: BUILD_DIR/FilterUI.html not found"
+  exit 1
+fi
+
 
 # === Inject Init.js for setting script properties ===
 if [[ "$SKIP_INIT" == false ]]; then

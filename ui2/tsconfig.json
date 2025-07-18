@@ -3,15 +3,18 @@
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "outDir": "build",
+    "outDir": "./build/ts",
+    "rootDir": "./src",
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "outDir": "build",
+    "allowJs": true,
+    "checkJs": false,
     "lib": ["ESNext"],
-    "types": ["google-apps-script"]
+    "types": ["google-apps-script", "node"]
   },
-  "include": ["src"],
-  "files": ["src/index.ts"]
+  "include": ["src/**/*"],
+  "exclude": ["src/FilterUICode.js"]  // ✅ Prevent TypeScript from touching it
 }
+
