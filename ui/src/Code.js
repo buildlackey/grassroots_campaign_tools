@@ -3,8 +3,14 @@ function onOpen() {
     .createMenu('📍 Distance Filter8')
     .addItem('Filter By Distance', 'showAutocompleteDialog')
     .addItem('Add Lat/Long Info', 'populateLatLong')
+    .addItem('Say Hello from TS', 'callHelloLatLong')
     .addToUi();
 }
+
+function callHelloLatLong() {
+  return LatLong.helloLatLong();  // expects global export
+}
+
 
 function showAutocompleteDialog() {
   const html = HtmlService.createHtmlOutputFromFile('FilterUI')

@@ -3,7 +3,7 @@
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "outDir": "./build/ts",
+    "outDir": "build/unit_testable_js", // tsc transpile'd js files - not GAS safe, but testable
     "rootDir": "./src",
     "strict": true,
     "noUnusedLocals": true,
