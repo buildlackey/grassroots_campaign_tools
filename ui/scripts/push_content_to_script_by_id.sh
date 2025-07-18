@@ -21,8 +21,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/utils.sh"
 GIT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
 CONFIG_FILE="$GIT_ROOT/maps_config.env"
-UI_DIR="$GIT_ROOT/ui2"
+UI_DIR="$GIT_ROOT/ui"
 BUILD_DIR="$UI_DIR/build"
+BUILD_TS_DIR="$UI_DIR/build/ts"     # javascript files compiled from typescript
 SRC_DIR="$UI_DIR/src"
 
 # === Ensure login ===
@@ -77,6 +78,12 @@ clasp clone "$SCRIPT_ID" >/dev/null
 echo "📦 Copying built TypeScript output"
 cp "$SRC_DIR/Code.js" "$TMP_DIR/"
 cp "$UI_DIR/appsscript.json" "$TMP_DIR/"
+
+echo "📦 Copying built TypeScript output"
+cp "$BUILD_TS_DIR"/*.js  "$BUILD_DIR"/*.html  "$TMP_DIR/"
+cp "$UI_DIR/appsscript.json" "$TMP_DIR/"
+
+
 
 if [[ -f "$BUILD_DIR/FilterUI.html" ]]; then
   echo "📥 Copying FilterUI.html"
