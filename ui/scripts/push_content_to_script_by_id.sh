@@ -79,19 +79,18 @@ echo "📦 Copying built TypeScript output"
 cp "$SRC_DIR/Code.js" "$TMP_DIR/"
 cp "$UI_DIR/appsscript.json" "$TMP_DIR/"
 
-echo "📦 Copying built TypeScript output"
-cp "$BUILD_DIR"/*.js  "$BUILD_DIR"/*.html  "$TMP_DIR/"
-cp "$UI_DIR/appsscript.json" "$TMP_DIR/"
+echo "📦 Copying Webpack GAS-safe output (JS)"
+cp "$BUILD_DIR"/*.js   "$TMP_DIR/"
 
-
-
-if [[ -f "$BUILD_DIR/FilterUI.html" ]]; then
+if [[ -f "$BUILD_DIR/FilterUI.html" ]]; then  # check combined html/javascript file in right place
   echo "📥 Copying FilterUI.html"
   cp "$BUILD_DIR/FilterUI.html" "$TMP_DIR/"
 else
   echo "⚠️  ERROR: BUILD_DIR/FilterUI.html not found"
   exit 1
 fi
+
+
 
 
 # === Inject Init.js for setting script properties ===

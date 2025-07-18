@@ -1,3 +1,27 @@
+/**
+ * Webpack configuration for Google Apps Script bundling.
+ *
+ * 🔧 Purpose:
+ * This config transforms and bundles TypeScript modules for use in the Apps Script environment.
+ *
+ * 🧱 Build Lifecycle:
+ *   - TypeScript files are compiled by `tsc` into `build/unit_testable_js/` (for testing only)
+ *   - Webpack then bundles those into `build/gas_safe_staging/`, removing module syntax
+ *
+ * 📦 What Webpack does:
+ *   1. Loads compiled JS from `build/unit_testable_js/`
+ *   2. Removes unsupported module features like `import`/`export`
+ *   3. Generates Google Apps Script–safe `.js` files in `build/gas_safe_staging/`
+ *   4. Uses `gas-webpack-plugin` to expose exports as global objects 
+ *
+ * 🚀 Only files in `build/gas_safe_staging/` are pushed to Apps Script using `clasp push`.
+ *
+ * ✅ Result:
+ * Apps Script can call TypeScript-defined logic as global functions without errors.
+ */
+
+
+
 const path = require("path");
 const fs = require("fs");
 const GasPlugin = require("gas-webpack-plugin");
@@ -22,6 +46,8 @@ fs.readdirSync(srcDir)
     entry[name] = path.join(srcDir, file);
   });
 
+
+
 module.exports = {
   mode: "development",
   context: __dirname,
@@ -33,12 +59,8 @@ module.exports = {
   resolve: {
     extensions: [".ts", ".js"],
   },
-  plugins: [
-    new GasPlugin({
-      autoGlobalExportsFiles: [
-        './src/LatLong.ts',  // 👈 this enables LatLong.helloLatLong()
-      ],
-    }),
-  ],
+  plugins: [],
   devtool: false,
 };
+
+
