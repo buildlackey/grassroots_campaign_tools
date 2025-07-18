@@ -27,7 +27,7 @@ module.exports = {
   context: __dirname,
   entry,
   output: {
-    path: path.resolve(__dirname, "build"),
+    path: path.resolve(__dirname, "build/gas_safe_staging"),
     filename: "[name].js",
   },
   resolve: {
