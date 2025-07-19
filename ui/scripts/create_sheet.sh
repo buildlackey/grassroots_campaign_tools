@@ -42,7 +42,7 @@ if [[ ! -f "$CONFIG_FILE" ]]; then
   exit 1
 fi
 
-PROJECT_TITLE="CampaignSheet-$(date +%s)"
+PROJECT_TITLE="RampaignSheet-$(date +%s)"
 TMP_DIR="$(mktemp -d /tmp/sheet_create_XXXX)"
 echo "📁 Using temp working directory: $TMP_DIR"
 
