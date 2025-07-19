@@ -22,8 +22,8 @@ source "$SCRIPT_DIR/utils.sh"
 GIT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
 CONFIG_FILE="$GIT_ROOT/maps_config.env"
 UI_DIR="$GIT_ROOT/ui"
-BUILD_DIR="$UI_DIR/build"
-BUILD_TS_DIR="$UI_DIR/build/ts"     # javascript files compiled from typescript
+BUILD_DIR="$UI_DIR/build/gas_safe_staging"
+BUILD_TS_DIR="$UI_DIR/build/unit_testable_js"     # javascript files compiled from typescript
 SRC_DIR="$UI_DIR/src"
 
 # === Ensure login ===
@@ -79,19 +79,18 @@ echo "📦 Copying built TypeScript output"
 cp "$SRC_DIR/Code.js" "$TMP_DIR/"
 cp "$UI_DIR/appsscript.json" "$TMP_DIR/"
 
-echo "📦 Copying built TypeScript output"
-cp "$BUILD_TS_DIR"/*.js  "$BUILD_DIR"/*.html  "$TMP_DIR/"
-cp "$UI_DIR/appsscript.json" "$TMP_DIR/"
+echo "📦 Copying Webpack GAS-safe output (JS)"
+cp "$BUILD_DIR"/*.js   "$TMP_DIR/"
 
-
-
-if [[ -f "$BUILD_DIR/FilterUI.html" ]]; then
+if [[ -f "$BUILD_DIR/FilterUI.html" ]]; then  # check combined html/javascript file in right place
   echo "📥 Copying FilterUI.html"
   cp "$BUILD_DIR/FilterUI.html" "$TMP_DIR/"
 else
   echo "⚠️  ERROR: BUILD_DIR/FilterUI.html not found"
   exit 1
 fi
+
+
 
 
 # === Inject Init.js for setting script properties ===

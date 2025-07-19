@@ -7,7 +7,7 @@ PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 TEMPLATE="$PROJECT_DIR/src/FilterUI.template.html"
 SIDEBAR_JS="$PROJECT_DIR/src/FilterUICode.js"
-OUTPUT="$PROJECT_DIR/build/FilterUI.html"
+OUTPUT="$PROJECT_DIR/build/gas_safe_staging/FilterUI.html"
 
 if [[ ! -f "$TEMPLATE" ]]; then
   echo "❌ Template HTML not found: $TEMPLATE"
