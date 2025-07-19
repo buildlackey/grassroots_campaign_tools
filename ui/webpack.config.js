@@ -59,7 +59,22 @@ module.exports = {
   resolve: {
     extensions: [".ts", ".js"],
   },
-  plugins: [],
+plugins: [
+  new GasPlugin({
+    // 📦 autoGlobalExportsFiles tells gas-webpack-plugin which modules to
+    // expose globally in Google Apps Script. Although Webpack processes
+    // compiled JS from build/unit_testable_js/, this list uses the original
+    // .ts source paths to ensure that exports (from Foo.ts files) are
+    // attached to the global scope as globalThis.Foo.
+    //
+    // This is required because GAS does not support modules — all callable
+    // functions must be globally scoped.
+    autoGlobalExportsFiles: [
+      './build/unit_testable_js/LatLong.js' // 👈 use the emitted JS path
+    ],
+  }),
+],
+
   devtool: false,
 };
 
