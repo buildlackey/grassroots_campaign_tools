@@ -1,16 +1,20 @@
 function onOpen() {
   SpreadsheetApp.getUi()
-    .createMenu('📍 Distance Filter5')
+    .createMenu('📍 Campaign')
     .addItem('Filter By Distance', 'showAutocompleteDialog')
     .addItem('Add Lat/Long Info', 'populateLatLong')
-    .addItem('Say Hello from TS', 'callHelloLatLong')
+    .addItem('👋 Greet', 'callGreetWithOptions')
+    .addItem('📣 Hello', 'callHelloLatLong')
     .addToUi();
 }
 
-function callHelloLatLong() {
-  return LatLong.helloLatLong();  // expects global export
+function callGreetWithOptions() {
+  LatLong.greetWithOptions({ name: "Chris" });
 }
 
+function callHelloLatLong() {
+  LatLong.helloLatLong("from the menu");
+}
 
 function showAutocompleteDialog() {
   const html = HtmlService.createHtmlOutputFromFile('FilterUI')

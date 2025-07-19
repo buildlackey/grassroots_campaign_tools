@@ -13,3 +13,6 @@ export const LatLong = {
   }
 };
 
+// 👇 Tell GAS to expose it globally
+(globalThis as any).LatLong = LatLong;
+
