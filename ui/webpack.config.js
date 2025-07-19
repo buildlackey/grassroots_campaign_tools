@@ -70,7 +70,7 @@ plugins: [
     // This is required because GAS does not support modules — all callable
     // functions must be globally scoped.
     autoGlobalExportsFiles: [
-      './build/unit_testable_js/LatLong.js' // 👈 use the emitted JS path
+      './src/LatLong.ts' // ✅ not build/unit_testable_js — plugin maps source to global
     ],
   }),
 ],

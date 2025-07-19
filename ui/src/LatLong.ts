@@ -2,8 +2,14 @@ interface GreetingOptions {
   name?: string;
 }
 
-export function greetWithOptions(opts: GreetingOptions = {}): void {
-  const name = opts.name ?? "stranger";
-  SpreadsheetApp.getUi().alert(`👋 Greetings, ${name}`);
-}
+export const LatLong = {
+  greetWithOptions(opts: GreetingOptions = {}) {
+    const name = opts.name ?? "stranger";
+    SpreadsheetApp.getUi().alert(`👋 Greetings, ${name}`);
+  },
+
+  helloLatLong(message: string = "defaulto") {
+    SpreadsheetApp.getUi().alert("👋 Hello from " + message);
+  }
+};
 
