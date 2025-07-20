@@ -27,7 +27,7 @@ BUILD_TS_DIR="$UI_DIR/build/unit_testable_js"     # javascript files compiled fr
 SRC_DIR="$UI_DIR/src"
 
 # === Ensure login ===
-ensure_login
+ensure_logged_in
 
 # === Run project bootstrap to ensure dependencies are installed ===
 bash "$SCRIPT_DIR/bootstrap.sh"

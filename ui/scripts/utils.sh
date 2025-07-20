@@ -1,4 +1,4 @@
-ensure_login() {
+ensure_logged_in() {
   echo "🔐 Checking gcloud login..."
   if ! gcloud auth list --format="value(account)" | grep -q .; then
     echo "🔓 Not logged in to gcloud — invoking login..."
