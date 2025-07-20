@@ -42,7 +42,7 @@ if [[ ! -f "$CONFIG_FILE" ]]; then
   exit 1
 fi
 
-PROJECT_TITLE="RampaignSheet-$(date +%s)"
+PROJECT_TITLE="CampaignSheet-$(date +%s)"
 TMP_DIR="$(mktemp -d /tmp/sheet_create_XXXX)"
 echo "📁 Using temp working directory: $TMP_DIR"
 
@@ -66,7 +66,8 @@ SCRIPT_ID=$(jq -r '.scriptId' .clasp.json)
 }
 
 # === Get SHEET_ID via Apps Script API ===
-ACCESS_TOKEN=$(jq -r '.token.access_token' ~/.clasprc.json)
+ACCESS_TOKEN=$(jq -r '.tokens.default.access_token' ~/.clasprc.json)
+
 SCRIPT_INFO_URL="https://script.googleapis.com/v1/projects/${SCRIPT_ID}"
 
 if [[ "$DEBUG" == true ]]; then
@@ -74,7 +75,7 @@ if [[ "$DEBUG" == true ]]; then
   echo "🪪 Access token source: ~/.clasprc.json"
   echo "🔑 TOKEN (first 20 chars): ${ACCESS_TOKEN:0:20}..."
   echo "📡 CURL COMMAND:"
-  echo "curl -s -H \"Authorization: Bearer <ACCESS_TOKEN>\" \"$SCRIPT_INFO_URL\""
+  echo "curl -s -H \"Authorization: Bearer <ACCESS_TOKEN>\" \"$SCRIPT_INFO_URL\""        #  redundant w/def of SCRIPT_INFO
 fi
 
 SCRIPT_INFO=$(curl -s -H "Authorization: Bearer $ACCESS_TOKEN" "$SCRIPT_INFO_URL")
@@ -89,7 +90,6 @@ SHEET_ID=$(echo "$SCRIPT_INFO" | jq -r '.parentId')
   echo "❌ Could not determine SHEET_ID from Apps Script API"
   exit 1
 }
-
 
 SHEET_URL="https://docs.google.com/spreadsheets/d/${SHEET_ID}"
 echo "✅ SCRIPT_ID = $SCRIPT_ID"
@@ -112,9 +112,26 @@ update_env_var SCRIPT_ID "$SCRIPT_ID"
 update_env_var SHEET_ID "$SHEET_ID"
 update_env_var SHEET_URL "$SHEET_URL"
 
-
-echo "🎉 Done. You can now run:"
-echo "   cd $PROJECT_ROOT"
-echo "   clasp push --script-id $SCRIPT_ID"
+# === Prompt user to manually associate with real GCP project ===
+echo ""
+echo "⚠️  MANUAL STEP REQUIRED"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "To ensure Maps API billing works, you must associate this script:"
+echo "  Script Title: $PROJECT_TITLE"
+echo "  Script ID:    $SCRIPT_ID"
+echo ""
+echo "With your real GCP project:"
+echo "  GCP Project ID: $(grep PROJECT_ID "$CONFIG_FILE" | cut -d= -f2 | tr -d \")"
+echo ""
+echo "Open the following URL in your browser:"
+echo "  https://script.google.com/d/$SCRIPT_ID/edit"
+echo ""
+echo "➡️  Then go to:"
+echo "  Extensions > Apps Script Dashboard"
+echo "  Project Settings > Google Cloud Platform (GCP) Project"
+echo "  Select the option: 'Change project' and paste:"
+echo "     $(grep PROJECT_ID "$CONFIG_FILE" | cut -d= -f2 | tr -d \")"
+echo ""
+read -rp "🛑 Press [ENTER] when you've finished associating the script to your GCP project..."
 
 
