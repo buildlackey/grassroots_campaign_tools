@@ -81,6 +81,8 @@ module.exports = {
       autoGlobalExportsFiles: [         // this is redundant and brittle .. should derive this from entries, above
         './src/Code.ts',
         './src/LatLong.ts',
+  './src/Geocoder.ts',
+  './src/PreferenceSvc.ts',  // ✅ Newly added
       ],
     }),
   ],

@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "outDir": "build/unit_testable_js", // tsc transpile'd js files - not GAS safe, but testable
+    "target": "ES5",                          // ⬅️ Required: GAS only supports ES5
+    "module": "CommonJS",                    // ⬅️ Required: for Webpack bundling
+    "moduleResolution": "Node",              // ⬅️ Node-style resolution works with CommonJS
+    "outDir": "build/unit_testable_js",
     "rootDir": "./src",
     "strict": true,
     "noUnusedLocals": true,
@@ -11,10 +11,10 @@
     "noFallthroughCasesInSwitch": true,
     "allowJs": true,
     "checkJs": false,
-    "lib": ["ESNext"],
+    "lib": ["ES2015"],                       // ⬅️ Avoid modern APIs not available in ES5
     "types": ["google-apps-script", "node"]
   },
   "include": ["src/**/*"],
-  "exclude": ["src/FilterUICode.js"]  // ✅ Prevent TypeScript from touching it
+  "exclude": ["src/FilterUICode.js"]
 }
 

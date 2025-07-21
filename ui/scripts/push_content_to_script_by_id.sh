@@ -24,17 +24,27 @@ UI_DIR="$GIT_ROOT/ui"
 BUILD_DIR="$UI_DIR/build/gas_safe_staging"
 BUILD_TS_DIR="$UI_DIR/build/unit_testable_js"     # javascript files compiled from typescript  ## NOT NEEDED?
 SRC_DIR="$UI_DIR/src"   ## NOT NEEDED?
+LOCAL_CLASP="$GIT_ROOT/node_modules/.bin/clasp"
+
+echo "📦 Ensuring local clasp is available..."
+cd "$GIT_ROOT"
+npm install --silent
+
+echo "🔧 Using clasp from: $LOCAL_CLASP"
+"$LOCAL_CLASP" --version
+
+# === Guard: Ensure local clasp binary is available ===
+if [[ ! -x "$LOCAL_CLASP" ]]; then
+  echo "❌ ERROR: Local clasp not found at $LOCAL_CLASP"
+  echo "💡 Tip: Run 'npm install' from project root to install clasp"
+  exit 1
+fi
+
 
 # === Ensure login ===
 source "$SCRIPT_DIR/utils.sh"
 ensure_logged_in
 
-# === Guard: Check for global `clasp` availability ===
-if ! command -v clasp >/dev/null 2>&1; then
-  echo "❌ ERROR: 'clasp' is not installed or not on PATH."
-  echo "💡 Tip: Run 'npm install -g clasp' or source your Nix shell."
-  exit 1
-fi
 
 # === Run project bootstrap to ensure dependencies are installed ===
 bash "$SCRIPT_DIR/bootstrap.sh"
@@ -52,13 +62,6 @@ if [[ -z "${SCRIPT_ID:-}" || -z "${MAPS_API_KEY:-}" ]]; then
   exit 1
 fi
 
-# === Ensure clasp is globally installed ===
-if ! command -v clasp >/dev/null 2>&1; then
-  echo "🔧 clasp not found. Installing globally..."
-  npm install -g clasp
-else
-  echo "✅ clasp is already installed globally"
-fi
 
 # === Build TypeScript ===
 echo "🔧 Building TypeScript from: $UI_DIR"
@@ -82,7 +85,7 @@ echo "🚧 Working in: $TMP_DIR"
 cd "$TMP_DIR"
 
 echo "📥 Cloning script ID: $SCRIPT_ID"
-clasp clone "$SCRIPT_ID" >/dev/null
+$LOCAL_CLASP clone "$SCRIPT_ID" >/dev/null
 
 # === Copy compiled TS output ===
 echo "📦 Copying built TypeScript output"
@@ -111,6 +114,7 @@ function initialSetup() {
   const key = "$MAPS_API_KEY";
   PropertiesService.getScriptProperties().setProperty("GOOGLE_MAPS_API_KEY", key);
   PropertiesService.getScriptProperties().setProperty("DEBUG", "false");
+  PropertiesService.getScriptProperties().setProperty("YEBUG", "cat");
   Logger.log("✅ Script properties set: GOOGLE_MAPS_API_KEY + DEBUG");
 }
 initialSetup();
@@ -122,12 +126,15 @@ fi
 
 # === Push to Apps Script ===
 echo "🚀 Pushing project to Apps Script"
-clasp push --force
+$LOCAL_CLASP push --force
 
 # === Clean up sensitive Init.js after push ===
 if [[ "$SKIP_INIT" == false ]]; then
   echo "🧽 Cleaning up Init.js"
   rm -f "$TMP_DIR/Init.js"
 fi
+
+bash "$SCRIPT_DIR/smoke_test.sh"
+
 
 echo "✅ Done syncing project."
