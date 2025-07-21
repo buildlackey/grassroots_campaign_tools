@@ -1,0 +1,32 @@
+{
+  "scripts": {
+    "clean": "rm -rf build",
+    "tsc": "tsc",
+    "test": "jest",
+    "webpack": "webpack",
+    "build": "npm run clean && npm run tsc && npm run test && npm run webpack && bash scripts/inject_sidebar.sh",
+    "push": "npm run build && clasp push -f",
+    "deploy": "npm run push && clasp deploy",
+    "lint": "eslint",
+    "format": "prettier . --write",
+    "login": "clasp login"
+  },
+  "license": "GPL",
+  "devDependencies": {
+    "@google/clasp": "^3.1.0",
+    "@types/google-apps-script": "^1.0.97",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-googleappsscript": "^1.0.5",
+    "gas-webpack-plugin": "^2.6.0",
+    "html-webpack-plugin": "^5.6.3",
+    "prettier": "^3.5.3",
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.8.3",
+    "webpack": "^5.99.9",
+    "webpack-cli": "^6.0.1"
+  },
+  "private": true
+}
