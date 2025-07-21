@@ -6,7 +6,6 @@ maps_config.env
 .clasp.json
 .clasprc.json 
 package-lock.json
-package.json
 
 
 **/node_modules/
