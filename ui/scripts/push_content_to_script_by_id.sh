@@ -18,16 +18,23 @@ done
 
 # === Paths ===
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/utils.sh"
 GIT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
 CONFIG_FILE="$GIT_ROOT/maps_config.env"
 UI_DIR="$GIT_ROOT/ui"
 BUILD_DIR="$UI_DIR/build/gas_safe_staging"
-BUILD_TS_DIR="$UI_DIR/build/unit_testable_js"     # javascript files compiled from typescript
-SRC_DIR="$UI_DIR/src"
+BUILD_TS_DIR="$UI_DIR/build/unit_testable_js"     # javascript files compiled from typescript  ## NOT NEEDED?
+SRC_DIR="$UI_DIR/src"   ## NOT NEEDED?
 
 # === Ensure login ===
+source "$SCRIPT_DIR/utils.sh"
 ensure_logged_in
+
+# === Guard: Check for global `clasp` availability ===
+if ! command -v clasp >/dev/null 2>&1; then
+  echo "❌ ERROR: 'clasp' is not installed or not on PATH."
+  echo "💡 Tip: Run 'npm install -g clasp' or source your Nix shell."
+  exit 1
+fi
 
 # === Run project bootstrap to ensure dependencies are installed ===
 bash "$SCRIPT_DIR/bootstrap.sh"
@@ -59,7 +66,10 @@ cd "$UI_DIR"
 
 if [[ ! -d "node_modules" ]]; then
   echo "📦 Installing local dependencies... all except clasp"
-  npm install
+  npm install    #  this should pick up exact dependencies in  package-lock.json:?
+
+
+
 fi
 
 echo "🛠️  Running build..."
@@ -76,7 +86,7 @@ clasp clone "$SCRIPT_ID" >/dev/null
 
 # === Copy compiled TS output ===
 echo "📦 Copying built TypeScript output"
-cp "$SRC_DIR/Code.js" "$TMP_DIR/"
+cp "$BUILD_DIR/Code.js" "$TMP_DIR/"
 cp "$UI_DIR/appsscript.json" "$TMP_DIR/"
 
 echo "📦 Copying Webpack GAS-safe output (JS)"

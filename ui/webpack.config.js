@@ -2,51 +2,44 @@
  * Webpack configuration for Google Apps Script bundling.
  *
  * 🔧 Purpose:
- * This config transforms and bundles TypeScript modules for use in the Apps Script environment.
+ * This config transforms and bundles TypeScript source files for use in the Apps Script environment.
  *
  * 🧱 Build Lifecycle:
- *   - TypeScript files are compiled by `tsc` into `build/unit_testable_js/` (for testing only)
- *   - Webpack then bundles those into `build/gas_safe_staging/`, removing module syntax
+ *   - TypeScript files are compiled directly by Webpack (via `ts-loader`)
+ *   - Webpack bundles these into `build/gas_safe_staging/`, stripping unsupported module syntax
+ *   - No intermediate build/unit_testable_js/ is used for bundling (though you may keep it for tests)
  *
  * 📦 What Webpack does:
- *   1. Loads compiled JS from `build/unit_testable_js/`
+ *   1. Loads `.ts` source files and transpiles them via `ts-loader`
  *   2. Removes unsupported module features like `import`/`export`
- *   3. Generates Google Apps Script–safe `.js` files in `build/gas_safe_staging/`
- *   4. Uses `gas-webpack-plugin` to expose exports as global objects 
+ *   3. Automatically injects `globalThis.myExportedFunction = myExportedFunction` 
+ *      for each exported symbol, using `gas-webpack-plugin`
+ *   4. Outputs GAS-safe `.js` files into `build/gas_safe_staging/`
  *
  * 🚀 Only files in `build/gas_safe_staging/` are pushed to Apps Script using `clasp push`.
  *
  * ✅ Result:
- * Apps Script can call TypeScript-defined logic as global functions without errors.
+ * Apps Script can call TypeScript-defined logic as global functions without module errors.
  */
-
-
 
 const path = require("path");
 const fs = require("fs");
 const GasPlugin = require("gas-webpack-plugin");
 const webpack = require("webpack");
 
-console.log("🛠️  Using webpack.config.js with dynamic entry discovery");
+console.log("🛠️  Using webpack.config.js with dynamic TypeScript entry discovery");
 
-// Auto-generate entry object for all .js files in src/
-const srcDir = path.resolve(__dirname, "build/unit_testable_js");
+const srcDir = path.resolve(__dirname, "src");
 
 const entry = {};
 
-// Only bundle files other than FilterUICode.js - we leave this raw -- better integration w/ GAS
+// Only bundle `.ts` files, skip any UI assets like FilterUICode.ts if needed
 fs.readdirSync(srcDir)
-  .filter(file =>
-    file.endsWith(".js") &&
-    file !== "FilterUICode.js" &&
-    file !== "Code.js"
-  )
+  .filter(file => file.endsWith(".ts"))
   .forEach(file => {
-    const name = path.basename(file, ".js");
+    const name = path.basename(file, ".ts"); // ✅ Fix: strip .ts, not .js
     entry[name] = path.join(srcDir, file);
-  });
-
-
+ });
 
 module.exports = {
   mode: "development",
@@ -59,23 +52,35 @@ module.exports = {
   resolve: {
     extensions: [".ts", ".js"],
   },
-plugins: [
-  new GasPlugin({
-    // 📦 autoGlobalExportsFiles tells gas-webpack-plugin which modules to
-    // expose globally in Google Apps Script. Although Webpack processes
-    // compiled JS from build/unit_testable_js/, this list uses the original
-    // .ts source paths to ensure that exports (from Foo.ts files) are
-    // attached to the global scope as globalThis.Foo.
-    //
-    // This is required because GAS does not support modules — all callable
-    // functions must be globally scoped.
-    autoGlobalExportsFiles: [
-      './src/LatLong.ts' // ✅ not build/unit_testable_js — plugin maps source to global
+
+  // 🧩 Tell Webpack how to handle TypeScript files
+  module: {
+    rules: [
+      {
+        test: /\.ts$/,
+        use: "ts-loader",
+        exclude: /node_modules/,
+      },
     ],
-  }),
-],
+  },
+
+  plugins: [
+    new GasPlugin({
+      // 📦 autoGlobalExportsFiles tells gas-webpack-plugin which modules to
+      // expose globally in Google Apps Script. Although Webpack processes
+      // compiled JS from build/unit_testable_js/, this list uses the original
+      // .ts source paths to ensure that exports (from Foo.ts files) are
+      // attached to the global scope as globalThis.Foo.
+      //
+      // This is required because GAS does not support modules — all callable
+      // functions must be globally scoped.
+      autoGlobalExportsFiles: [
+        './src/Code.ts',
+        './src/LatLong.ts',
+      ],
+    }),
+  ],
 
   devtool: false,
 };
-
 
