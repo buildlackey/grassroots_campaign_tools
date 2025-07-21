@@ -5,14 +5,18 @@
  * This config transforms and bundles TypeScript source files for use in the Apps Script environment.
  *
  * 🧱 Build Lifecycle:
- *   - TypeScript files are compiled directly by Webpack (via `ts-loader`)
+ *   - TypeScript files are compiled directly by Webpack (via `ts-loader`) - module rules declared to pick up '*.ts'
  *   - Webpack bundles these into `build/gas_safe_staging/`, stripping unsupported module syntax
- *   - No intermediate build/unit_testable_js/ is used for bundling (though you may keep it for tests)
+ *   -   Also key: Webpack injects methods into the equivalent of globalThis entry points
+ *       which are required since GAS environment wants everything in a flat namespace.  
+ *       That is where __webpack_require__.g comes in.  This is Webpack's internal globalThis shim which 
+ *       provides a consistent global object reference across various JavaScript environments — 
+ *       including browsers, Node.js, and older runtimes that may not support globalThis natively.
  *
  * 📦 What Webpack does:
  *   1. Loads `.ts` source files and transpiles them via `ts-loader`
  *   2. Removes unsupported module features like `import`/`export`
- *   3. Automatically injects `globalThis.myExportedFunction = myExportedFunction` 
+ *   3. Automatically injects `globalThis.myExportedFunction = myExportedFunction`  (using its globalThis analog)
  *      for each exported symbol, using `gas-webpack-plugin`
  *   4. Outputs GAS-safe `.js` files into `build/gas_safe_staging/`
  *
@@ -74,7 +78,7 @@ module.exports = {
       //
       // This is required because GAS does not support modules — all callable
       // functions must be globally scoped.
-      autoGlobalExportsFiles: [
+      autoGlobalExportsFiles: [         // this is redundant and brittle .. should derive this from entries, above
         './src/Code.ts',
         './src/LatLong.ts',
       ],
