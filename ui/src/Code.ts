@@ -12,4 +12,7 @@ export function testFunction() {
   SpreadsheetApp.getUi().alert("Test function triggered!");
 }
 
-export { populateLatLong }; // ✅ Make available to GAS via gas-webpack-plugin
+// (globalThis as any).populateLatLong = populateLatLong; // tried this does not work
+
+export { populateLatLong };
+
