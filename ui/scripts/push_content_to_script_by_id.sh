@@ -22,8 +22,8 @@ GIT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
 CONFIG_FILE="$GIT_ROOT/maps_config.env"
 UI_DIR="$GIT_ROOT/ui"
 BUILD_DIR="$UI_DIR/build/gas_safe_staging"
-BUILD_TS_DIR="$UI_DIR/build/unit_testable_js"     # javascript files compiled from typescript  ## NOT NEEDED?
-SRC_DIR="$UI_DIR/src"   ## NOT NEEDED?
+BUILD_TS_DIR="$UI_DIR/build/unit_testable_js"
+SRC_DIR="$UI_DIR/src"
 LOCAL_CLASP="$GIT_ROOT/node_modules/.bin/clasp"
 
 echo "📦 Ensuring local clasp is available..."
@@ -40,15 +40,12 @@ if [[ ! -x "$LOCAL_CLASP" ]]; then
   exit 1
 fi
 
-
 # === Ensure login ===
 source "$SCRIPT_DIR/utils.sh"
 ensure_logged_in
 
-
 # === Run project bootstrap to ensure dependencies are installed ===
 bash "$SCRIPT_DIR/bootstrap.sh"
-
 
 # === Load config ===
 if [[ ! -f "$CONFIG_FILE" ]]; then
@@ -62,22 +59,17 @@ if [[ -z "${SCRIPT_ID:-}" || -z "${MAPS_API_KEY:-}" ]]; then
   exit 1
 fi
 
-
 # === Build TypeScript ===
 echo "🔧 Building TypeScript from: $UI_DIR"
 cd "$UI_DIR"
 
 if [[ ! -d "node_modules" ]]; then
   echo "📦 Installing local dependencies... all except clasp"
-  npm install    #  this should pick up exact dependencies in  package-lock.json:?
-
-
-
+  npm install
 fi
 
 echo "🛠️  Running build..."
 npm run build
-
 
 # === Clone target Apps Script project ===
 TMP_DIR="$(mktemp -d /tmp/clasp_push_XXXX)"
@@ -91,20 +83,18 @@ $LOCAL_CLASP clone "$SCRIPT_ID" >/dev/null
 echo "📦 Copying built TypeScript output"
 cp "$BUILD_DIR/Code.js" "$TMP_DIR/"
 cp "$UI_DIR/appsscript.json" "$TMP_DIR/"
+cp "$GIT_ROOT/maps_config.env" "$TMP_DIR/"
 
 echo "📦 Copying Webpack GAS-safe output (JS)"
-cp "$BUILD_DIR"/*.js   "$TMP_DIR/"
+cp "$BUILD_DIR"/*.js "$TMP_DIR/"
 
-if [[ -f "$BUILD_DIR/FilterUI.html" ]]; then  # check combined html/javascript file in right place
+if [[ -f "$BUILD_DIR/FilterUI.html" ]]; then
   echo "📥 Copying FilterUI.html"
   cp "$BUILD_DIR/FilterUI.html" "$TMP_DIR/"
 else
   echo "⚠️  ERROR: BUILD_DIR/FilterUI.html not found"
   exit 1
 fi
-
-
-
 
 # === Inject Init.js for setting script properties ===
 if [[ "$SKIP_INIT" == false ]]; then
@@ -134,7 +124,22 @@ if [[ "$SKIP_INIT" == false ]]; then
   rm -f "$TMP_DIR/Init.js"
 fi
 
-bash "$SCRIPT_DIR/smoke_test.sh"
+# === DEPLOY after push ===
+echo "🚀 Deploying new version..."
+DEPLOY_OUTPUT=$($LOCAL_CLASP deploy --description "Auto-deploy from push script")
+echo "$DEPLOY_OUTPUT"
 
+DEPLOYMENT_ID=$(echo "$DEPLOY_OUTPUT" | grep -o 'AKfycb[a-zA-Z0-9_-]*' | head -n 1)
 
-echo "✅ Done syncing project."
+if [[ -z "$DEPLOYMENT_ID" ]]; then
+  echo "❌ Failed to extract DEPLOYMENT_ID"
+  exit 1
+fi
+
+echo "✅ Deployment ID: $DEPLOYMENT_ID"
+
+# === Update maps_config.env with DEPLOYMENT_ID ===
+update_env_var DEPLOYMENT_ID "$DEPLOYMENT_ID"
+
+echo "✅ Done syncing and deploying from working folder $TMP_DIR"
+

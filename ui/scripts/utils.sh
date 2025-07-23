@@ -16,3 +16,13 @@ ensure_logged_in() {
   fi
 }
 
+update_env_var() {
+  local key="$1"
+  local value="$2"
+  if grep -q "^${key}=" "$CONFIG_FILE"; then
+    sed -i "s|^${key}=.*|${key}=\"${value}\"|" "$CONFIG_FILE"
+  else
+    echo "${key}=\"${value}\"" >> "$CONFIG_FILE"
+  fi
+}
+
