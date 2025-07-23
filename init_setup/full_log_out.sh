@@ -10,7 +10,7 @@ rm -f ~/.config/gcloud/application_default_credentials.json
 rm -rf ~/.mozilla/firefox
 rm -rf ~/.cache/mozilla/firefox
 
-clasp logout
+npx --yes @google/clasp@2.4.2 logout
 rm -f ~/.clasprc.json       # <- This is clasp’s global auth token
 rm -rf ~/.clasp-*           # <- In case of clasp env profiles (not always present)
 
