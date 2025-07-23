@@ -40,7 +40,7 @@ cd "$TMP_DIR"
 
 # === Create container-bound script with new Google Sheet ===
 echo "📄 Running: clasp create --title \"$PROJECT_TITLE\" --type sheets"
-clasp create --title "$PROJECT_TITLE" --type sheets > create.log
+npx --yes @google/clasp@2.5.0 create --title "$PROJECT_TITLE" --type sheets > create.log
 
 # === Get SCRIPT_ID from .clasp.json ===
 if [[ ! -f .clasp.json ]]; then
@@ -55,8 +55,18 @@ SCRIPT_ID=$(jq -r '.scriptId' .clasp.json)
   exit 1
 }
 
-# === Get SHEET_ID via Apps Script API ===
-ACCESS_TOKEN=$(jq -r '.tokens.default.access_token' ~/.clasprc.json)
+if [[ -f "/home/chris/config/client_secret.json" ]]; then
+  echo "🔐 Using local OAuth client secret to refresh token..."
+  gcloud auth application-default login --client-id-file="/home/chris/config/client_secret.json" \
+    --scopes="https://www.googleapis.com/auth/script.projects" --quiet
+else
+  echo "❌ missing OAuth client secret t"
+  exit 1
+fi
+
+ACCESS_TOKEN="$(gcloud auth application-default print-access-token)"
+
+
 
 SCRIPT_INFO_URL="https://script.googleapis.com/v1/projects/${SCRIPT_ID}"
 
@@ -119,7 +129,7 @@ echo "  GCP Project ID:     $PROJECT_ID"
 echo "  GCP Project Number: $PROJECT_NUMBER"
 echo ""
 echo "Open the following URL in your browser:"
-echo "  $SHEET_URL""
+echo "  $SHEET_URL"
 echo ""
 echo "➡️  Then go to:"
 echo "  Extensions > Apps Script Dashboard"
