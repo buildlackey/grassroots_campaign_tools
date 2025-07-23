@@ -10,7 +10,7 @@ ensure_logged_in() {
   echo "🔐 Checking clasp login..."
   if [[ ! -f "$HOME/.clasprc.json" ]]; then
     echo "🔓 Not logged in to clasp — invoking login..."
-    clasp login
+    npx --yes @google/clasp@2.4.2 login
   else
     echo "✅ Already logged in to clasp"
   fi
