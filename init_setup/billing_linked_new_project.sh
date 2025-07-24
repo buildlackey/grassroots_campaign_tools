@@ -9,6 +9,26 @@ check_login() {
   fi
 }
 
+# === Poll for API readiness ===
+poll_api_ready() {
+  local API="$1"
+  local RETRIES=10
+  local DELAY=5
+  echo "⏳ Polling for $API to become active..."
+  for i in $(seq 1 "$RETRIES"); do
+    if gcloud services list --enabled --project="$PROJECT_ID" \
+         --filter="config.name:$API" \
+         --format="value(config.name)" | grep -q "$API"; then
+      echo "✅ $API is now enabled and available."
+      return 0
+    fi
+    echo "⏱️  Attempt $i/$RETRIES: $API not ready yet... waiting $DELAY sec"
+    sleep "$DELAY"
+  done
+  echo "❌ Timeout: $API did not become ready after $((RETRIES * DELAY)) seconds."
+  return 1
+}
+
 # === Check if user is logged in ===
 check_login
 
@@ -28,12 +48,36 @@ if [ -z "${PROJECT_ID:-}" ] || [ -z "${BILLING_ID:-}" ]; then
   exit 1
 fi
 
+# Warn if project ID already exists
+if gcloud projects describe "$PROJECT_ID" &>/dev/null; then
+  echo "❌ Project ID '$PROJECT_ID' already exists. Choose a different one."
+  exit 1
+fi
+
 # === Create the new project ===
 echo "Creating Google Cloud project: $PROJECT_ID..."
 if ! gcloud projects create "$PROJECT_ID"; then
   echo "❌ Failed to create project: $PROJECT_ID"
   exit 1
 fi
+
+echo NOT YET TESTED. RECOMMENDED BY CHATGPT
+# Grant owner permissions to yourself
+gcloud projects add-iam-policy-binding "$PROJECT_ID" \
+  --member="user:chris@buildlackey.com" \
+  --role="roles/owner"
+
+echo "🔍 Verifying ownership for user: chris@buildlackey.com ..."
+gcloud projects get-iam-policy "$PROJECT_ID" \
+  --flatten="bindings[].members" \
+  --filter="bindings.members:user:chris@buildlackey.com" \
+  --format="table(bindings.role)"
+
+# === Fix Application Default Credentials (ADC) quota project mismatch ===
+echo "🔧 Setting ADC quota project to: $PROJECT_ID..."
+gcloud auth application-default set-quota-project "$PROJECT_ID"
+
+
 
 # === Set the active project ===
 echo "Setting active project to: $PROJECT_ID..."
@@ -73,10 +117,16 @@ APIS=(
   forms.googleapis.com
 )
 
-
+# === Enable all in parallel ===
 for API in "${APIS[@]}"; do
-  echo "🔌 Enabling $API..."
-  gcloud services enable "$API" --project="$PROJECT_ID" --quiet
+  echo "🚀 Enabling $API..."
+  gcloud services enable "$API" --project="$PROJECT_ID" --quiet &
+done
+wait
+
+# === Poll each for readiness ===
+for API in "${APIS[@]}"; do
+  poll_api_ready "$API" || exit 1
 done
 
 # === Save config to file ===
