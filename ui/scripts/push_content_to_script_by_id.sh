@@ -110,54 +110,19 @@ else
   exit 1
 fi
 
-# === Inject Init.js for setting script properties ===
-if [[ "$SKIP_INIT" == false ]]; then
-  echo "🧬 Creating Init.js to set script properties..."
-  cat <<EOF > "$TMP_DIR/Init.js"
-function initialSetup() {
-  const props = PropertiesService.getScriptProperties();
-  const existingKey = props.getProperty("GOOGLE_MAPS_API_KEY");
-
-  if (existingKey) {
-    Logger.log("⚠️ Script properties already set. Skipping initialization.");
-    return "INIT_SKIPPED";
-  }
-
-  const key = "$MAPS_API_KEY";  // Placeholder - replace with real key or runtime inject
-  props.setProperty("GOOGLE_MAPS_API_KEY", key);
-  props.setProperty("DEBUG", "false");
-  props.setProperty("YEBUG", "cat");
-
-  Logger.log("✅ Script properties initialized.");
-  return "INIT_DONE";
-}
-EOF
-else
-  echo "🧹 Skipping Init.js generation (--update mode)"
-  rm -f "$TMP_DIR/Init.js"
-fi
 
 # === Push to Apps Script ===
 echo "🚀 Pushing project to Apps Script"
 $LOCAL_CLASP push --force
 
-# === Clean up sensitive Init.js after push ===
-if [[ "$SKIP_INIT" == false ]]; then
-  echo "🧽 Cleaning up Init.js"
-  rm -f "$TMP_DIR/Init.js"
-fi
 
 
-echo running initialSetup 
-npx --yes @google/clasp@2.4.0 run initialSetup 
-
-echo running hello 
-npx --yes @google/clasp@2.4.0 run hello | grep HELLO
+echo running initSetup 
+npx --yes @google/clasp@2.4.0 run initSetup | grep INIT_DONE
 if [ "$?" != "0" ] ; then 
-  echo "❌ smoke test failed"
+  echo "❌ remote exec of initialization script failed"
   exit 1
 fi
-
 
 
 echo "✅ Done syncing and deploying from working folder $TMP_DIR"
