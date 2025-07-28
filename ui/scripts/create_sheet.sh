@@ -25,22 +25,29 @@ UTILS_PATH="$PROJECT_ROOT/ui/scripts/utils.sh"
 CONFIG_FILE="$PROJECT_ROOT/maps_config.env"
 
 source "$UTILS_PATH"
+echo BEFORE ensure
 ensure_logged_in
+echo AFTER ensure
+
+exit
 
 if [[ ! -f "$CONFIG_FILE" ]]; then
   echo "❌ maps_config.env not found at: $CONFIG_FILE"
   exit 1
 fi
 
-PROJECT_TITLE="CampaignSheet-$(date +%s)"
+PROJECT_TITLE="After Ruben CampaignSheet-$(date +%s)"
 TMP_DIR="$(mktemp -d /tmp/sheet_create_XXXX)"
 echo "📁 Using temp working directory: $TMP_DIR"
 
 cd "$TMP_DIR"
 
+echo '{}' > package.json        # work around clasp bug which causes failure due to broken dependency on ts2gas
+
+
 # === Create container-bound script with new Google Sheet ===
 echo "📄 Running: clasp create --title \"$PROJECT_TITLE\" --type sheets"
-npx --yes @google/clasp@2.5.0 create --title "$PROJECT_TITLE" --type sheets > create.log
+npx --yes @google/clasp@2.4.0 create --title "$PROJECT_TITLE" --type sheets > create.log
 
 # === Get SCRIPT_ID from .clasp.json ===
 if [[ ! -f .clasp.json ]]; then
@@ -54,6 +61,9 @@ SCRIPT_ID=$(jq -r '.scriptId' .clasp.json)
   echo "❌ Could not extract scriptId from .clasp.json"
   exit 1
 }
+
+
+echo "CONSIDER cleaning up this part of script which uses gcloud. why do we even bother w/ this? -- also update_env_var should be retrieved from utils.sh"
 
 if [[ -f "/home/chris/config/client_secret.json" ]]; then
   echo "🔐 Using local OAuth client secret to refresh token..."

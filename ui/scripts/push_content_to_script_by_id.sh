@@ -42,7 +42,7 @@ fi
 
 # === Ensure login ===
 source "$SCRIPT_DIR/utils.sh"
-ensure_logged_in
+#ensure_logged_in
 
 # === Run project bootstrap to ensure dependencies are installed ===
 bash "$SCRIPT_DIR/bootstrap.sh"
@@ -54,10 +54,16 @@ if [[ ! -f "$CONFIG_FILE" ]]; then
 fi
 source "$CONFIG_FILE"
 
-if [[ -z "${SCRIPT_ID:-}" || -z "${MAPS_API_KEY:-}" ]]; then
-  echo "❌ SCRIPT_ID or MAPS_API_KEY not set in $CONFIG_FILE"
+if [[ -z "${MAPS_API_KEY:-}" ]]; then
+  echo "❌ MAPS_API_KEY not set in $CONFIG_FILE"
   exit 1
 fi
+
+if [[ ! -d "${WORKING_PUSH_FOLDER:-}" ]]; then
+  echo "❌ could not find $WORKING_PUSH_FOLDER"
+  exit 1
+fi
+
 
 # === Build TypeScript ===
 echo "🔧 Building TypeScript from: $UI_DIR"
@@ -72,12 +78,20 @@ echo "🛠️  Running build..."
 npm run build
 
 # === Clone target Apps Script project ===
-TMP_DIR="$(mktemp -d /tmp/clasp_push_XXXX)"
+TMP_DIR=$WORKING_PUSH_FOLDER                ##  let us inline tmp_dir soon 
 echo "🚧 Working in: $TMP_DIR"
 cd "$TMP_DIR"
 
-echo "📥 Cloning script ID: $SCRIPT_ID"
-$LOCAL_CLASP clone "$SCRIPT_ID" >/dev/null
+SCRIPT_ID=$(jq -r '.scriptId' .clasp.json)
+
+if [[ -z "$SCRIPT_ID" || "$SCRIPT_ID" == "null" ]]; then
+  echo "❌ scriptId not found in .clasp.json"
+  exit 1
+fi
+
+echo "✅ Script ID: $SCRIPT_ID  - might not even need it.. take out if useless"
+  
+
 
 # === Copy compiled TS output ===
 echo "📦 Copying built TypeScript output"
@@ -123,6 +137,12 @@ if [[ "$SKIP_INIT" == false ]]; then
   echo "🧽 Cleaning up Init.js"
   rm -f "$TMP_DIR/Init.js"
 fi
+
+
+echo BEFORE DEPLOY .. we will run hello
+
+npx --yes @google/clasp@2.4.0 run hello
+
 
 # === DEPLOY after push ===
 echo "🚀 Deploying new version..."

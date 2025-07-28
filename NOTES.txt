@@ -1,4 +1,12 @@
 
+
+project creation:
+    should be of type web application.
+
+oauth:
+    use audience to add test users before creating the oauth client
+
+
 INFO on maps API key:
     ✅ What to Tell Users About Getting a Google Maps API Key
     To use this extension, you’ll need a free Google Maps API key.

@@ -134,5 +134,12 @@ CONFIG_FILE="maps_config.env"
 echo "PROJECT_ID=\"$PROJECT_ID\"" > "$CONFIG_FILE"
 echo "💾 Saved project ID to $CONFIG_FILE"
 
+echo SAve the project number too !
+
+error ;^) will crash script
+
+echo "TODO - provide instructions on setting up oauth client, and then save path to OAUTH_CLIENT_SECRET_PATH"
+
+
 echo "✅ Project $PROJECT_ID created, fully unlocked, and ready for downstream setup."
 

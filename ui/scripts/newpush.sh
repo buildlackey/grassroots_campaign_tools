@@ -72,7 +72,7 @@ echo "🛠️  Running build..."
 npm run build
 
 # === Clone target Apps Script project ===
-TMP_DIR=/tmp/clasp_login_create_WQ27vG/
+TMP_DIR=/tmp/clasp_login_create_NiKaZD
 echo "🚧 Working in: $TMP_DIR"
 cd "$TMP_DIR"
 
