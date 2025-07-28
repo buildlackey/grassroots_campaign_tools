@@ -115,13 +115,22 @@ if [[ "$SKIP_INIT" == false ]]; then
   echo "🧬 Creating Init.js to set script properties..."
   cat <<EOF > "$TMP_DIR/Init.js"
 function initialSetup() {
-  const key = "$MAPS_API_KEY";
-  PropertiesService.getScriptProperties().setProperty("GOOGLE_MAPS_API_KEY", key);
-  PropertiesService.getScriptProperties().setProperty("DEBUG", "false");
-  PropertiesService.getScriptProperties().setProperty("YEBUG", "cat");
-  Logger.log("✅ Script properties set: GOOGLE_MAPS_API_KEY + DEBUG");
+  const props = PropertiesService.getScriptProperties();
+  const existingKey = props.getProperty("GOOGLE_MAPS_API_KEY");
+
+  if (existingKey) {
+    Logger.log("⚠️ Script properties already set. Skipping initialization.");
+    return "INIT_SKIPPED";
+  }
+
+  const key = "$MAPS_API_KEY";  // Placeholder - replace with real key or runtime inject
+  props.setProperty("GOOGLE_MAPS_API_KEY", key);
+  props.setProperty("DEBUG", "false");
+  props.setProperty("YEBUG", "cat");
+
+  Logger.log("✅ Script properties initialized.");
+  return "INIT_DONE";
 }
-initialSetup();
 EOF
 else
   echo "🧹 Skipping Init.js generation (--update mode)"
@@ -139,27 +148,17 @@ if [[ "$SKIP_INIT" == false ]]; then
 fi
 
 
-echo BEFORE DEPLOY .. we will run hello
+echo running initialSetup 
+npx --yes @google/clasp@2.4.0 run initialSetup 
 
-npx --yes @google/clasp@2.4.0 run hello
-
-
-# === DEPLOY after push ===
-echo "🚀 Deploying new version..."
-DEPLOY_OUTPUT=$($LOCAL_CLASP deploy --description "Auto-deploy from push script")
-echo "$DEPLOY_OUTPUT"
-
-DEPLOYMENT_ID=$(echo "$DEPLOY_OUTPUT" | grep -o 'AKfycb[a-zA-Z0-9_-]*' | head -n 1)
-
-if [[ -z "$DEPLOYMENT_ID" ]]; then
-  echo "❌ Failed to extract DEPLOYMENT_ID"
+echo running hello 
+npx --yes @google/clasp@2.4.0 run hello | grep HELLO
+if [ "$?" != "0" ] ; then 
+  echo "❌ smoke test failed"
   exit 1
 fi
 
-echo "✅ Deployment ID: $DEPLOYMENT_ID"
 
-# === Update maps_config.env with DEPLOYMENT_ID ===
-update_env_var DEPLOYMENT_ID "$DEPLOYMENT_ID"
 
 echo "✅ Done syncing and deploying from working folder $TMP_DIR"
 
