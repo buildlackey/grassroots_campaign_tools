@@ -78,9 +78,8 @@ echo "🛠️  Running build..."
 npm run build
 
 # === Clone target Apps Script project ===
-TMP_DIR=$WORKING_PUSH_FOLDER                ##  let us inline tmp_dir soon 
-echo "🚧 Working in: $TMP_DIR"
-cd "$TMP_DIR"
+echo "🚧 Working in: $WORKING_PUSH_FOLDER"
+cd "$WORKING_PUSH_FOLDER"
 
 SCRIPT_ID=$(jq -r '.scriptId' .clasp.json)
 
@@ -95,16 +94,16 @@ echo "✅ Script ID: $SCRIPT_ID  - might not even need it.. take out if useless"
 
 # === Copy compiled TS output ===
 echo "📦 Copying built TypeScript output"
-cp "$BUILD_DIR/Code.js" "$TMP_DIR/"
-cp "$UI_DIR/appsscript.json" "$TMP_DIR/"
-cp "$GIT_ROOT/maps_config.env" "$TMP_DIR/"
+cp "$BUILD_DIR/Code.js" "$WORKING_PUSH_FOLDER/"
+cp "$UI_DIR/appsscript.json" "$WORKING_PUSH_FOLDER/"
+cp "$GIT_ROOT/maps_config.env" "$WORKING_PUSH_FOLDER/"
 
 echo "📦 Copying Webpack GAS-safe output (JS)"
-cp "$BUILD_DIR"/*.js "$TMP_DIR/"
+cp "$BUILD_DIR"/*.js "$WORKING_PUSH_FOLDER/"
 
 if [[ -f "$BUILD_DIR/FilterUI.html" ]]; then
   echo "📥 Copying FilterUI.html"
-  cp "$BUILD_DIR/FilterUI.html" "$TMP_DIR/"
+  cp "$BUILD_DIR/FilterUI.html" "$WORKING_PUSH_FOLDER/"
 else
   echo "⚠️  ERROR: BUILD_DIR/FilterUI.html not found"
   exit 1
@@ -125,5 +124,5 @@ if [ "$?" != "0" ] ; then
 fi
 
 
-echo "✅ Done syncing and deploying from working folder $TMP_DIR"
+echo "✅ Done syncing and deploying from working folder $WORKING_PUSH_FOLDER"
 

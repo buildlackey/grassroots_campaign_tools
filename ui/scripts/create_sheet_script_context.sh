@@ -61,7 +61,7 @@ rm -f .clasp.json
 
 
 # === Create the Sheet-bound Apps Script project ===
-PROJECT_TITLE="My Sheet $(date +%s)"
+PROJECT_TITLE="Test Sheet $(date +%s)"
 npx --yes @google/clasp@2.5.0 create --title "$PROJECT_TITLE" --type sheets
 
 # === Extract script ID and save to config ===
@@ -70,7 +70,7 @@ SCRIPT_ID=$(jq -r '.scriptId' .clasp.json)
 # === Get spreadsheet URL ===
 PARENT_ID=$(jq -r '.parentId | if type=="array" then .[0] else . end' .clasp.json)
 SHEET_URL="https://docs.google.com/spreadsheets/d/${PARENT_ID}/edit"
-
+update_env_var SHEET_URL $SHEET_URL
 
 
 # === Prompt user to manually associate script ===
