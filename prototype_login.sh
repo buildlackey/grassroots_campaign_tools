@@ -36,6 +36,7 @@ cat > appsscript.json <<EOF
   "dependencies": {},
   "exceptionLogging": "STACKDRIVER",
   "oauthScopes": [
+    "https://www.googleapis.com/auth/userinfo.email",
     "https://www.googleapis.com/auth/script.projects",
     "https://www.googleapis.com/auth/script.deployments",
     "https://www.googleapis.com/auth/script.webapp.deploy",

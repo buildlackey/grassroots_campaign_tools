@@ -26,7 +26,7 @@ export function smokeTest(): string {
 
 
 export function hello(): string {
-  return "HELLO2";
+  return "HELLO4";
 }
 
 
