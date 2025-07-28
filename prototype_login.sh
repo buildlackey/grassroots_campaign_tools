@@ -1,5 +1,23 @@
 
+
 bash /home/chris/grassroots_campaign_tools/init_setup/full_log_out.sh
+
+
+CONFIG_FILE=/home/chris/grassroots_campaign_tools/maps_config.env
+source $CONFIG_FILE
+
+update_env_var() {
+  local key="$1"
+  local value="$2"
+  if grep -q "^${key}=" "$CONFIG_FILE"; then
+    sed -i "s|^${key}=.*|${key}=\"${value}\"|" "$CONFIG_FILE"
+  else
+    echo "${key}=\"${value}\"" >> "$CONFIG_FILE"
+  fi
+}
+
+
+
 
 # 1. Create a temp directory
 export WORK_DIR=$(mktemp -d -t clasp_login_create_XXXXXX)
@@ -8,7 +26,8 @@ echo "📁 Using working dir: $WORK_DIR"
 
 # 2. Create dummy files to bypass clasp internals
 echo '{}' > package.json
-echo '{ "scriptId": "PLACEHOLDER" }' > .clasp.json
+echo '{ "scriptId": "PLACEHOLDER", "projectId": "build-lackey-project-5" }' > .clasp.json
+
 cat > appsscript.json <<EOF
 {
   "timeZone": "America/Los_Angeles",
