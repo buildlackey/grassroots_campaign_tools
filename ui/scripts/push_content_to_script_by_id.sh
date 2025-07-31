@@ -109,7 +109,7 @@ else
   exit 1
 fi
 
-cp "$SRC_DIR/SettingsDialog.html" "$WORKING_PUSH_FOLDER/"
+cp "$BUILD_DIR/SettingsDialog.html" "$WORKING_PUSH_FOLDER/"
 
 
 
