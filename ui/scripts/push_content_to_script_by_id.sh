@@ -109,6 +109,9 @@ else
   exit 1
 fi
 
+cp "$SRC_DIR/SettingsDialog.html" "$WORKING_PUSH_FOLDER/"
+
+
 
 # === Push to Apps Script ===
 echo "🚀 Pushing project to Apps Script"
@@ -117,7 +120,7 @@ $LOCAL_CLASP push --force
 
 
 echo running initSetup 
-npx --yes @google/clasp@2.4.0 run initSetup | grep INIT_DONE
+npx --yes @google/clasp@2.4.0 run initSetup | grep INIT     # output should be either INIT_DONE or INIT_SKIPPED
 if [ "$?" != "0" ] ; then 
   echo "❌ remote exec of initialization script failed"
   exit 1

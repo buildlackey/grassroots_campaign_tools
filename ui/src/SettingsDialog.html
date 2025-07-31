@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        width: 540px;
+        position: relative;
+      }
+
+      label {
+        display: block;
+        margin: 10px 0 5px;
+      }
+
+      input[type="text"],
+      input[type="password"],
+      select {
+        width: 100%;
+        padding: 6px;
+        font-size: 14px;
+        box-sizing: border-box;
+      }
+
+      .checkbox-group {
+        display: flex;
+        align-items: center;
+        margin: 8px 0;
+      }
+
+      .checkbox-group input[type="checkbox"] {
+        margin-right: 8px;
+        flex-shrink: 0;
+      }
+
+      .checkbox-group label {
+        margin: 0;
+        white-space: nowrap;
+      }
+
+.help-icon {
+  display: inline-block;
+  font-size: 18px;
+  width: 22px;
+  height: 22px;
+  text-align: center;
+  line-height: 20px;
+  border-radius: 50%;
+  background: #e0f0ff;
+  color: #2a7ddf;
+  cursor: pointer;
+  margin-left: 6px;
+  user-select: none;
+  vertical-align: middle;
+  overflow: hidden;
+  position: relative; /* NEW */
+}
+
+
+
+      .help-popup {
+        position: absolute;
+        background: #f9f9f9;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        padding: 10px;
+        box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.15);
+        max-width: 300px;
+        z-index: 10;
+      }
+
+      .button-row {
+        margin-top: 20px;
+      }
+    </style>
+
+    <script>
+      let sheets = [];
+      let headers = [];
+
+      window.addEventListener("load", onOpen);
+
+      function onOpen() {
+        console.log("🔍 Fetching sheet tabs...");
+        google.script.run.withSuccessHandler((sheetNames) => {
+          const sheetSelect = document.getElementById("sheetSelect");
+          sheets = sheetNames;
+          sheetSelect.innerHTML = sheets.map(name =>
+            `<option value="${name}">${name}</option>`).join('');
+          if (sheets.length > 0) {
+            sheetSelect.value = sheets[0];
+            onSheetChange(); // auto-load address columns
+          }
+        }).getSheetTabNames();
+      }
+
+    function onSheetChange() {
+      const sheetName = document.getElementById("sheetSelect").value;
+      console.log("📄 onSheetChange called with:", sheetName);
+      google.script.run
+        .withSuccessHandler((result) => {
+          console.log("📥 Headers returned from GAS:", result);
+          const addressSelect = document.getElementById("addressSelect");
+          headers = result.headers || [];
+          console.log("📑 Headers extracted:", headers);
+          addressSelect.innerHTML = headers.map(h =>
+            `<option value="${h}">${h}</option>`).join('');
+          const defaultAddr = headers.find(h => /address/i.test(h));
+          if (defaultAddr) {
+            addressSelect.value = defaultAddr;
+            console.log("✅ Default address column preselected:", defaultAddr);
+          } else {
+            console.warn("⚠️ No obvious address-like column found.");
+          }
+        })
+        .withFailureHandler((e) => {
+          console.error("❌ GAS call failed:", e);
+        })
+        .getHeadersForSheet(sheetName);
+    }
+
+
+      function toggleApiKeyVisibility(checkbox) {
+        const field = document.getElementById("mapsApiKey");
+        field.type = checkbox.checked ? "text" : "password";
+      }
+
+      function hideApiKeyOnBlur() {
+        const field = document.getElementById("mapsApiKey");
+        field.type = "password";
+      }
+
+      function cancelDialog() {
+        google.script.host.close();
+      }
+
+      function saveSettings() {
+        const sheet = document.getElementById("sheetSelect").value;
+        const addressCol = document.getElementById("addressSelect").value;
+        const apiKey = document.getElementById("mapsApiKey").value;
+        const showLatLng = document.getElementById("showLatLng").checked;
+        const debug = document.getElementById("debug").checked;
+
+        if (!addressCol) {
+          showHelp('addressColumn', event);
+          return;
+        }
+
+
+google.script.run
+  .withSuccessHandler(() => {
+    console.log("✅ Preferences saved, closing dialog...");
+    google.script.host.close();
+  })
+  .withFailureHandler(e => {
+    console.error("❌ Failed to save preferences:", e);
+    alert("Save failed: " + e.message);
+  })
+  .savePreferences({
+    sheetName: sheet,
+    addressColumn: addressCol,
+    mapsApiKey: apiKey,
+    showLatLong: showLatLng,
+    debug: debug
+  });
+
+      }
+
+function showHelp(topic, event) {
+  console.log("🆘 Help icon clicked for topic:", topic, event);
+  const messages = {
+    mapsApiKey: `Enter your Google Maps API key. You can obtain this from the Google Cloud Console. Make sure the Maps JavaScript API is enabled.`,
+    sheetTab: `Select the sheet where your data is stored.`,
+    addressColumn: `Choose the column in your sheet that contains addresses.`,
+    showLatLng: `Check this box to display the Latitude and Longitude results in your sheet.`,
+    debug: `Enable this to log detailed debugging information for troubleshooting.`
+  };
+  alert(messages[topic] || "No help available for this section.");
+}
+
+
+    function keepThisBadShowHelp(topic, event) {
+      console.log("🆘 Help icon clicked for topic:", topic, event);
+      try {
+        closeHelp(); // close any existing help
+        const messages = {
+          mapsApiKey: `Enter your Google Maps API key...`,
+          sheetTab: `Select the sheet where your data is stored.`,
+          addressColumn: `Choose the column in your sheet that contains addresses.`,
+          showLatLng: `Check to display the Latitude and Longitude results in your sheet.`,
+          debug: `Enable verbose logging for troubleshooting.`
+        };
+
+        const popup = document.createElement("div");
+        popup.className = "help-popup";
+        popup.innerHTML = messages[topic] || "No help available.";
+
+        icon.parentElement.appendChild(popup);
+
+
+        const icon = event.target;
+        const rect = icon.getBoundingClientRect();
+        console.log("📐 Icon bounds:", rect);
+
+        popup.style.top = (window.scrollY + rect.bottom + 4) + "px";
+        popup.style.left = (window.scrollX + rect.left - 20) + "px";
+
+        document.addEventListener("click", closeHelp);
+        document.addEventListener("keydown", escListener);
+      } catch (e) {
+        console.error("❌ showHelp error:", e);
+      }
+    }
+
+
+      function closeHelp() {
+        const existing = document.querySelector(".help-popup");
+        if (existing) existing.remove();
+        document.removeEventListener("click", closeHelp);
+        document.removeEventListener("keydown", escListener);
+      }
+
+      function escListener(e) {
+        if (e.key === "Escape") closeHelp();
+      }
+    </script>
+  </head>
+
+  <body>
+    <label for="mapsApiKey">
+      Our Google Maps API Key:
+      <span class="help-icon" onclick="showHelp('mapsApiKey', event)">?</span>
+    </label>
+    <input id="mapsApiKey" type="text" onblur="hideApiKeyOnBlur()" />
+
+    <div class="checkbox-group">
+      <input type="checkbox" id="showApiKey" onchange="toggleApiKeyVisibility(this)">
+      <label for="showApiKey">Show API Key</label>
+    </div>
+
+    <label for="sheetSelect">
+      Sheet Tab:
+      <span class="help-icon" onclick="showHelp('sheetTab', event)">?</span>
+    </label>
+    <select id="sheetSelect" onchange="onSheetChange()"></select>
+
+    <label for="addressSelect">
+      Address Column:
+      <span class="help-icon" onclick="showHelp('addressColumn', event)">?</span>
+    </label>
+    <select id="addressSelect"></select>
+
+    <div class="checkbox-group">
+      <input type="checkbox" id="showLatLng">
+      <label for="showLatLng">
+        Show Lat/Lng columns
+        <span class="help-icon" onclick="showHelp('showLatLng', event)">?</span>
+      </label>
+    </div>
+
+    <div class="checkbox-group">
+      <input type="checkbox" id="debug">
+      <label for="debug">
+        Enable Debug Logging
+        <span class="help-icon" onclick="showHelp('debug', event)">?</span>
+      </label>
+    </div>
+
+    <div class="button-row">
+      <button onclick="cancelDialog()">Cancel</button>
+      <button onclick="saveSettings()">Save Settings</button>
+    </div>
+  </body>
+</html>
+

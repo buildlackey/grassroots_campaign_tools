@@ -61,7 +61,7 @@ rm -f .clasp.json
 
 
 # === Create the Sheet-bound Apps Script project ===
-PROJECT_TITLE="Test Sheet $(date +%s)"
+PROJECT_TITLE="Weds Test Sheet $(date +%s)"
 npx --yes @google/clasp@2.5.0 create --title "$PROJECT_TITLE" --type sheets
 
 # === Extract script ID and save to config ===

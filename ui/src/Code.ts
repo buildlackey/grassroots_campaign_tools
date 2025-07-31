@@ -1,17 +1,25 @@
+import * as PreferenceSvc from "./PreferenceSvc";
 import { populateLatLong } from "./Geocoder";
 
 export function onOpen() {
-  SpreadsheetApp.getUi()
-    .createMenu("📍 Kanga bigaroo")
+  const ui = SpreadsheetApp.getUi();
+  const menu = ui.createMenu("📍 Wanga jigaroo")
     .addItem("Test Item", "testFunction")
-    .addItem("Add Lat/Long Info", "populateLatLong")
-    .addToUi();
+    .addItem("showPREFS", "showPreferencesDialog")
+    .addItem("Add Lat/Long Info", "populateLatLong");
+
+  //const debug = PropertiesService.getScriptProperties().getProperty("DEBUG");
+  //if (debug === "true") {
+    //menu.addSeparator()
+        //.addItem("🧪 Run Settings Test", "runSettingsTests");
+  //}
+
+  menu.addToUi();
 }
 
 export function testFunction() {
   SpreadsheetApp.getUi().alert("Test function triggered!");
 }
-
 
 export function smokeTest(): string {
   const props = PropertiesService.getScriptProperties();
@@ -23,7 +31,6 @@ export function smokeTest(): string {
 
   return "SUCCESS";
 }
-
 
 export function hello(): string {
   return "HELLO4";
@@ -47,6 +54,15 @@ export function initSetup(): string {
   return "INIT_DONE";
 }
 
+//  Developer test entry point (invocable via dev-only menu item)
 
+// 🔁 Export bindings to PreferenceSvc
+export const showPreferencesDialog = PreferenceSvc.showSettingsDialog;
+export const getSheetTabNames = PreferenceSvc.getSheetTabNames;
+export const getHeadersForSheet = PreferenceSvc.getHeadersForSheet;
+export const savePreferences = PreferenceSvc.saveUserPreferences;
+//export const getUserPreferences = PreferenceSvc.getUserPreferences;
 
+// 🔁 Explicitly export lat/long population
 export { populateLatLong };
+
