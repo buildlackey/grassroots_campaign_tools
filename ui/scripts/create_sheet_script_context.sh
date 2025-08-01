@@ -1,3 +1,50 @@
+###############################################################################
+# Script: create_sheet_script_context.sh
+#
+# Purpose:
+#   Creates a new Google Sheet and binds a Google Apps Script (GAS)
+#   project to it, and creates a new tmp staging folder from which transpiled, 
+#   gas-ified Javascript code can  be pushed to the GAS cloud environment to be run/tested.
+#
+#
+# Prerequisite:
+#   - Step 1 must have already been completed:
+#       ./init_setup/billing_linked_new_project.sh
+#     This ensures a Google Cloud project exists and is linked to billing.
+#
+# Behavior:
+#   - Logs out of any prior gcloud / clasp state to ensure a clean environment
+#   - Creates a temporary working folder for staging deployment artifacts
+#   - Authenticates clasp with the correct credentials
+#   - Uses clasp to create a new container-bound Apps Script project linked to
+#     a fresh spreadsheet
+#   - Extracts and stores metadata such as:
+#       - SCRIPT_ID
+#       - SHEET_URL
+#       - WORKING_PUSH_FOLDER
+#   - Prompts the developer to manually associate the new script with the
+#     pre-existing GCP project using the UI (required by Google)
+#
+# Manual step required:
+#   After the Sheet + Script project is created, you must:
+#     1. Open the Sheet URL in a browser
+#     2. Go to Extensions > Apps Script
+#     3. Click the gear icon in the Apps Script editor
+#     4. Under "Google Cloud Platform (GCP) Project", click "Change project"
+#     5. Paste in the project number from your maps_config.env
+#
+# Outcome:
+#   You will have a ready-to-use Sheet + Script container project that can
+#   be pushed to via `clasp push` and invoked interactively in the browser.
+#
+#
+# Safe to re-run?
+#   Yes — But note that every time you run, you will have a different spreadsheet
+#   where your code lives, and you will have to go to a different URL to test/debug that code
+#   (check maps_config.env.)    Also note that transpiled gas-ified Javascript code 
+#   will be staged to a different working folder every time you run this script.
+###############################################################################
+
 
 
 bash /home/chris/grassroots_campaign_tools/init_setup/full_log_out.sh

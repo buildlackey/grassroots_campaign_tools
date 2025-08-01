@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "skipLibCheck": true,
     "target": "ES5",                          // ⬅️ Required: GAS only supports ES5
     "module": "CommonJS",                    // ⬅️ Required: for Webpack bundling
     "moduleResolution": "Node",              // ⬅️ Node-style resolution works with CommonJS
@@ -11,7 +12,7 @@
     "noFallthroughCasesInSwitch": true,
     "allowJs": true,
     "checkJs": false,
-    "lib": ["ES2015"],                       // ⬅️ Avoid modern APIs not available in ES5
+"lib": ["ES2015", "DOM"],
     "types": ["google-apps-script", "node"]
   },
   "include": ["src/**/*"],

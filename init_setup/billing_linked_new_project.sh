@@ -1,4 +1,25 @@
 #!/usr/bin/env bash
+########################################################################################
+# billing_linked_new_project.sh
+#
+# Purpose:
+#
+#   This is the first step in setting up a development environment: creates
+#   the new Google Cloud project with which our runtime code will be associated.
+#
+#   We enable test users by setting up an oauth client for this project, 
+#   and we we link our billing account -- a must if we want our 
+#   code to invoke any of Google's metered for-pay services.
+#
+#   Grants required owner roles, enables APIs for the project, 
+#   and validates readiness.
+#
+# Usage:
+#   ./billing_linked_new_project.sh -p <project-id> -b <billing-account-id>
+########################################################################################
+
+
+
 set -euo pipefail
 
 # === Function to check if the user is logged in ===

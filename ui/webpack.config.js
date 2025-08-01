@@ -37,13 +37,23 @@ const srcDir = path.resolve(__dirname, "src");
 
 const entry = {};
 
-// Only bundle `.ts` files, skip any UI assets like FilterUICode.ts if needed
+
+// Exclude all Typescript source which will be javascript'ified and injected into an HTML form
+//
+const UI_EXCLUSIONS = [
+  "SettingsDialogCode.ts",
+  "FilterUICode.ts"
+];
+
 fs.readdirSync(srcDir)
-  .filter(file => file.endsWith(".ts"))
+  .filter(file =>
+    file.endsWith(".ts") && !UI_EXCLUSIONS.includes(file)
+  )
   .forEach(file => {
-    const name = path.basename(file, ".ts"); // ✅ Fix: strip .ts, not .js
+    const name = path.basename(file, ".ts");
     entry[name] = path.join(srcDir, file);
- });
+  });
+
 
 module.exports = {
   mode: "development",

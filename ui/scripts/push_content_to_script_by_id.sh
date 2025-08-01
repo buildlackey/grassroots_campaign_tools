@@ -41,8 +41,8 @@ if [[ ! -x "$LOCAL_CLASP" ]]; then
 fi
 
 # === Ensure login ===
-source "$SCRIPT_DIR/utils.sh"
-#ensure_logged_in
+source "$SCRIPT_DIR/clasp_login.sh"
+
 
 # === Run project bootstrap to ensure dependencies are installed ===
 bash "$SCRIPT_DIR/bootstrap.sh"
@@ -63,7 +63,6 @@ if [[ ! -d "${WORKING_PUSH_FOLDER:-}" ]]; then
   echo "❌ could not find $WORKING_PUSH_FOLDER"
   exit 1
 fi
-
 
 # === Build TypeScript ===
 echo "🔧 Building TypeScript from: $UI_DIR"
@@ -89,8 +88,6 @@ if [[ -z "$SCRIPT_ID" || "$SCRIPT_ID" == "null" ]]; then
 fi
 
 echo "✅ Script ID: $SCRIPT_ID  - might not even need it.. take out if useless"
-  
-
 
 # === Copy compiled TS output ===
 echo "📦 Copying built TypeScript output"
@@ -98,8 +95,13 @@ cp "$BUILD_DIR/Code.js" "$WORKING_PUSH_FOLDER/"
 cp "$UI_DIR/appsscript.json" "$WORKING_PUSH_FOLDER/"
 cp "$GIT_ROOT/maps_config.env" "$WORKING_PUSH_FOLDER/"
 
-echo "📦 Copying Webpack GAS-safe output (JS)"
-cp "$BUILD_DIR"/*.js "$WORKING_PUSH_FOLDER/"
+
+echo "📦 Copying Webpack GAS-safe output (JS, excluding SettingsDialogCode.js and FilterUICode.js)"
+shopt -s extglob
+cp "$BUILD_DIR"/!(*SettingsDialogCode|*FilterUICode).js "$WORKING_PUSH_FOLDER/"
+shopt -u extglob
+
+
 
 if [[ -f "$BUILD_DIR/FilterUI.html" ]]; then
   echo "📥 Copying FilterUI.html"
@@ -111,13 +113,11 @@ fi
 
 cp "$BUILD_DIR/SettingsDialog.html" "$WORKING_PUSH_FOLDER/"
 
-
-
+rm -f "$WORKING_PUSH_FOLDER/SettingsDialogCode.js"
+rm -f "$WORKING_PUSH_FOLDER/FilterUICode.js"
 # === Push to Apps Script ===
 echo "🚀 Pushing project to Apps Script"
 $LOCAL_CLASP push --force
-
-
 
 echo running initSetup 
 npx --yes @google/clasp@2.4.0 run initSetup | grep INIT     # output should be either INIT_DONE or INIT_SKIPPED
@@ -125,7 +125,6 @@ if [ "$?" != "0" ] ; then
   echo "❌ remote exec of initialization script failed"
   exit 1
 fi
-
 
 echo "✅ Done syncing and deploying from working folder $WORKING_PUSH_FOLDER"
 

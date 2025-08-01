@@ -1,3 +1,53 @@
+DEVELOPER NOTES:
+
+In order to run Google sheets extensions that invoke Google's metered for-pay services
+(e.g., the Maps API), we need to create a number of 'fixtures' such as a Google Project
+that has been granted requisite privileges to access those services, and an associated 
+spread sheet and script context to which we can push our extension code, test it, and debug it.
+
+For this purpose we include a number of scripts which automate the process of 
+establishing these fixtures to the extent possible.   Some of the steps in 
+this set-up are  only executable via the UI -- not by any CLI capabilities, by design. 
+This helps prevent the construction of scripts that leak sensitive keys and credentials
+into logs.  Our scripts do their best to guide you through the UI configuration required
+at any such step.
+
+
+First time set-up (for new Google accounts never before used for development)  
+
+    1)
+    init_setup/billing_linked_new_project.sh
+        #   This is the first step in setting up a development environment: creates
+        #   the new Google Cloud project, with which our runtime code will be associated.
+
+
+    2)
+    ui/scripts/create_sheet_script_context.sh
+        # Creates a new Google Sheet and binds the above created Google Apps Script (GAS)
+        # project to it, and creates a new tmp staging folder from which transpiled, gas-ified  
+        # Javascript code can  be pushed to the GAS cloud environment to be run/tested.
+
+
+Important Details
+
+    $PROJECT_ROOT/maps_config.env, 
+
+    We try to avoid maintaining script parameters which -- for any 
+    given script step -- take in the  outputs of a precursor step (e.g., for step 1 we create 
+    a project, whose id is then required in step 2). Rather than cluttering things up by 
+    chaining parameters through the sequence of script calls  our development pipeline makes,
+    we build up a record of these parameters in $PROJECT_ROOT/maps_config.env. 
+    This is a file that each downstream script can check to get the 
+    value of any parameter it expects an upstream step to generate.  This file would 
+    contain, for example,  the entry:
+        PROJECT_ID=<some project id>, created in step 1, and consumed in step 2. 
+
+
+
+
+    
+
+
 USER NOTES:
 
 If you don't have a gmail.com account, then you can create a google account that will allow you to view spreadsheet via:
