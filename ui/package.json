@@ -4,7 +4,7 @@
     "tsc": "tsc",
     "test": "jest",
     "webpack": "webpack",
-"build": "npm run clean && npx tsc && npx tsc -p tsconfig.unit.json && npm run test && npm run webpack && bash scripts/inject_sidebar.sh && bash scripts/inject_settings_dialog.sh",
+    "build": "npm run clean && npx tsc && npx tsc -p tsconfig.unit.json && npm run test && npm run webpack && bash scripts/inject_sidebar.sh && bash scripts/inject_settings_dialog.sh",
     "push": "npm run build && clasp push -f",
     "deploy": "npm run push && clasp deploy",
     "lint": "eslint",
@@ -24,8 +24,8 @@
     "html-webpack-plugin": "^5.6.3",
     "prettier": "^3.5.3",
     "ts-loader": "^9.5.2",
-    "typescript": "^5.8.3",
-    "webpack": "^5.99.9",
+    "typescript": "^5.9.2",
+    "webpack": "^5.101.0",
     "webpack-cli": "^6.0.1"
   },
   "private": true

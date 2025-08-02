@@ -37,6 +37,15 @@ const srcDir = path.resolve(__dirname, "src");
 
 const entry = {};
 
+// ✅ Explicitly configure FormValidation.global.ts with proper window export
+entry["FormValidation.global"] = {
+  import: path.join(srcDir, "FormValidation.global.ts"),
+  library: {
+    name: "FormValidation",
+    type: "window",
+    export: "FormValidation"
+  }
+};
 
 // Exclude all Typescript source which will be javascript'ified and injected into an HTML form
 //
@@ -55,14 +64,14 @@ fs.readdirSync(srcDir)
     entry[name] = path.join(srcDir, file);
   });
 
-
 module.exports = {
   mode: "development",
   context: __dirname,
   entry,
   output: {
     path: path.resolve(__dirname, "build/gas_safe_staging"),
-    filename: "[name].js",
+    filename: "[name].js"
+    // ⚠️ Do not define a global 'library' here — we only want it for FormValidation.global
   },
   resolve: {
     extensions: [".ts", ".js"],
@@ -92,8 +101,8 @@ module.exports = {
       autoGlobalExportsFiles: [         // this is redundant and brittle .. should derive this from entries, above
         './src/Code.ts',
         './src/LatLong.ts',
-  './src/Geocoder.ts',
-  './src/PreferenceSvc.ts',  // ✅ Newly added
+        './src/Geocoder.ts',
+        './src/PreferenceSvc.ts',  // ✅ Newly added
       ],
     }),
   ],

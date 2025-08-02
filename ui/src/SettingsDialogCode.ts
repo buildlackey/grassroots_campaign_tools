@@ -4,6 +4,7 @@ declare const google: any; // GAS runtime
 interface Window {
   FormValidation?: {
     MESSAGE?: string;
+    validateForm: (data: Record<string, any>) => { valid: boolean; errors: string[] };
   };
 }
 
@@ -15,7 +16,13 @@ window.addEventListener("load", onOpen);
 function onOpen(): void {
   alert("🔍 Fetching sheet tabs...");
   google.script.run.withSuccessHandler((sheetNames: string[]) => {
-      alert("🔍 script running ...");
+      alert("🔍 script running next may be blank...");
+
+     const result = window.FormValidation?.validateForm({});
+     alert(result?.errors?.join(", ") ?? "No result");
+
+      alert("🔍 2nd");
+
       if (window.FormValidation && window.FormValidation.MESSAGE) {
             alert("✅ FormValidation loaded: " + window.FormValidation.MESSAGE);
       } else {

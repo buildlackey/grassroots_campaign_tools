@@ -1,0 +1,13 @@
+// ui/tsconfig.formvalidation.json
+{
+  "compilerOptions": {
+    "target": "ES5",
+    "module": "ESNext", // let Webpack handle modules
+    "strict": true,
+    "lib": ["DOM", "ES2015"],
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/FormValidation.ts", "src/FormValidation.global.ts"]
+}
+
