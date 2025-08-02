@@ -1,8 +1,10 @@
 ###############################################################################
 # Script: create_sheet_script_context.sh
+# 
+# Arguments:    none
 #
 # Purpose:
-#   Creates a new Google Sheet and binds a Google Apps Script (GAS)
+#   Creates a new Google Sheet, binds a Google Apps Script (GAS)
 #   project to it, and creates a new tmp staging folder from which transpiled, 
 #   gas-ified Javascript code can  be pushed to the GAS cloud environment to be run/tested.
 #
@@ -46,25 +48,15 @@
 ###############################################################################
 
 
-
-bash /home/chris/grassroots_campaign_tools/init_setup/full_log_out.sh
-
-
-CONFIG_FILE=/home/chris/grassroots_campaign_tools/maps_config.env
-source $CONFIG_FILE
-
-update_env_var() {
-  local key="$1"
-  local value="$2"
-  if grep -q "^${key}=" "$CONFIG_FILE"; then
-    sed -i "s|^${key}=.*|${key}=\"${value}\"|" "$CONFIG_FILE"
-  else
-    echo "${key}=\"${value}\"" >> "$CONFIG_FILE"
-  fi
-}
+# Determine project root
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
 
 
+. $PROJECT_ROOT/ui/scripts/utils.sh
 
+# 0.  Log out
+bash $PROJECT_ROOT/init_setup/full_log_out.sh
 
 
 # 1. Create WORKING_PUSH_FOLDER where built artifacts are staged then pushed
@@ -144,3 +136,5 @@ echo ""
 read -rp "🛑 Press [ENTER] when you've finished associating the script to your GCP project..."
 
 
+echo "clasp is now set up to push from $WORKING_PUSH_FOLDER every time you change code,"
+echo "then update with $PROJECT_ROOT/ui/scripts/push_content_to_script_by_id.sh"

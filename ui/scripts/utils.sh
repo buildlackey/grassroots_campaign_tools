@@ -1,6 +1,27 @@
 #  Assumes we have CONFIG_FILE path (to maps_config.env) set up
 #
 
+
+# Determine project root
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
+
+CONFIG_FILE=$PROJECT_ROOT/maps_config.env
+source $CONFIG_FILE
+
+
+update_env_var() {
+  local key="$1"
+  local value="$2"
+  if grep -q "^${key}=" "$CONFIG_FILE"; then
+    sed -i "s|^${key}=.*|${key}=\"${value}\"|" "$CONFIG_FILE"
+  else
+    echo "${key}=\"${value}\"" >> "$CONFIG_FILE"
+  fi
+}
+
+
+
 ensure_logged_in() {
 
 
@@ -42,16 +63,6 @@ EOF
 
   else
     echo "✅ Already logged in to clasp"
-  fi
-}
-
-update_env_var() {
-  local key="$1"
-  local value="$2"
-  if grep -q "^${key}=" "$CONFIG_FILE"; then
-    sed -i "s|^${key}=.*|${key}=\"${value}\"|" "$CONFIG_FILE"
-  else
-    echo "${key}=\"${value}\"" >> "$CONFIG_FILE"
   fi
 }
 
