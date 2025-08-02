@@ -3,7 +3,7 @@ import { populateLatLong } from "./Geocoder";
 
 export function onOpen() {
   const ui = SpreadsheetApp.getUi();
-  const menu = ui.createMenu("📍 DogBone")
+  const menu = ui.createMenu("📍 hogBone")
     .addItem("Test Item", "testFunction")
     .addItem("showPREFS", "showPreferencesDialog")
     .addItem("Add Lat/Long Info", "populateLatLong");

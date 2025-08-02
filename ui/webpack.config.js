@@ -42,7 +42,8 @@ const entry = {};
 //
 const UI_EXCLUSIONS = [
   "SettingsDialogCode.ts",
-  "FilterUICode.ts"
+  "FilterUICode.ts",
+  "FormValidation.ts"     
 ];
 
 fs.readdirSync(srcDir)

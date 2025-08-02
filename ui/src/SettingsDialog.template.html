@@ -76,12 +76,18 @@
       }
     </style>
 
+
+    <script>
+            <!-- INJECT FormValidation.js -->
+    </script>
+
     <script>
           <!-- INJECT SettingsDialogCode.js -->
     </script>
   </head>
 
   <body>
+    <p id="validation-test-output" style="color: green;"></p>
     <label for="mapsApiKey">
       Our Google Maps API Key:
       <span class="help-icon" onclick="showHelp('mapsApiKey', event)">?</span>

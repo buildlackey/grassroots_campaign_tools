@@ -1,0 +1,18 @@
+// ui/tsconfig.unit.json
+{
+  "compilerOptions": {
+    "target": "ES5",
+    "outDir": "build/unit_testable_js",
+    "module": "none",                     // ✅ Prevent ESM boilerplate
+    "strict": true,
+    "esModuleInterop": true,
+    "moduleResolution": "Node",
+    "types": [],                          // ✅ Exclude Node + GAS types
+    "lib": ["DOM", "ES2015"]
+  },
+  "include": [
+    "src/FormValidation.ts",
+    "src/SettingsDialogCode.ts"
+  ]
+}
+

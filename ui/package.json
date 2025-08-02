@@ -4,7 +4,7 @@
     "tsc": "tsc",
     "test": "jest",
     "webpack": "webpack",
-    "build": "npm run clean && npm run tsc && npm run test && npm run webpack && bash scripts/inject_sidebar.sh && bash -x scripts/inject_settings_dialog.sh",
+"build": "npm run clean && npx tsc && npx tsc -p tsconfig.unit.json && npm run test && npm run webpack && bash scripts/inject_sidebar.sh && bash scripts/inject_settings_dialog.sh",
     "push": "npm run build && clasp push -f",
     "deploy": "npm run push && clasp deploy",
     "lint": "eslint",
