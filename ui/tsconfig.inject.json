@@ -1,12 +1,13 @@
-// ui/tsconfig.inject.json
 {
   "compilerOptions": {
     "target": "ES5",
-    "module": "none",                        // ✅ Avoid CommonJS wrapper
-    "outDir": "build/injectable_js",         // ✅ Separate output folder
+    "module": "none",
+    "outDir": "build/unit_testable_js",
+    "rootDir": "src",
     "strict": true,
-    "lib": ["DOM", "ES2015"]
+    "lib": ["ES2015", "DOM"],
+    "types": []
   },
-  "include": ["src/FormValidation.global.ts"]
+  "include": ["src/FormValidation_client_side_injectable.ts"]
 }
 

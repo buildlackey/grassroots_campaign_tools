@@ -80,27 +80,11 @@ fi
 echo "✅ Script ID: $SCRIPT_ID"
 
 echo "📦 Copying built TypeScript output"
-cp "$BUILD_DIR/Code.js" "$WORKING_PUSH_FOLDER/"
-cp "$UI_DIR/appsscript.json" "$WORKING_PUSH_FOLDER/"
-cp "$GIT_ROOT/maps_config.env" "$WORKING_PUSH_FOLDER/"
+cp "$SRC_DIR/Code.js"               "$WORKING_PUSH_FOLDER/"
+cp "$SRC_DIR/SettingsDialog.html"    "$WORKING_PUSH_FOLDER/"
+cp "$GIT_ROOT/maps_config.env"      "$WORKING_PUSH_FOLDER/"
+cp "$BUILD_DIR/FormValidation_client_side_injectable.html" "$WORKING_PUSH_FOLDER/"
 
-# Copy GAS-safe output except for SettingsDialogCode.js and FilterUICode.js
-shopt -s extglob
-cp "$BUILD_DIR"/!(*SettingsDialogCode|*FilterUICode).js "$WORKING_PUSH_FOLDER/"
-shopt -u extglob
-
-# ✅ Copy unit-testable FormValidation.js (non-webpacked)
-if [[ -f "$UNIT_TESTABLE_DIR/FormValidation.js" ]]; then
-  echo "📦 Copying unit-testable FormValidation.js"
-  cp "$UNIT_TESTABLE_DIR/FormValidation.js" "$WORKING_PUSH_FOLDER/"
-else
-  echo "⚠️  FormValidation.js not found in $UNIT_TESTABLE_DIR"
-  exit 1
-fi
-
-
-cp "$BUILD_DIR/FilterUI.html" "$WORKING_PUSH_FOLDER/"
-cp "$BUILD_DIR/SettingsDialog.html" "$WORKING_PUSH_FOLDER/"
 
 
 echo "🚀 Pushing project to Apps Script"
