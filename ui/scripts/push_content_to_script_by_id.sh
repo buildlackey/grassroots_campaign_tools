@@ -21,7 +21,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GIT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
 CONFIG_FILE="$GIT_ROOT/maps_config.env"
 UI_DIR="$GIT_ROOT/code/ui"
-RAW_SRC_DIR="$UI_DIR/raw"
+UI_BUILD_DIR="$UI_DIR//build"
+RAW_SRC_DIR="$UI_DIR/src/raw"
 BUILD_DIR=/home/chris/grassroots_campaign_tools/built/ui/gas_safe_staging
 LOCAL_CLASP="$GIT_ROOT/node_modules/.bin/clasp"
 
@@ -57,8 +58,8 @@ if [[ ! -d "${WORKING_PUSH_FOLDER:-}" ]]; then
   exit 1
 fi
 
-echo "🔧 Building TypeScript from: $UI_DIR"
-cd "$UI_DIR"
+echo "🔧 Building TypeScript from: $UI_BUILD_DIR"
+cd "$UI_BUILD_DIR"
 
 if [[ ! -d "node_modules" ]]; then
   echo "📦 Installing local dependencies..."

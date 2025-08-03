@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "ES5",
+    "module": "none",
+    "outDir": "../../../built/ui/unit_testable_js",
+    "rootDir": "../src/logic",
+    "strict": true,
+    "lib": ["ES2015", "DOM"],
+    "types": []
+  },
+  "include": ["../src/logic/**/*.ts"]
+}
+
