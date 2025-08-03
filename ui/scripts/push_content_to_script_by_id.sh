@@ -87,8 +87,10 @@ cp "$GIT_ROOT/maps_config.env"      "$WORKING_PUSH_FOLDER/"
 
 
 
-echo "🚀 Pushing project to Apps Script"
-$LOCAL_CLASP push --force
+echo "🚀 Pushing project to Apps Script -- going back to 2.5"
+#$LOCAL_CLASP push --force
+npx @google/clasp@2.5.0 push --force
+
 
 echo "🏁 Running initSetup"
 npx --yes @google/clasp@2.4.0 run initSetup | grep INIT
