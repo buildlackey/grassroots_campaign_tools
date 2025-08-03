@@ -1,5 +1,7 @@
 maps_config.env
-**/combined_upload.txt  # throw-away intermediate work file
+combined_upload.txt  # throw-away intermediate work file
+*/combined_upload.txt
+
 
 
 # clasp cruft that we don't need
@@ -9,5 +11,5 @@ package-lock.json
 
 
 **/node_modules/
-**/build/
+**/built/
 
