@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "clean": "rm -rf /home/chris/grassroots_campaign_tools/built/ui",
+    "clean": "rm -rf ../../built/ui",
     "tsc": "tsc",
     "test": "jest",
     "webpack": "webpack",

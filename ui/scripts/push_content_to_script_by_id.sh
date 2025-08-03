@@ -20,8 +20,7 @@ done
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GIT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
 CONFIG_FILE="$GIT_ROOT/maps_config.env"
-SRC_DIR="$GIT_ROOT/src"
-UI_DIR="$SRC_DIR/ui"
+UI_DIR="$GIT_ROOT/code/ui"
 RAW_SRC_DIR="$UI_DIR/raw"
 BUILD_DIR=/home/chris/grassroots_campaign_tools/built/ui/gas_safe_staging
 LOCAL_CLASP="$GIT_ROOT/node_modules/.bin/clasp"
@@ -67,7 +66,6 @@ if [[ ! -d "node_modules" ]]; then
 fi
 
 echo "🛠️  Running build...   - tmp dir change"
-cd /home/chris/grassroots_campaign_tools/src/ui
 npm run build
 
 echo "🚧 Working in: $WORKING_PUSH_FOLDER"
