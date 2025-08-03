@@ -20,10 +20,10 @@ done
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GIT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
 CONFIG_FILE="$GIT_ROOT/maps_config.env"
-UI_DIR="$GIT_ROOT/ui"
-BUILD_DIR="$UI_DIR/build/gas_safe_staging"
-UNIT_TESTABLE_DIR="$UI_DIR/build/unit_testable_js"
-SRC_DIR="$UI_DIR/src"
+SRC_DIR="$GIT_ROOT/src"
+UI_DIR="$SRC_DIR/ui"
+RAW_SRC_DIR="$UI_DIR/raw"
+BUILD_DIR=/home/chris/grassroots_campaign_tools/built/ui/gas_safe_staging
 LOCAL_CLASP="$GIT_ROOT/node_modules/.bin/clasp"
 
 echo "📦 Ensuring local clasp is available..."
@@ -66,7 +66,8 @@ if [[ ! -d "node_modules" ]]; then
   npm install
 fi
 
-echo "🛠️  Running build..."
+echo "🛠️  Running build...   - tmp dir change"
+cd /home/chris/grassroots_campaign_tools/src/ui
 npm run build
 
 echo "🚧 Working in: $WORKING_PUSH_FOLDER"
@@ -80,10 +81,9 @@ fi
 echo "✅ Script ID: $SCRIPT_ID"
 
 echo "📦 Copying built TypeScript output"
-cp "$SRC_DIR/Code.js"               "$WORKING_PUSH_FOLDER/"
-cp "$SRC_DIR/SettingsDialog.html"    "$WORKING_PUSH_FOLDER/"
+cp "$RAW_SRC_DIR"/*               "$WORKING_PUSH_FOLDER/"
+cp "$BUILD_DIR"/* "$WORKING_PUSH_FOLDER/"
 cp "$GIT_ROOT/maps_config.env"      "$WORKING_PUSH_FOLDER/"
-cp "$BUILD_DIR/FormValidation_client_side_injectable.html" "$WORKING_PUSH_FOLDER/"
 
 
 
