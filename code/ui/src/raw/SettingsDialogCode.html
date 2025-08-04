@@ -14,7 +14,7 @@
             `<option value="${name}">${name}</option>`).join('');
           if (sheets.length > 0) {
             sheetSelect.value = sheets[0];
-            //onSheetChange(); // auto-load address columns
+            onSheetChange(); // auto-load address columns
           }
         }).getSheetTabNames();
       }

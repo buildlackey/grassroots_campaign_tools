@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { JSDOM } from "jsdom";
 
-const htmlPath = path.join(__dirname, "../../built/rendered_settings_dialog_test.html"); // Adjust as needed
+const htmlPath = "/tmp/rendered_settings_dialog_test.html";
 const htmlContent = fs.readFileSync(htmlPath, "utf-8");
 
 function delay(ms: number) {
@@ -29,12 +29,16 @@ describe("SettingsDialog Save Button Enablement", () => {
       mapsApiKey: "key1",
       sheets: {
         Sheet1: [],
-        Sheet2: ["Name", "Address"],
+        Sheet2: ["Address", "City"],
         Sheet3: []
       }
     };
 
-    // Wait for script execution and DOM update
+    // Patch global so mocks_gas.js can hook into window
+    global.window = window;
+    require("../../test/support/mocks_gas.js");
+
+    // Wait for scripts to execute and DOM to initialize
     await delay(150);
   });
 
@@ -51,7 +55,7 @@ describe("SettingsDialog Save Button Enablement", () => {
     await delay(100); // Wait for addressSelect to populate
 
     const addressSelect = document.getElementById("addressSelect") as HTMLSelectElement;
-    addressSelect.value = "Address"; // Select a valid address column
+    addressSelect.value = "Address";
     addressSelect.dispatchEvent(new window.Event("change"));
 
     const saveBtn = document.querySelector("button[onclick='saveSettings()']") as HTMLButtonElement;

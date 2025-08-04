@@ -1,30 +1,32 @@
-window.SpreadsheetApp = {
-  getUi: () => ({
-    alert: (msg) => console.log("ALERT:", msg),
-    showModalDialog: () => {},
-    createMenu: () => ({ addItem: () => {}, addToUi: () => {} }),
-  }),
-};
-
-window.google = {
+global.google = {
   script: {
     run: {
-      withSuccessHandler(cb) {
+      withSuccessHandler(successHandler) {
         return {
-          getSheetTabNames: () => cb(["MockSheet1", "MockSheet2"]),
-          getHeadersForSheet: (name) =>
-            cb({ headers: ["Street", "City", "Zip"] }),
-          savePreferences: (prefs) =>
-            console.log("💾 Saved preferences", prefs),
+          withFailureHandler(failureHandler) {
+            return {
+              getHeadersForSheet(sheetName) {
+                console.log("📡 Mock getHeadersForSheet called with:", sheetName);
+                const headers = global.window?.__MOCK_CONFIG__?.sheets?.[sheetName] ?? [];
+                successHandler({ headers });
+              },
+              getSheetTabNames() {
+                console.log("📡 Mock getSheetTabNames called");
+                const tabNames = Object.keys(global.window?.__MOCK_CONFIG__?.sheets || {});
+                successHandler(tabNames);
+              },
+              savePreferences(prefs) {
+                console.log("💾 Saved preferences", prefs);
+                successHandler();
+              }
+            };
+          }
         };
-      },
-      withFailureHandler(cb) {
-        return this;
-      },
+      }
     },
     host: {
       close: () => console.log("🔒 Dialog closed"),
-    },
-  },
+    }
+  }
 };
 
