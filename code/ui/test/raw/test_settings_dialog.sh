@@ -8,15 +8,47 @@ RAW_DIR="$PROJECT_ROOT/code/ui/src/raw"
 TEMPLATE="$RAW_DIR/SettingsDialog.html"
 COMPILED_FORM_VALIDATION="$PROJECT_ROOT/built/ui/unit_testable_js/FormValidation.js"
 SETTINGS_DIALOG_CODE="$RAW_DIR/SettingsDialogCode.html"
+MOCKS_JS="$SCRIPT_DIR/mocks_gas.js"
 OUT_HTML="/tmp/rendered_settings_dialog_test.html"
 
 echo "📄 Reading template: $TEMPLATE"
 rm -f "$OUT_HTML"
 
+# Write static HTML wrapper head
+cat > "$OUT_HTML" <<EOF
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Settings Dialog Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+    }
+    .help-popup {
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body>
+<h2>🧪 Settings Dialog Local Test</h2>
+<script>
+EOF
+
+# Inject the GAS mock shim
+cat "$MOCKS_JS" >> "$OUT_HTML"
+
+# Close the mock script tag
+cat >> "$OUT_HTML" <<EOF
+</script>
+<div id="settings-dialog-container">
+EOF
+
+# Main inject loop
 function inject_fragment() {
   local name="$1"
   echo "🔧 Injecting fragment: $name"
-
   case "$name" in
     FormValidation)
       cat "$COMPILED_FORM_VALIDATION" >> "$OUT_HTML"
@@ -32,17 +64,23 @@ function inject_fragment() {
 }
 
 while IFS= read -r line; do
-  echo processing: $line
+  echo "processing: $line"
   if echo "$line" | grep -q "<?!= include("; then
-    echo is match: $line
-    # extract fragment name between single quotes
+    echo "is match: $line"
     fragment=$(echo "$line" | awk -F"'" '{print $2}')
     inject_fragment "$fragment"
   else
-    echo not match: $line
+    echo "not match: $line"
     echo "$line" >> "$OUT_HTML"
   fi
 done < "$TEMPLATE"
+
+# Close HTML structure
+cat >> "$OUT_HTML" <<EOF
+</div>
+</body>
+</html>
+EOF
 
 echo "✅ Rendered HTML saved to: $OUT_HTML"
 
@@ -51,4 +89,3 @@ if command -v xdg-open >/dev/null; then
 else
   echo "🌐 Please open $OUT_HTML manually in your browser."
 fi
-

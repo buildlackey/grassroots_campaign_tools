@@ -32,8 +32,7 @@ function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu('🧪 pest UI')
     .addItem('1funcall ', 'funcall')        
-    .addItem('1sideBarTest ', 'sideBarTest')        
-    .addItem('1dialogTest', 'dialogTest')        // createTemplateFromFile
+    .addItem('Settings', 'showSettingsDialog')        
     .addToUi();
 }
 
@@ -46,24 +45,17 @@ function whoAmI() {
   alert(Session.getActiveUser().getEmail());
 }
 
-
-function sideBarTest() {
+function showSettingsDialog() {
   const html = HtmlService
     .createTemplateFromFile('SettingsDialog')
     .evaluate()
-    .setTitle('⚙️ Settings Sidebar'); 
+    .setTitle('⚙️ Settings')
+    .setWidth(580)
+    .setHeight(400);
 
-  SpreadsheetApp.getUi().showSidebar(html);
-}
-
-
-function dialogTest() {
-  const html = HtmlService
-    .createTemplateFromFile('SettingsDialog')
-    .evaluate()
-    .setTitle('⚙️  Settings');  
   SpreadsheetApp.getUi().showModalDialog(html, "Settings");
 }
+
 
 
 
