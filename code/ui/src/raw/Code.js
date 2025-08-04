@@ -61,8 +61,8 @@ function dialogTest() {
   const html = HtmlService
     .createTemplateFromFile('SettingsDialog')
     .evaluate()
-    .setTitle('⚙️ Settings Sidebar');  
-  SpreadsheetApp.getUi().showModalDialog(html, "🚧 the Dialog");
+    .setTitle('⚙️  Settings');  
+  SpreadsheetApp.getUi().showModalDialog(html, "Settings");
 }
 
 
