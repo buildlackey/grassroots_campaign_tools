@@ -104,68 +104,34 @@ function showHelp(topic, event) {
 }
 
 
-    function keepThisBadShowHelp(topic, event) {
-      console.log("🆘 Help icon clicked for topic:", topic, event);
-      try {
-        closeHelp(); // close any existing help
+      function showHelp(topic, event) {
+        closeHelp();  // Remove existing if present
+
         const messages = {
-          mapsApiKey: `Enter your Google Maps API key...`,
+          mapsApiKey: `Enter your Google Maps API key. You can obtain this from the Google Cloud Console. Make sure the Maps JavaScript API is enabled.`,
           sheetTab: `Select the sheet where your data is stored.`,
           addressColumn: `Choose the column in your sheet that contains addresses.`,
-          showLatLng: `Check to display the Latitude and Longitude results in your sheet.`,
-          debug: `Enable verbose logging for troubleshooting.`
+          showLatLng: `Check this box to display the Latitude and Longitude results in your sheet.`,
+          debug: `Enable this to log detailed debugging information for troubleshooting.`
         };
 
         const popup = document.createElement("div");
         popup.className = "help-popup";
-        popup.innerHTML = messages[topic] || "No help available.";
+        popup.innerText = messages[topic] || "No help available.";
 
-        icon.parentElement.appendChild(popup);
+        const closeBtn = document.createElement("button");
+        closeBtn.textContent = "Dismiss";
+        closeBtn.style.marginTop = "10px";
+        closeBtn.onclick = () => popup.remove();
 
-
-        const icon = event.target;
-        const rect = icon.getBoundingClientRect();
-        console.log("📐 Icon bounds:", rect);
-
-        popup.style.top = (window.scrollY + rect.bottom + 4) + "px";
-        popup.style.left = (window.scrollX + rect.left - 20) + "px";
-
-        document.addEventListener("click", closeHelp);
-        document.addEventListener("keydown", escListener);
-      } catch (e) {
-        console.error("❌ showHelp error:", e);
+        popup.appendChild(document.createElement("br"));
+        popup.appendChild(closeBtn);
+        document.body.appendChild(popup);
       }
-    }
-
 
       function closeHelp() {
-        const existing = document.querySelector(".help-popup");
-        if (existing) existing.remove();
-        document.removeEventListener("click", closeHelp);
-        document.removeEventListener("keydown", escListener);
+        const popup = document.querySelector(".help-popup");
+        if (popup) popup.remove();
       }
-
-      function escListener(e) {
-        if (e.key === "Escape") closeHelp();
-      }
-
-function showCustomPopup() {
-  // Close any existing popups
-  const existing = document.querySelector(".custom-popup");
-  if (existing) existing.remove();
-
-  const popup = document.createElement("div");
-  popup.className = "custom-popup";
-  popup.innerText = "hello";
-
-  const closeBtn = document.createElement("button");
-  closeBtn.textContent = "Dismiss";
-  closeBtn.style.marginTop = "8px";
-  closeBtn.onclick = () => popup.remove();
-
-  popup.appendChild(document.createElement("br"));
-  popup.appendChild(closeBtn);
-  document.body.appendChild(popup);
-}
 
 

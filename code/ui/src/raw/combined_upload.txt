@@ -152,6 +152,40 @@ function showHelp(topic, event) {
         if (e.key === "Escape") closeHelp();
       }
 
+function showCustomPopup() {
+  // Close any existing popups
+  const existing = document.querySelector(".custom-popup");
+  if (existing) existing.remove();
+
+  const popup = document.createElement("div");
+  popup.className = "custom-popup";
+  popup.innerText = "hello";
+
+  const closeBtn = document.createElement("button");
+  closeBtn.textContent = "Dismiss";
+  closeBtn.style.marginTop = "8px";
+  closeBtn.onclick = () => popup.remove();
+
+  popup.appendChild(document.createElement("br"));
+  popup.appendChild(closeBtn);
+  document.body.appendChild(popup);
+}
+
+
+
+
+===== FILE: FormValidation.html =====
+"use strict";
+var FormValidation = {
+    MESSAGE: "Injected via include",
+    hello: function () {
+        return "👋 cheap goods  zee  boo foo doo china roo from FormValidation.hello()";
+    },
+    validateForm: function (data) {
+        return { valid: false, errors: ["Still a placeholder"] };
+    }
+};
+
 
 ===== FILE: Code.js =====
 function include(filename) {
@@ -251,6 +285,21 @@ function dialogTest() {
         font-size: 14px;
         box-sizing: border-box;
       }
+
+    .custom-popup {
+      position: fixed;
+      top: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ffffff;
+      border: 1px solid #aaa;
+      border-radius: 6px;
+      padding: 20px;
+      box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+      z-index: 100;
+      text-align: center;
+      min-width: 200px;
+    }
 
       .checkbox-group {
         display: flex;
@@ -352,6 +401,7 @@ function dialogTest() {
     <div class="button-row">
       <button onclick="cancelDialog()">The new Cancel</button>
       <button onclick="saveSettings()">Save Settings</button>
+      <button onclick="showCustomPopup()">Popup</button>
     </div>
     <script>
       <?!= include('FormValidation') ?>
