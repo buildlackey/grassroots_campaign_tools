@@ -5,6 +5,7 @@
     "test": "jest",
     "webpack": "webpack",
     "compile": "npx tsc -p tsconfig.inject.json",
+    "test:dialog": "jest --config=jest.config.js",
     "injectify": "bash -x scripts/convert_to_client_side_injectable.sh ",
      "build": "npm run clean && npm run compile && npm run injectify",
     "push": "npm run build && clasp push -f",
