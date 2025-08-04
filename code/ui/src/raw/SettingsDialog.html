@@ -2,13 +2,13 @@
 <html>
   <head>
     <script>
-      <?!= include('FormValidation_client_side_injectable') ?>
+      <?!= include('FormValidation') ?>
     </script>
   </head>
   <body>
     <div>hello ho</div>
     <script>
-      alert(window.FormValidation_client_side_injectable?.hello() ?? "❌ Not loaded");
+      alert(window.FormValidation?.hello() ?? "❌ Not loaded");
     </script>
   </body>
 </html>

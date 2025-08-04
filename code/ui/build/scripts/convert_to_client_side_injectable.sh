@@ -12,7 +12,7 @@ DEST_DIR=$BUILD_OUTPUT_DIR/ui/gas_safe_staging
 mkdir -p "$DEST_DIR"
 
 # Loop through all *_client_side_injectable.js files
-for src_file in "$SRC_DIR"/*_client_side_injectable.js; do
+for src_file in "$SRC_DIR"/*.js; do
   [ -e "$src_file" ] || continue  # Skip if no matches
 
   # Extract the base name and derive the JS global name

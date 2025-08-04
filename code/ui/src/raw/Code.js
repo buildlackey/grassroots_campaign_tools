@@ -30,7 +30,7 @@ globalThis.initSetup = function () {
 
 function onOpen() {
   SpreadsheetApp.getUi()
-    .createMenu('🧪 Test UI')
+    .createMenu('🧪 pest UI')
     .addItem('1funcall ', 'funcall')        
     .addItem('1sideBarTest ', 'sideBarTest')        
     .addItem('1dialogTest', 'dialogTest')        // createTemplateFromFile

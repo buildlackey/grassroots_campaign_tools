@@ -1,7 +1,7 @@
-const FormValidation_client_side_injectable = {
+const FormValidation = {
   MESSAGE: "Injected via include",
   hello() : string {
-      return "👋 zoobooo  zee  boo foo doo china roo from FormValidation_client_side_injectable.hello()";
+      return "👋 cheap goods  zee  boo foo doo china roo from FormValidation.hello()";
   },
   validateForm(data: any) {
     return { valid: false, errors: ["Still a placeholder"] };
