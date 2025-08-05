@@ -1,6 +1,7 @@
 import fs from "fs";
-import path from "path";
 import { JSDOM } from "jsdom";
+import { installMockGoogleScript } from "/home/chris/grassroots_campaign_tools/code/ui/test/raw/support/installMockGoogleScript";
+
 
 const htmlPath = "/tmp/rendered_settings_dialog_test.html";
 const htmlContent = fs.readFileSync(htmlPath, "utf-8");
@@ -18,28 +19,15 @@ describe("SettingsDialog Save Button Enablement", () => {
     dom = new JSDOM(htmlContent, {
       runScripts: "dangerously",
       resources: "usable",
-      pretendToBeVisual: true
+      pretendToBeVisual: true,
     });
 
     window = dom.window;
     document = window.document;
 
-    // Inject mock config before scripts run
-    window.__MOCK_CONFIG__ = {
-      mapsApiKey: "key1",
-      sheets: {
-        Sheet1: [],
-        Sheet2: ["Address", "City"],
-        Sheet3: []
-      }
-    };
+    installMockGoogleScript(window);
 
-    // Patch global so mocks_gas.js can hook into window
-    global.window = window;
-    require("../../test/support/mocks_gas.js");
-
-    // Wait for scripts to execute and DOM to initialize
-    await delay(150);
+    await delay(150); // allow script execution
   });
 
   test("Save button is disabled when default Sheet1 has no address columns", async () => {
@@ -52,7 +40,7 @@ describe("SettingsDialog Save Button Enablement", () => {
     sheetSelect.value = "Sheet2";
     sheetSelect.dispatchEvent(new window.Event("change"));
 
-    await delay(100); // Wait for addressSelect to populate
+    await delay(100);
 
     const addressSelect = document.getElementById("addressSelect") as HTMLSelectElement;
     addressSelect.value = "Address";
