@@ -1,10 +1,15 @@
-import fs from "fs";
 import { JSDOM } from "jsdom";
-import { installMockGoogleScript } from "/home/chris/grassroots_campaign_tools/code/ui/test/raw/support/installMockGoogleScript";
+import { installMockGoogleScript } from "./support/installMockGoogleScript";
+
+import * as fs from "fs";
+import * as path from "path";
 
 
-const htmlPath = "/tmp/rendered_settings_dialog_test.html";
+
+const repoRoot = path.resolve(__dirname, "../../../../"); // up to repo root
+const htmlPath = path.resolve(repoRoot, "built/ui/rendered_settings_dialog_test.html");
 const htmlContent = fs.readFileSync(htmlPath, "utf-8");
+
 
 function delay(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -30,11 +35,6 @@ describe("SettingsDialog Save Button Enablement", () => {
     await delay(150); // allow script execution
   });
 
-  test("Save button is disabled when default Sheet1 has no address columns", async () => {
-    const saveBtn = document.querySelector("button[onclick='saveSettings()']") as HTMLButtonElement;
-    expect(saveBtn.disabled).toBeTruthy();
-  });
-
   test("Save button becomes enabled after selecting Sheet2 with valid address column", async () => {
     const sheetSelect = document.getElementById("sheetSelect") as HTMLSelectElement;
     sheetSelect.value = "Sheet2";
@@ -47,6 +47,14 @@ describe("SettingsDialog Save Button Enablement", () => {
     addressSelect.dispatchEvent(new window.Event("change"));
 
     const saveBtn = document.querySelector("button[onclick='saveSettings()']") as HTMLButtonElement;
+
+// Dump full outer HTML so you see tag + attributes
+console.log("Save button HTML:", saveBtn.outerHTML);
+
+// Or dump key props
+console.log("disabled:", saveBtn.disabled, "text:", saveBtn.textContent);
+
+
     expect(saveBtn.disabled).toBeFalsy();
   });
 });

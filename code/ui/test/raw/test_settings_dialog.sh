@@ -6,10 +6,11 @@ PROJECT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
 
 RAW_DIR="$PROJECT_ROOT/code/ui/src/raw"
 TEMPLATE="$RAW_DIR/SettingsDialog.html"
-COMPILED_FORM_VALIDATION="$PROJECT_ROOT/built/ui/unit_testable_js/FormValidation.js"
+BUILT_UI_DIR="$PROJECT_ROOT/built/ui"
+
+COMPILED_FORM_VALIDATION="$BUILT_UI_DIR/unit_testable_js/FormValidation.js"
 SETTINGS_DIALOG_CODE="$RAW_DIR/SettingsDialogCode.html"
-MOCKS_JS="$SCRIPT_DIR/mocks_gas.js"
-OUT_HTML="/tmp/rendered_settings_dialog_test.html"
+OUT_HTML="$BUILT_UI_DIR/rendered_settings_dialog_test.html"
 
 echo "📄 Reading template: $TEMPLATE"
 rm -f "$OUT_HTML"
@@ -36,8 +37,6 @@ cat > "$OUT_HTML" <<EOF
 <script>
 EOF
 
-# Inject the GAS mock shim
-cat "$MOCKS_JS" >> "$OUT_HTML"
 
 # Close the mock script tag
 cat >> "$OUT_HTML" <<EOF

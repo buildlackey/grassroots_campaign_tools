@@ -17,7 +17,7 @@
             `<option value="${name}">${name}</option>`).join('');
           if (sheets.length > 0) {
             sheetSelect.value = sheets[0];
-            //onSheetChange(); // auto-load address columns
+            onSheetChange(); // auto-load address columns
           }
         }).getSheetTabNames();
       }
@@ -107,69 +107,35 @@ function showHelp(topic, event) {
 }
 
 
-    function keepThisBadShowHelp(topic, event) {
-      console.log("🆘 Help icon clicked for topic:", topic, event);
-      try {
-        closeHelp(); // close any existing help
+      function showHelp(topic, event) {
+        closeHelp();  // Remove existing if present
+
         const messages = {
-          mapsApiKey: `Enter your Google Maps API key...`,
+          mapsApiKey: `Enter your Google Maps API key. You can obtain this from the Google Cloud Console. Make sure the Maps JavaScript API is enabled.`,
           sheetTab: `Select the sheet where your data is stored.`,
           addressColumn: `Choose the column in your sheet that contains addresses.`,
-          showLatLng: `Check to display the Latitude and Longitude results in your sheet.`,
-          debug: `Enable verbose logging for troubleshooting.`
+          showLatLng: `Check this box to display the Latitude and Longitude results in your sheet.`,
+          debug: `Enable this to log detailed debugging information for troubleshooting.`
         };
 
         const popup = document.createElement("div");
         popup.className = "help-popup";
-        popup.innerHTML = messages[topic] || "No help available.";
+        popup.innerText = messages[topic] || "No help available.";
 
-        icon.parentElement.appendChild(popup);
+        const closeBtn = document.createElement("button");
+        closeBtn.textContent = "Dismiss";
+        closeBtn.style.marginTop = "10px";
+        closeBtn.onclick = () => popup.remove();
 
-
-        const icon = event.target;
-        const rect = icon.getBoundingClientRect();
-        console.log("📐 Icon bounds:", rect);
-
-        popup.style.top = (window.scrollY + rect.bottom + 4) + "px";
-        popup.style.left = (window.scrollX + rect.left - 20) + "px";
-
-        document.addEventListener("click", closeHelp);
-        document.addEventListener("keydown", escListener);
-      } catch (e) {
-        console.error("❌ showHelp error:", e);
+        popup.appendChild(document.createElement("br"));
+        popup.appendChild(closeBtn);
+        document.body.appendChild(popup);
       }
-    }
-
 
       function closeHelp() {
-        const existing = document.querySelector(".help-popup");
-        if (existing) existing.remove();
-        document.removeEventListener("click", closeHelp);
-        document.removeEventListener("keydown", escListener);
+        const popup = document.querySelector(".help-popup");
+        if (popup) popup.remove();
       }
-
-      function escListener(e) {
-        if (e.key === "Escape") closeHelp();
-      }
-
-function showCustomPopup() {
-  // Close any existing popups
-  const existing = document.querySelector(".custom-popup");
-  if (existing) existing.remove();
-
-  const popup = document.createElement("div");
-  popup.className = "custom-popup";
-  popup.innerText = "hello";
-
-  const closeBtn = document.createElement("button");
-  closeBtn.textContent = "Dismiss";
-  closeBtn.style.marginTop = "8px";
-  closeBtn.onclick = () => popup.remove();
-
-  popup.appendChild(document.createElement("br"));
-  popup.appendChild(closeBtn);
-  document.body.appendChild(popup);
-}
 
 
 
@@ -222,8 +188,7 @@ function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu('🧪 pest UI')
     .addItem('1funcall ', 'funcall')        
-    .addItem('1sideBarTest ', 'sideBarTest')        
-    .addItem('1dialogTest', 'dialogTest')        // createTemplateFromFile
+    .addItem('Settings', 'showSettingsDialog')        
     .addToUi();
 }
 
@@ -236,24 +201,17 @@ function whoAmI() {
   alert(Session.getActiveUser().getEmail());
 }
 
-
-function sideBarTest() {
+function showSettingsDialog() {
   const html = HtmlService
     .createTemplateFromFile('SettingsDialog')
     .evaluate()
-    .setTitle('⚙️ Settings Sidebar'); 
+    .setTitle('⚙️ Settings')
+    .setWidth(580)
+    .setHeight(400);
 
-  SpreadsheetApp.getUi().showSidebar(html);
+  SpreadsheetApp.getUi().showModalDialog(html, "Settings");
 }
 
-
-function dialogTest() {
-  const html = HtmlService
-    .createTemplateFromFile('SettingsDialog')
-    .evaluate()
-    .setTitle('⚙️ Settings Sidebar');  
-  SpreadsheetApp.getUi().showModalDialog(html, "🚧 the Dialog");
-}
 
 
 
@@ -336,21 +294,23 @@ function dialogTest() {
 }
 
 
+  .help-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 10px;
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.15);
+    max-width: 300px;
+    z-index: 100;
+    text-align: center;
+  }
 
-      .help-popup {
-        position: absolute;
-        background: #f9f9f9;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        padding: 10px;
-        box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.15);
-        max-width: 300px;
-        z-index: 10;
-      }
 
-      .button-row {
-        margin-top: 20px;
-      }
+
     </style>
 
     <script>
@@ -399,9 +359,8 @@ function dialogTest() {
     </div>
 
     <div class="button-row">
-      <button onclick="cancelDialog()">The new Cancel</button>
-      <button onclick="saveSettings()">Save Settings</button>
-      <button onclick="showCustomPopup()">Popup</button>
+      <button onclick="cancelDialog()">Dismiss</button>
+      <button onclick="saveSettings()">Save</button>
     </div>
     <script>
       <?!= include('FormValidation') ?>

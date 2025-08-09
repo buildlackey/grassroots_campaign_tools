@@ -3,9 +3,10 @@ set -euo pipefail
 
 # Determine script's directory and project root
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-UI_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+GIT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
 
-BUILD_OUTPUT_DIR=/home/chris/grassroots_campaign_tools/built
+
+BUILD_OUTPUT_DIR=$GIT_ROOT/built
 SRC_DIR=$BUILD_OUTPUT_DIR/ui/unit_testable_js
 DEST_DIR=$BUILD_OUTPUT_DIR/ui/gas_safe_staging
 
