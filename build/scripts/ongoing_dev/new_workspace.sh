@@ -51,12 +51,13 @@
 # Determine project root
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
+SCRIPTS_ROOT=$PROJECT_ROOT/build/scripts/
 
+.  $SCRIPTS_ROOT/common/utils.sh
 
-. $PROJECT_ROOT/ui/scripts/utils.sh
 
 # 0.  Log out
-bash $PROJECT_ROOT/init_setup/full_log_out.sh
+bash $SCRIPTS_ROOT/common/full_log_out.sh
 
 
 # 1. Create WORKING_PUSH_FOLDER where built artifacts are staged then pushed
@@ -137,4 +138,6 @@ read -rp "🛑 Press [ENTER] when you've finished associating the script to your
 
 
 echo "clasp is now set up to push from $WORKING_PUSH_FOLDER every time you change code,"
-echo "then update with $PROJECT_ROOT/ui/scripts/push_content_to_script_by_id.sh"
+echo "then update with $SCRIPTS_ROOT/ongoing_dev/push_to_workspace.sh"
+
+
