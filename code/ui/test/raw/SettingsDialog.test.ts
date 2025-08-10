@@ -1,3 +1,4 @@
+// ===== FILE: SettingsDialog.test.ts =====
 import { JSDOM } from "jsdom";
 import { setupMock } from "./setupMock";
 
@@ -19,44 +20,38 @@ function waitForLoad(win: Window): Promise<void> {
   });
 }
 
-describe("SettingsDialog Save Button Enablement", () => {
+describe("SettingsDialog Save Button / Maps API key (config-driven)", () => {
   let dom: JSDOM;
   let document: Document;
   let window: any;
 
-  // 1) Create and parse JSDOM ONCE
+  // Parse DOM once; install an initial mock so inline scripts can run
   beforeAll(async () => {
     dom = new JSDOM(htmlContent, {
       runScripts: "dangerously",
       resources: "usable",
       pretendToBeVisual: true,
-      // We still need the mock present for the initial load (onOpen)
       beforeParse: (win) => {
+        // No config yet; setupMock will use default fallback
         setupMock(win as any);
       },
     });
 
     window = dom.window;
     document = window.document;
-
-    // Wait until inline scripts run and load fires (onOpen runs once here)
     await waitForLoad(window);
   });
 
-  // 2) Reinstall/refresh the mock BEFORE EACH TEST (no config yet)
   beforeEach(() => {
-    // Reinstall the mock on the existing window to reset handler chains
-    setupMock(window as any);
-
-    // Fresh console spies per test; fail fast on console.error
+    // Fail fast on console.error; quiet console.warn if desired
     jest
       .spyOn(window.console, "error")
       .mockImplementation((...args: any[]) => {
         throw new Error("console.error called: " + args.join(" "));
       });
-
-    // Optional: ignore warnings like “no address column found”
     jest.spyOn(window.console, "warn").mockImplementation(() => {});
+
+    // Each test sets window.__MOCK_CONFIG__ and then calls setupMock + onOpen()
   });
 
   afterEach(() => {
@@ -64,33 +59,87 @@ describe("SettingsDialog Save Button Enablement", () => {
   });
 
   afterAll(() => {
-    // Close the JSDOM window to release resources
     dom?.window?.close();
   });
 
-  test("Save button becomes enabled after selecting Sheet2 with valid address column", async () => {
+  //
+  // test 1
+  // Blocked: maps key present, but default Sheet1 has NO columns
+  //
+  test("Blocked when default Sheet1 has no columns (even with maps key)", async () => {
+    // Config for this test
+    (window as any).__MOCK_CONFIG__ = {
+      mapsApiKey: "key1",
+      sheets: {
+        Sheet1: [],
+        Sheet2: ["Name", "Address"],
+        Sheet3: [],
+      },
+    };
+
+    // Reinstall mock w/ this config and repopulate UI
+    setupMock(window as any);
+    // Use the same entrypoint the page uses at load time
+    window.onOpen();
+    await Promise.resolve();
+
     const sheetSelect = document.getElementById(
       "sheetSelect"
     ) as HTMLSelectElement;
-    sheetSelect.value = "Sheet2";
-    sheetSelect.dispatchEvent(new window.Event("change"));
-
-    // Let the change handler run
-    await Promise.resolve();
-
     const addressSelect = document.getElementById(
       "addressSelect"
     ) as HTMLSelectElement;
-
-    expect(addressSelect.value).toBe("address1");
-
     const saveBtn = document.querySelector(
       "button[onclick='saveSettings()']"
     ) as HTMLButtonElement;
 
-    console.log("Save button HTML:", saveBtn.outerHTML);
-    console.log("disabled:", saveBtn.disabled, "text:", saveBtn.textContent);
+    // Default is first sheet (Sheet1)
+    expect(sheetSelect.value).toBe("Sheet1");
+    // No columns → no address value
+    expect(addressSelect.value).toBe("");
 
+    // Expected: Save button blocked/disabled
+    expect(saveBtn.disabled).toBeTruthy();
+  });
+
+  //
+  // test 2
+  // Enabled after switching to Sheet2 (has Address column)
+  //
+  test("Enabled after switching to Sheet2 which has Address column", async () => {
+    // Same config as test 1
+    (window as any).__MOCK_CONFIG__ = {
+      mapsApiKey: "key1",
+      sheets: {
+        Sheet1: [],
+        Sheet2: ["Name", "Address"],
+        Sheet3: [],
+      },
+    };
+
+    setupMock(window as any);
+    window.onOpen();
+    await Promise.resolve();
+
+    const sheetSelect = document.getElementById(
+      "sheetSelect"
+    ) as HTMLSelectElement;
+    const addressSelect = document.getElementById(
+      "addressSelect"
+    ) as HTMLSelectElement;
+    const saveBtn = document.querySelector(
+      "button[onclick='saveSettings()']"
+    ) as HTMLButtonElement;
+
+    // Switch to Sheet2
+    sheetSelect.value = "Sheet2";
+    sheetSelect.dispatchEvent(new window.Event("change"));
+    await Promise.resolve();
+
+    // Should auto-preselect an address-like header (case-insensitive)
+    expect(addressSelect.value.toLowerCase()).toBe("address");
+
+    // Expected: Save button enabled
     expect(saveBtn.disabled).toBeFalsy();
   });
 });

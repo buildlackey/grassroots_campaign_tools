@@ -2,6 +2,37 @@
       let sheets = [];
       let headers = [];
 
+      // --- gating helpers ---
+      function getSaveBtn() {
+        return document.getElementById("saveBtn");
+      }
+
+      function hasMapsKey() {
+        var el = document.getElementById("mapsApiKey");
+        var v = el && typeof el.value === "string" ? el.value : "";
+        return v.trim().length > 0;
+      }
+
+      function hasAddressSelection() {
+        var el = document.getElementById("addressSelect");
+        var v = el && typeof el.value === "string" ? el.value : "";
+        return v !== "";
+      }
+
+      function updateSaveButtonState() {
+        var btn = getSaveBtn();
+        if (!btn) return;
+        var enabled = hasMapsKey() && hasAddressSelection();
+        btn.disabled = !enabled;
+        console.log("🔒 Save button state:", {
+          enabled: enabled,
+          mapsKey: hasMapsKey(),
+          addressSelected: hasAddressSelection()
+        });
+      }
+      // --- end helpers ---
+
+
       window.addEventListener("load", onOpen);
 
 
@@ -16,6 +47,15 @@
             sheetSelect.value = sheets[0];
             onSheetChange(); // auto-load address columns
           }
+
+          // Ensure initial save state is set even if headers are empty
+          updateSaveButtonState();
+
+          // Bind UI listeners (idempotent if onOpen re-runs)
+          const maps = document.getElementById("mapsApiKey");
+          const addr = document.getElementById("addressSelect");
+          maps && maps.addEventListener("input", updateSaveButtonState);
+          addr && addr.addEventListener("change", updateSaveButtonState);
         }).getSheetTabNames();
       }
 
@@ -37,6 +77,9 @@
           } else {
             console.warn("⚠️ No obvious address-like column found.");
           }
+
+          // Update Save button after (re)populating address options
+          updateSaveButtonState();
         })
         .withFailureHandler((e) => {
           console.error("❌ GAS call failed:", e);
@@ -48,11 +91,13 @@
       function toggleApiKeyVisibility(checkbox) {
         const field = document.getElementById("mapsApiKey");
         field.type = checkbox.checked ? "text" : "password";
+        updateSaveButtonState(); // keep state fresh on UX toggles
       }
 
       function hideApiKeyOnBlur() {
         const field = document.getElementById("mapsApiKey");
         field.type = "password";
+        updateSaveButtonState(); // keep state fresh on UX toggles
       }
 
       function cancelDialog() {
