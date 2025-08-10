@@ -1,5 +1,5 @@
 import { JSDOM } from "jsdom";
-import { installMockGoogleScript } from "./installMockGoogleScript";
+import { setupMock } from "./setupMock";
 
 import * as fs from "fs";
 import * as path from "path";
@@ -32,7 +32,7 @@ describe("SettingsDialog Save Button Enablement", () => {
       pretendToBeVisual: true,
       // We still need the mock present for the initial load (onOpen)
       beforeParse: (win) => {
-        installMockGoogleScript(win as any);
+        setupMock(win as any);
       },
     });
 
@@ -46,7 +46,7 @@ describe("SettingsDialog Save Button Enablement", () => {
   // 2) Reinstall/refresh the mock BEFORE EACH TEST (no config yet)
   beforeEach(() => {
     // Reinstall the mock on the existing window to reset handler chains
-    installMockGoogleScript(window as any);
+    setupMock(window as any);
 
     // Fresh console spies per test; fail fast on console.error
     jest
