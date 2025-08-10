@@ -76,17 +76,10 @@ echo "🚀 Pushing project to Apps Script"
 "$LOCAL_CLASP" push --force
 
 # 4) Optional remote init
-if [[ "$SKIP_INIT" == false ]]; then
-  echo "🏁 Running remote initSetup (expects INIT_DONE)"
-  if npx --yes @google/clasp@2.4.0 run initSetup | grep -q INIT_DONE; then
-    echo "✅ initSetup reported INIT_DONE"
-  else
-    echo "❌ remote exec of initialization script failed"
-    exit 1
-  fi
+echo "🏁 Running remote smokeTest (expects SUCCESS)"
+if npx --yes @google/clasp@2.4.0 run smokeTest | grep -q SUCCESS; then
+    echo "✅ smoke test passed"
 else
-  echo "🧹 Skipping remote init (--update)"
+    echo "❌ smoke test passed"
+    exit 1
 fi
-
-echo "✅ Done syncing from workspace: $WORKING_PUSH_FOLDER"
-
