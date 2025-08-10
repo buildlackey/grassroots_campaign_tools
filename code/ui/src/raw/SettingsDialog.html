@@ -24,21 +24,6 @@
         box-sizing: border-box;
       }
 
-    .custom-popup {
-      position: fixed;
-      top: 100px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #ffffff;
-      border: 1px solid #aaa;
-      border-radius: 6px;
-      padding: 20px;
-      box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
-      z-index: 100;
-      text-align: center;
-      min-width: 200px;
-    }
-
       .checkbox-group {
         display: flex;
         align-items: center;
@@ -55,42 +40,88 @@
         white-space: nowrap;
       }
 
-.help-icon {
-  display: inline-block;
-  font-size: 18px;
-  width: 22px;
-  height: 22px;
-  text-align: center;
-  line-height: 20px;
-  border-radius: 50%;
-  background: #e0f0ff;
-  color: #2a7ddf;
-  cursor: pointer;
-  margin-left: 6px;
-  user-select: none;
-  vertical-align: middle;
-  overflow: hidden;
-  position: relative; /* NEW */
-}
+      /* ===============================
+         Hover/Focus Help Tooltip System
+         =============================== */
+      .help-wrap {
+        display: inline-block;
+        position: relative;
+        vertical-align: top; /* keep top edge aligned with label text */
+        margin-left: 6px;
+      }
 
+      .help-icon {
+        display: inline-block;
+        font-size: 12px;     /* ~33% smaller than before */
+        width: 15px;
+        height: 15px;
+        text-align: center;
+        line-height: 14px;
+        border-radius: 50%;
+        background: #e0f0ff;
+        color: #2a7ddf;
+        cursor: help;
+        user-select: none;
+        vertical-align: top; /* “float” effect */
+        position: relative;
+        outline: none;
+      }
 
-  .help-popup {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #f9f9f9;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    padding: 10px;
-    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.15);
-    max-width: 300px;
-    z-index: 100;
-    text-align: center;
-  }
+      /* Bubble container uses real DOM so links are clickable */
+      .help-bubble {
+        position: absolute;
+        left: 50%;
+        bottom: calc(100% + 8px);
+        transform: translateX(-50%);
+        background: #fff;
+        color: #333;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        padding: 8px 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        width: max-content;
+        max-width: 320px;
+        font-size: 13px;
+        line-height: 1.35;
+        white-space: normal;
+        z-index: 1000;
 
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 120ms ease, visibility 120ms ease;
+        pointer-events: auto; /* allow clicking inside bubble */
+      }
 
+      .help-bubble::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        bottom: -12px;
+        transform: translateX(-50%);
+        border: 6px solid transparent;
+        border-top-color: #ccc;
+      }
 
+      /* Show bubble on hover of wrapper or focus of icon */
+      .help-wrap:hover .help-bubble,
+      .help-wrap:focus-within .help-bubble {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      /* Accessible focus ring */
+      .help-icon:focus {
+        box-shadow: 0 0 0 2px rgba(42,125,223,0.35);
+      }
+
+      /* Link styling inside tooltip bubble */
+      .help-bubble a {
+        color: #2a7ddf;
+        text-decoration: none;
+      }
+      .help-bubble a:hover {
+        text-decoration: underline;
+      }
     </style>
 
     <script>
@@ -101,7 +132,16 @@
   <body>
     <label for="mapsApiKey">
       Our Google Maps API Key:
-      <span class="help-icon" onclick="showHelp('mapsApiKey', event)">?</span>
+      <span class="help-wrap">
+        <span class="help-icon" tabindex="0">?</span>
+        <span class="help-bubble">
+          Enter your Google Maps API key. Make sure the
+          <strong>Maps JavaScript API</strong> is enabled in your project.<br>
+          You can enable it
+          <a href="https://console.cloud.google.com/apis/library/maps-backend.googleapis.com"
+             target="_blank" rel="noopener noreferrer">here in Google Cloud Console</a>.
+        </span>
+      </span>
     </label>
     <input id="mapsApiKey" type="text" onblur="hideApiKeyOnBlur()" />
 
@@ -112,13 +152,23 @@
 
     <label for="sheetSelect">
       Sheet Tab:
-      <span class="help-icon" onclick="showHelp('sheetTab', event)">?</span>
+      <span class="help-wrap">
+        <span class="help-icon" tabindex="0">?</span>
+        <span class="help-bubble">
+          Select name of sheet tab where your data is stored. (Typically 'Sheet1' for new sheets)
+        </span>
+      </span>
     </label>
     <select id="sheetSelect" onchange="onSheetChange()"></select>
 
     <label for="addressSelect">
       Address Column:
-      <span class="help-icon" onclick="showHelp('addressColumn', event)">?</span>
+      <span class="help-wrap">
+        <span class="help-icon" tabindex="0">?</span>
+        <span class="help-bubble">
+          Choose the column that contains addresses.
+        </span>
+      </span>
     </label>
     <select id="addressSelect"></select>
 
@@ -126,7 +176,12 @@
       <input type="checkbox" id="showLatLng">
       <label for="showLatLng">
         Show Lat/Lng columns
-        <span class="help-icon" onclick="showHelp('showLatLng', event)">?</span>
+        <span class="help-wrap">
+          <span class="help-icon" tabindex="0">?</span>
+          <span class="help-bubble">
+            If enabled, Latitude and Longitude columns will be shown/filled in your sheet.
+          </span>
+        </span>
       </label>
     </div>
 
@@ -134,7 +189,12 @@
       <input type="checkbox" id="debug">
       <label for="debug">
         Enable Debug Logging
-        <span class="help-icon" onclick="showHelp('debug', event)">?</span>
+        <span class="help-wrap">
+          <span class="help-icon" tabindex="0">?</span>
+          <span class="help-bubble">
+            Enable verbose logging to help troubleshoot issues.
+          </span>
+        </span>
       </label>
     </div>
 
@@ -142,6 +202,7 @@
       <button onclick="cancelDialog()">Dismiss</button>
       <button id="saveBtn" onclick="saveSettings()" disabled>Save</button>
     </div>
+
     <script>
       <?!= include('SettingsDialogCode') ?>
     </script>
