@@ -21,6 +21,41 @@ update_env_var() {
 }
 
 
+# === Ensure clasp login (no gcloud needed) ===
+ensure_clasp_login() {
+  if [[ -f "$HOME/.clasprc.json" ]]; then
+    echo "✅ clasp already logged in"
+    return
+  fi
+
+  if [[ -z "${OAUTH_CLIENT_SECRET_PATH:-}" || ! -f "$OAUTH_CLIENT_SECRET_PATH" ]]; then
+    echo "❌ OAUTH_CLIENT_SECRET_PATH not set or file missing (from maps_config.env)"
+    exit 1
+  fi
+
+  echo "🔐 Not logged in to clasp — launching login..."
+  TMP_DIR="$(mktemp -d -t clasp_login_XXXXXX)"
+  pushd "$TMP_DIR" >/dev/null
+  echo '{}' > package.json
+  # Start login. Some versions write .clasprc.json in CWD, so we handle both cases.
+  npx --yes @google/clasp@2.5.0 login --creds "$OAUTH_CLIENT_SECRET_PATH" || true
+
+  if [[ ! -f "$HOME/.clasprc.json" ]]; then
+    if [[ -f ".clasprc.json" ]]; then
+      echo "ℹ️ Promoting local .clasprc.json to \$HOME"
+      cp .clasprc.json "$HOME/.clasprc.json"
+      if command -v jq >/dev/null 2>&1; then
+        jq '.isLocalCreds = false' "$HOME/.clasprc.json" > "$HOME/.clasprc.json.tmp" && mv "$HOME/.clasprc.json.tmp" "$HOME/.clasprc.json"
+      fi
+    fi
+  fi
+
+  popd >/dev/null
+
+  [[ -f "$HOME/.clasprc.json" ]] || { echo "❌ clasp login failed (no ~/.clasprc.json)"; exit 1; }
+  echo "✅ clasp login ready"
+}
+
 
 ensure_logged_in() {
 
