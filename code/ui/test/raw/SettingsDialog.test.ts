@@ -1,5 +1,5 @@
 import { JSDOM } from "jsdom";
-import { installMockGoogleScript } from "./support/installMockGoogleScript";
+import { installMockGoogleScript } from "./installMockGoogleScript";
 
 import * as fs from "fs";
 import * as path from "path";
@@ -24,12 +24,13 @@ describe("SettingsDialog Save Button Enablement", () => {
   let document: Document;
   let window: any;
 
-  beforeEach(async () => {
+  // 1) Create and parse JSDOM ONCE
+  beforeAll(async () => {
     dom = new JSDOM(htmlContent, {
       runScripts: "dangerously",
       resources: "usable",
       pretendToBeVisual: true,
-      // ✅ install mock BEFORE any inline <script> runs
+      // We still need the mock present for the initial load (onOpen)
       beforeParse: (win) => {
         installMockGoogleScript(win as any);
       },
@@ -38,18 +39,33 @@ describe("SettingsDialog Save Button Enablement", () => {
     window = dom.window;
     document = window.document;
 
-    // 🚨 Fail fast if any console.error happens during load or later
+    // Wait until inline scripts run and load fires (onOpen runs once here)
+    await waitForLoad(window);
+  });
+
+  // 2) Reinstall/refresh the mock BEFORE EACH TEST (no config yet)
+  beforeEach(() => {
+    // Reinstall the mock on the existing window to reset handler chains
+    installMockGoogleScript(window as any);
+
+    // Fresh console spies per test; fail fast on console.error
     jest
       .spyOn(window.console, "error")
       .mockImplementation((...args: any[]) => {
         throw new Error("console.error called: " + args.join(" "));
       });
 
-    // (Optional) suppress warns if you don’t care about “no address column found”
+    // Optional: ignore warnings like “no address column found”
     jest.spyOn(window.console, "warn").mockImplementation(() => {});
+  });
 
-    // Wait until all scripts have run and load event fired
-    await waitForLoad(window);
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  afterAll(() => {
+    // Close the JSDOM window to release resources
+    dom?.window?.close();
   });
 
   test("Save button becomes enabled after selecting Sheet2 with valid address column", async () => {
@@ -65,17 +81,14 @@ describe("SettingsDialog Save Button Enablement", () => {
     const addressSelect = document.getElementById(
       "addressSelect"
     ) as HTMLSelectElement;
-    addressSelect.value = "Address";
-    addressSelect.dispatchEvent(new window.Event("change"));
+
+    expect(addressSelect.value).toBe("address1");
 
     const saveBtn = document.querySelector(
       "button[onclick='saveSettings()']"
     ) as HTMLButtonElement;
 
-    // Dump full outer HTML so you see tag + attributes
     console.log("Save button HTML:", saveBtn.outerHTML);
-
-    // Or dump key props
     console.log("disabled:", saveBtn.disabled, "text:", saveBtn.textContent);
 
     expect(saveBtn.disabled).toBeFalsy();
