@@ -136,19 +136,6 @@ google.script.run
 
       }
 
-function showHelp(topic, event) {
-  console.log("🆘 Help icon clicked for topic:", topic, event);
-  const messages = {
-    mapsApiKey: `Enter your Google Maps API key. You can obtain this from the Google Cloud Console. Make sure the Maps JavaScript API is enabled.`,
-    sheetTab: `Select the sheet where your data is stored.`,
-    addressColumn: `Choose the column in your sheet that contains addresses.`,
-    showLatLng: `Check this box to display the Latitude and Longitude results in your sheet.`,
-    debug: `Enable this to log detailed debugging information for troubleshooting.`
-  };
-  alert(messages[topic] || "No help available for this section.");
-}
-
-
       function showHelp(topic, event) {
         closeHelp();  // Remove existing if present
 

@@ -63,13 +63,10 @@ function inject_fragment() {
 }
 
 while IFS= read -r line; do
-  echo "processing: $line"
   if echo "$line" | grep -q "<?!= include("; then
-    echo "is match: $line"
     fragment=$(echo "$line" | awk -F"'" '{print $2}')
     inject_fragment "$fragment"
   else
-    echo "not match: $line"
     echo "$line" >> "$OUT_HTML"
   fi
 done < "$TEMPLATE"
