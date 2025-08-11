@@ -71,27 +71,62 @@
       }
     </style>
 
-    <script>
-      <?!= include('FormValidation') ?>
 
-      // Initialize tooltips with smart positioning
-      $(function() {
-        $(".help-icon").tooltip({
-          position: {
-            my: "center bottom-10",
-            at: "center top",
-            collision: "flipfit"
-          },
-          tooltipClass: "custom-tooltip"
+<script>
+  <?!= include('FormValidation') ?>
+</script>
+
+
+<script>
+  function initTooltips() {
+    $(".help-icon").tooltip({
+      items: ".help-icon",
+      content: function () {
+        return $(this).attr("data-help");
+      },
+      position: {
+        my: "center bottom-10",
+        at: "center top",
+        collision: "flipfit"
+      },
+      tooltipClass: "custom-tooltip",
+      track: true,
+      open: function (event, ui) {
+        // Keep tooltip open when mouse enters it
+        ui.tooltip.on("mouseenter", function () {
+          $(this).stop(true).fadeTo(200, 1); // Keep visible
+        }).on("mouseleave", function () {
+          $(this).fadeOut(200);
         });
-      });
-    </script>
+      }
+    }).on("mouseleave", function () {
+      // Delay hide to allow moving into tooltip
+      const tooltip = $(this).tooltip("instance")._tooltip;
+      setTimeout(() => {
+        if (!tooltip.is(":hover")) {
+          $(this).tooltip("close");
+        }
+      }, 200);
+    });
+  }
+
+  $(function () {
+    initTooltips();
+  });
+</script>
+
+
   </head>
 
   <body>
     <label for="mapsApiKey">
-      Our Google Maps API Key:
-      <span class="help-icon" title="Enter your Google Maps API key. Make sure the Maps JavaScript API is enabled in your project. You can enable it here: https://console.cloud.google.com/apis/library/maps-backend.googleapis.com">?</span>
+      Maps API Key:
+
+<span class="help-icon"
+      data-help='Enter your Google Maps API key. Make sure the Maps JavaScript API is enabled in your project. You can enable it here: <a href="https://console.cloud.google.com/apis/library/maps-backend.googleapis.com" target="_blank">Google Cloud Console</a>'>
+  ?
+</span>
+
     </label>
     <input id="mapsApiKey" type="text" onblur="hideApiKeyOnBlur()" />
 
@@ -102,13 +137,19 @@
 
     <label for="sheetSelect">
       Sheet Tab:
-      <span class="help-icon" title="Select the sheet tab where your data is stored. (Typically 'Sheet1' for new sheets)">?</span>
+      <span class="help-icon" 
+            data-help="Select the sheet tab where your data is stored. (Typically 'Sheet1' for new sheets)">
+        ?
+      </span>
     </label>
     <select id="sheetSelect" onchange="onSheetChange()"></select>
 
     <label for="addressSelect">
       Address Column:
-      <span class="help-icon" title="Choose the column that contains addresses.">?</span>
+      <span class="help-icon" 
+            data-help="Choose the column that contains addresses.">
+        ?
+      </span>
     </label>
     <select id="addressSelect"></select>
 
@@ -116,7 +157,10 @@
       <input type="checkbox" id="showLatLng">
       <label for="showLatLng">
         Show Lat/Lng columns
-        <span class="help-icon" title="If enabled, Latitude and Longitude columns will be shown/filled in your sheet.">?</span>
+        <span class="help-icon" 
+              data-help="If enabled, Latitude and Longitude columns will be shown/filled in your sheet.">
+          ?
+        </span>
       </label>
     </div>
 
@@ -124,7 +168,10 @@
       <input type="checkbox" id="debug">
       <label for="debug">
         Enable Debug Logging
-        <span class="help-icon" title="Enable verbose logging to help troubleshoot issues.">?</span>
+        <span class="help-icon" 
+              data-help="Enable verbose logging to help troubleshoot issues.">
+          ?
+        </span>
       </label>
     </div>
 
