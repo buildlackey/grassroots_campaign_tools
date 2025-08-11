@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+
 # === Parse args ===
 SKIP_INIT=false
 while [[ $# -gt 0 ]]; do
@@ -10,15 +11,17 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-
-
-# === Paths ===
+# === Standard Preamble  ===
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GIT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
 COMMON_SCRIPTS_DIR=$SCRIPT_DIR/../common
-CONFIG_FILE="$GIT_ROOT/maps_config.env"
+
+.  $COMMON_SCRIPTS_DIR/utils.sh
+
+ensure_clasp_login
+"$LOCAL_CLASP" login --status >/dev/null || { echo "❌ clasp status failed — please run ensure_clasp_login"; exit 1; }
+
 #
-# Build happens in build/ui now:
 BUILD_UI_DIR="$GIT_ROOT/build/ui"
 BUILD_DIR="$GIT_ROOT/built/ui/gas_safe_staging"   # webpack/inject output
 #
@@ -28,50 +31,16 @@ RAW_HTML_DIR="$GIT_ROOT/code/ui/src/raw"
 #  GAS raw JS pushed directly to Apps Script
 GAS_RAW_DIR="$GIT_ROOT/code/gas/raw"
 #
-# Keep helpers in ui/scripts for now (unchanged)
-UTILS_SH="$COMMON_SCRIPTS_DIR/utils.sh"
+
+
 BOOTSTRAP_SH="$COMMON_SCRIPTS_DIR/bootstrap.sh"
-#
-# === Paths (END) ===
-
-# Project-level clasp (root install)
-LOCAL_CLASP="$GIT_ROOT/node_modules/.bin/clasp"
-echo "🔧 Using clasp from: $LOCAL_CLASP"
-"$LOCAL_CLASP" --version
-[[ -x "$LOCAL_CLASP" ]] || { echo "❌ Local clasp not found at $LOCAL_CLASP"; exit 1; }
-
-ensure_clasp_login() {
-  if [[ -f "$HOME/.clasprc.json" ]]; then
-    echo "✅ clasp already logged in"; return
-  fi
-  [[ -n "${OAUTH_CLIENT_SECRET_PATH:-}" && -f "$OAUTH_CLIENT_SECRET_PATH" ]] \
-    || { echo "❌ OAUTH_CLIENT_SECRET_PATH missing/invalid"; exit 1; }
-
-  echo "🔐 Running clasp login…"
-  tmpdir="$(mktemp -d -t clasp_login_XXXXXX)"
-  pushd "$tmpdir" >/dev/null
-  echo '{}' > package.json
-  $LOCAL_CLASP login --creds "$OAUTH_CLIENT_SECRET_PATH" || true
-  [[ -f "$HOME/.clasprc.json" ]] || [[ -f ".clasprc.json" ]] \
-    || { echo "❌ clasp login did not produce a token file"; exit 1; }
-  [[ -f ".clasprc.json" ]] && cp .clasprc.json "$HOME/.clasprc.json"
-  popd >/dev/null
-  echo "✅ clasp login ready"
-}
-
+[[ -x "$BOOTSTRAP_SH" ]] && bash "$BOOTSTRAP_SH" || true
 
 cd "$GIT_ROOT"
 npm install --silent
 
-# Optional helpers
-[[ -f "$UTILS_SH" ]] && source "$UTILS_SH" || true
-[[ -x "$BOOTSTRAP_SH" ]] && bash "$BOOTSTRAP_SH" || true
 
-# === Load config ===
-[[ -f "$CONFIG_FILE" ]] || { echo "❌ Missing config: $CONFIG_FILE"; exit 1; }
-source "$CONFIG_FILE"
 
-ensure_clasp_login
 
 [[ -d "${WORKING_PUSH_FOLDER:-}" ]] || { echo "❌ WORKING_PUSH_FOLDER not set/dir"; exit 1; }
 
@@ -80,6 +49,7 @@ echo "🔧 Building from: $BUILD_UI_DIR"
 cd "$BUILD_UI_DIR"
 [[ -d node_modules ]] || npm install
 npm run build
+
 
 # === Stage & Push ===
 echo "🚧 Working in: $WORKING_PUSH_FOLDER"
@@ -90,10 +60,13 @@ cd "$WORKING_PUSH_FOLDER"
 echo "📦 Copying built UI artifacts from: $BUILD_DIR"
 cp -a "$BUILD_DIR"/. "$WORKING_PUSH_FOLDER"/
 
+
+
 # 1) Blind copy ALL raw UI assets (contents only)
 [[ -d "$RAW_HTML_DIR" ]] || { echo "❌ RAW_HTML_DIR not found: $RAW_HTML_DIR"; exit 1; }
 echo "📄 Copying raw UI assets from: $RAW_HTML_DIR"
 cp -a "$RAW_HTML_DIR"/. "$WORKING_PUSH_FOLDER"/
+
 
 # 1b) Copy GAS raw files (real backend: sheet_utils.js, etc.) — fail-fast if empty
 if [[ -d "$GAS_RAW_DIR" ]]; then
