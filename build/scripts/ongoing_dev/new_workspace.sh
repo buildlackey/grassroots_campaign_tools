@@ -68,7 +68,7 @@ update_env_var WORKING_PUSH_FOLDER $WORKING_PUSH_FOLDER
 
 # 2. Create dummy files to bypass clasp internals
 echo '{}' > package.json
-echo '{ "scriptId": "PLACEHOLDER", "projectId": "build-lackey-project-5" }' > .clasp.json
+echo '{ "scriptId": "PLACEHOLDER", "projectId": "build-lackey-project-6" }' > .clasp.json
 
 cat > appsscript.json <<EOF
 {
@@ -101,7 +101,7 @@ rm -f .clasp.json
 
 
 # === Create the Sheet-bound Apps Script project ===
-PROJECT_TITLE="Weds Test Sheet $(date +%s)"
+PROJECT_TITLE="Test Sheet $(date +%s)"
 npx --yes @google/clasp@2.5.0 create --title "$PROJECT_TITLE" --type sheets
 
 # === Extract script ID and save to config ===
