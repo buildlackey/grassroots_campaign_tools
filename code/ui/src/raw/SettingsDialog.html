@@ -69,6 +69,25 @@
         white-space: normal;
         z-index: 10000;
       }
+
+
+      /* Button row styling */
+      .button-row {
+        display: flex;
+        justify-content: center; /* center the buttons */
+        align-items: center;     /* vertical alignment */
+        gap: 4mm;                 /* ~4 mm space between buttons */
+        margin-top: 8mm;          /* space above buttons */
+      }
+
+      /* Equal size and padding for both buttons */
+      .button-row button {
+        padding: 6px 16px;
+        min-width: 90px;          /* ensures equal width */
+        box-sizing: border-box;
+      }
+
+
     </style>
 
 
@@ -147,7 +166,7 @@
     <label for="addressSelect">
       Address Column:
       <span class="help-icon" 
-            data-help="Choose the column that contains addresses.">
+            data-help="Choose the column that contains addresses for the sheet tab selected above.">
         ?
       </span>
     </label>
