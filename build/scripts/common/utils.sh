@@ -13,8 +13,8 @@ source $CONFIG_FILE
 # Project-level clasp (root install)
 LOCAL_CLASP="$PROJECT_ROOT/node_modules/.bin/clasp"
 echo "🔧 Using clasp from: $LOCAL_CLASP"
-"$LOCAL_CLASP" --version
 [[ -x "$LOCAL_CLASP" ]] || { echo "❌ Local clasp not found at $LOCAL_CLASP"; exit 1; }
+"$LOCAL_CLASP" --version
 
 ## UTIL FUNCTIONS
 update_env_var() {
@@ -27,51 +27,50 @@ update_env_var() {
   fi
 }
 
-# === Ensure clasp login (no gcloud needed) ===
+# === Ensure clasp login (pinned to 2.5.0, simple) ===
 ensure_clasp_login() {
-  if [[ -f "$HOME/.clasprc.json" ]]; then
-    if "$LOCAL_CLASP" login --status >/dev/null 2>&1; then
-      echo "✅ clasp already logged in"
-      return
-    else
-      echo "⚠️ Existing clasp credentials invalid — re-running login..."
-      rm -f "$HOME/.clasprc.json"
-    fi
+  set -euo pipefail
+
+  # Preconditions
+  : "${WORKING_PUSH_FOLDER:?WORKING_PUSH_FOLDER not set}"
+  : "${LOCAL_CLASP:?LOCAL_CLASP not set}"
+  : "${OAUTH_CLIENT_SECRET_PATH:?OAUTH_CLIENT_SECRET_PATH not set}"
+  [[ -x "$LOCAL_CLASP" ]] || { echo "❌ LOCAL_CLASP not executable: $LOCAL_CLASP"; exit 1; }
+  [[ -f "$OAUTH_CLIENT_SECRET_PATH" ]] || { echo "❌ Missing creds: $OAUTH_CLIENT_SECRET_PATH"; exit 1; }
+  [[ -f "$WORKING_PUSH_FOLDER/.clasp.json" ]] || { echo "❌ $WORKING_PUSH_FOLDER/.clasp.json missing"; exit 1; }
+
+  echo "🔐 Checking clasp login (2.5.0)…"
+  if "$LOCAL_CLASP" login --status >/dev/null 2>&1; then
+    echo "✅ clasp already logged in"
+    return 0
   fi
 
-  if [[ -z "${OAUTH_CLIENT_SECRET_PATH:-}" || ! -f "$OAUTH_CLIENT_SECRET_PATH" ]]; then
-    echo "❌ OAUTH_CLIENT_SECRET_PATH not set or file missing (from maps_config.env)"
-    exit 1
+  echo "🔓 Not logged in — logging in via creds…"
+  pushd "$WORKING_PUSH_FOLDER" >/dev/null
+  $LOCAL_CLASP login --creds "$OAUTH_CLIENT_SECRET_PATH" || true
+
+  # If login wrote a local rc, promote to global so future runs work from anywhere
+  if [[ -f ".clasprc.json" ]]; then
+    cp ".clasprc.json" "$HOME/.clasprc.json"
+    command -v jq >/dev/null 2>&1 && \
+      jq '.isLocalCreds=false' "$HOME/.clasprc.json" > "$HOME/.clasprc.json.tmp" && \
+      mv "$HOME/.clasprc.json.tmp" "$HOME/.clasprc.json"
   fi
-
-  echo "🔐 Not logged in to clasp — launching login..."
-  TMP_DIR="$(mktemp -d -t clasp_login_XXXXXX)"
-  pushd "$TMP_DIR" >/dev/null
-  echo '{}' > package.json
-  # Start login. Some versions write .clasprc.json in CWD, so we handle both cases.
-  "$LOCAL_CLASP" login --creds "$OAUTH_CLIENT_SECRET_PATH" || true
-
-  if [[ ! -f "$HOME/.clasprc.json" ]]; then
-    if [[ -f ".clasprc.json" ]]; then
-      echo "ℹ️ Promoting local .clasprc.json to \$HOME"
-      cp .clasprc.json "$HOME/.clasprc.json"
-      if command -v jq >/dev/null 2>&1; then
-        jq '.isLocalCreds = false' "$HOME/.clasprc.json" > "$HOME/.clasprc.json.tmp" && mv "$HOME/.clasprc.json.tmp" "$HOME/.clasprc.json"
-      fi
-    fi
-  fi
-
   popd >/dev/null
 
-  [[ -f "$HOME/.clasprc.json" ]] || { echo "❌ clasp login failed (no ~/.clasprc.json)"; exit 1; }
-  "$LOCAL_CLASP" login --status >/dev/null || { echo "❌ clasp status failed after login"; exit 1; }
+  # Final check
+  if ! "$LOCAL_CLASP" login --status >/dev/null 2>&1; then
+    echo "❌ clasp login still not valid. Make sure the browser flow completed."
+    exit 1
+  fi
   echo "✅ clasp login ready"
 }
+
 
 ensure_logged_in() {
   source $CONFIG_FILE
   [[ -z "$OAUTH_CLIENT_SECRET_PATH" ||  -z "$PROJECT_ID" ]] && {
-    echo "❌ Could not extract scriptId OAUTH_CLIENT_SECRET_PATH from $CONFIG_FILE"
+    echo "❌ Could not extract PROJECT_ID or OAUTH_CLIENT_SECRET_PATH from $CONFIG_FILE"
     exit 1
   }
 

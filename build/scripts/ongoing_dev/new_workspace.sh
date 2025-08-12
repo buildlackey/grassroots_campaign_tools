@@ -68,7 +68,8 @@ update_env_var WORKING_PUSH_FOLDER $WORKING_PUSH_FOLDER
 
 # 2. Create dummy files to bypass clasp internals
 echo '{}' > package.json
-echo '{ "scriptId": "PLACEHOLDER", "projectId": "build-lackey-project-6" }' > .clasp.json
+echo '{ "scriptId": "PLACEHOLDER", "projectId": "$PROJECT_ID" }' > .clasp.json
+
 
 cat > appsscript.json <<EOF
 {
@@ -111,6 +112,7 @@ SCRIPT_ID=$(jq -r '.scriptId' .clasp.json)
 PARENT_ID=$(jq -r '.parentId | if type=="array" then .[0] else . end' .clasp.json)
 SHEET_URL="https://docs.google.com/spreadsheets/d/${PARENT_ID}/edit"
 update_env_var SHEET_URL $SHEET_URL
+update_env_var SCRIPT_ID $SCRIPT_ID
 
 
 # === Prompt user to manually associate script ===

@@ -1,10 +1,13 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GIT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"        # project root folder
-
+COMMON_SCRIPTS_DIR=$SCRIPT_DIR/../common
+    
+.  $COMMON_SCRIPTS_DIR/utils.sh
 .  $GIT_ROOT/maps_config.env
+
 pushd $WORKING_PUSH_FOLDER
 
-npx --yes @google/clasp@2.4.0 login --status  | grep $USER >/dev/null 2>&1
+$LOCAL_CLASP login --status  | grep $USER >/dev/null 2>&1
  
 if [ "$?" = "0" ] ; then 
     echo "Already logged into clasp" 
@@ -28,7 +31,8 @@ else
     }
 EOF
 
-    npx --yes @google/clasp@2.5.0 login --creds $OAUTH_CLIENT_SECRET_PATH
+    $LOCAL_CLASP login --creds $OAUTH_CLIENT_SECRET_PATH
+
     # 4. Promote the local .clasprc.json to global      -- delete original rc file in curr dir?
     cp .clasprc.json ~/.clasprc.json
     jq '.isLocalCreds = false' ~/.clasprc.json > ~/.clasprc_tmp.json && \

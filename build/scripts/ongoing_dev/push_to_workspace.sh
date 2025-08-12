@@ -16,10 +16,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GIT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
 COMMON_SCRIPTS_DIR=$SCRIPT_DIR/../common
 
-.  $COMMON_SCRIPTS_DIR/utils.sh
+.  "$COMMON_SCRIPTS_DIR/utils.sh"
 
 ensure_clasp_login
 "$LOCAL_CLASP" login --status >/dev/null || { echo "❌ clasp status failed — please run ensure_clasp_login"; exit 1; }
+
+#( cd "$WORKING_PUSH_FOLDER" && "$LOCAL_CLASP" push --force ) || echo FAILED TO PUSH
 
 #
 BUILD_UI_DIR="$GIT_ROOT/build/ui"
@@ -39,8 +41,7 @@ BOOTSTRAP_SH="$COMMON_SCRIPTS_DIR/bootstrap.sh"
 cd "$GIT_ROOT"
 npm install --silent
 
-
-
+#( cd "$WORKING_PUSH_FOLDER" && "$LOCAL_CLASP" push --force ) || echo FAILED TO PUSH
 
 [[ -d "${WORKING_PUSH_FOLDER:-}" ]] || { echo "❌ WORKING_PUSH_FOLDER not set/dir"; exit 1; }
 
@@ -50,23 +51,27 @@ cd "$BUILD_UI_DIR"
 [[ -d node_modules ]] || npm install
 npm run build
 
-
 # === Stage & Push ===
 echo "🚧 Working in: $WORKING_PUSH_FOLDER"
 cd "$WORKING_PUSH_FOLDER"
+
+# -1)
+CLASP_SCRIPT_ID=$(jq -r '.scriptId' .clasp.json)
+# Compare with expected SCRIPT_ID
+if [[ "$CLASP_SCRIPT_ID" != "$SCRIPT_ID" ]]; then
+  echo "❌ .clasp.json scriptId ($CLASP_SCRIPT_ID) does not match expected ($SCRIPT_ID)"
+  exit 1
+fi
 
 # 0) Copy built GAS artifacts 
 [[ -d "$BUILD_DIR" ]] || { echo "❌ Built UI output not found: $BUILD_DIR"; exit 1; }
 echo "📦 Copying built UI artifacts from: $BUILD_DIR"
 cp -a "$BUILD_DIR"/. "$WORKING_PUSH_FOLDER"/
 
-
-
 # 1) Blind copy ALL raw UI assets (contents only)
 [[ -d "$RAW_HTML_DIR" ]] || { echo "❌ RAW_HTML_DIR not found: $RAW_HTML_DIR"; exit 1; }
 echo "📄 Copying raw UI assets from: $RAW_HTML_DIR"
 cp -a "$RAW_HTML_DIR"/. "$WORKING_PUSH_FOLDER"/
-
 
 # 1b) Copy GAS raw files (real backend: sheet_utils.js, etc.) — fail-fast if empty
 if [[ -d "$GAS_RAW_DIR" ]]; then
@@ -94,12 +99,13 @@ cp "$UI_APPSSCRIPT_JSON" "$WORKING_PUSH_FOLDER/"
 echo "🚀 Pushing project to Apps Script"
 "$LOCAL_CLASP" push --force
 
+#( cd "$WORKING_PUSH_FOLDER" && "$LOCAL_CLASP" push --force ) || echo FAILED TO PUSH
+
 # 4) Optional remote smoke test
 echo "🏁 Running remote smokeTest (expects SUCCESS)"
-if $LOCAL_CLASP run smokeTest | grep -q SUCCESS; then
+if "$LOCAL_CLASP" run smokeTest | grep -q SUCCESS; then
     echo "✅ smoke test passed"
 else
     echo "❌ smoke test failed"
     exit 1
 fi
-
