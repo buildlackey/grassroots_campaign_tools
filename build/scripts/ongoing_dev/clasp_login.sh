@@ -7,7 +7,7 @@ COMMON_SCRIPTS_DIR=$SCRIPT_DIR/../common
 
 pushd $WORKING_PUSH_FOLDER
 
-$LOCAL_CLASP login --status  | grep $USER >/dev/null 2>&1
+$LOCAL_CLASP login  --creds $OAUTH_CLIENT_SECRET_PATH --status  | grep $USER >/dev/null 2>&1
  
 if [ "$?" = "0" ] ; then 
     echo "Already logged into clasp" 

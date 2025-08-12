@@ -12,7 +12,7 @@ function include(filename) {
 /** Add a minimal menu to open the Settings dialog */
 function onOpen() {
   SpreadsheetApp.getUi()
-    .createMenu('⚙️ Settings Dialog mouse')
+    .createMenu('⚙️ Settings Dialog dog')
     .addItem('Open Settings', 'showSettingsDialog')
     .addToUi();
 }
@@ -23,7 +23,7 @@ function showSettingsDialog() {
     .createTemplateFromFile('SettingsDialog')
     .evaluate()
     .setTitle('⚙️ Settings')
-    .setWidth(580)
+    .setWidth(380)
     .setHeight(400);
 
   SpreadsheetApp.getUi().showModalDialog(html, 'Settings');

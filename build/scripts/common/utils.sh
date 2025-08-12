@@ -27,44 +27,6 @@ update_env_var() {
   fi
 }
 
-# === Ensure clasp login (pinned to 2.5.0, simple) ===
-ensure_clasp_login() {
-  set -euo pipefail
-
-  # Preconditions
-  : "${WORKING_PUSH_FOLDER:?WORKING_PUSH_FOLDER not set}"
-  : "${LOCAL_CLASP:?LOCAL_CLASP not set}"
-  : "${OAUTH_CLIENT_SECRET_PATH:?OAUTH_CLIENT_SECRET_PATH not set}"
-  [[ -x "$LOCAL_CLASP" ]] || { echo "❌ LOCAL_CLASP not executable: $LOCAL_CLASP"; exit 1; }
-  [[ -f "$OAUTH_CLIENT_SECRET_PATH" ]] || { echo "❌ Missing creds: $OAUTH_CLIENT_SECRET_PATH"; exit 1; }
-  [[ -f "$WORKING_PUSH_FOLDER/.clasp.json" ]] || { echo "❌ $WORKING_PUSH_FOLDER/.clasp.json missing"; exit 1; }
-
-  echo "🔐 Checking clasp login (2.5.0)…"
-  if "$LOCAL_CLASP" login --status >/dev/null 2>&1; then
-    echo "✅ clasp already logged in"
-    return 0
-  fi
-
-  echo "🔓 Not logged in — logging in via creds…"
-  pushd "$WORKING_PUSH_FOLDER" >/dev/null
-  $LOCAL_CLASP login --creds "$OAUTH_CLIENT_SECRET_PATH" || true
-
-  # If login wrote a local rc, promote to global so future runs work from anywhere
-  if [[ -f ".clasprc.json" ]]; then
-    cp ".clasprc.json" "$HOME/.clasprc.json"
-    command -v jq >/dev/null 2>&1 && \
-      jq '.isLocalCreds=false' "$HOME/.clasprc.json" > "$HOME/.clasprc.json.tmp" && \
-      mv "$HOME/.clasprc.json.tmp" "$HOME/.clasprc.json"
-  fi
-  popd >/dev/null
-
-  # Final check
-  if ! "$LOCAL_CLASP" login --status >/dev/null 2>&1; then
-    echo "❌ clasp login still not valid. Make sure the browser flow completed."
-    exit 1
-  fi
-  echo "✅ clasp login ready"
-}
 
 
 ensure_logged_in() {

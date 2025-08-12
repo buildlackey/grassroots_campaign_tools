@@ -13,15 +13,18 @@ done
 
 # === Standard Preamble  ===
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GIT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
+LOGIN_SCRIPT_DIR=$SCRIPT_DIR
 COMMON_SCRIPTS_DIR=$SCRIPT_DIR/../common
+GIT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
+
 
 .  "$COMMON_SCRIPTS_DIR/utils.sh"
 
-ensure_clasp_login
-"$LOCAL_CLASP" login --status >/dev/null || { echo "❌ clasp status failed — please run ensure_clasp_login"; exit 1; }
 
-#( cd "$WORKING_PUSH_FOLDER" && "$LOCAL_CLASP" push --force ) || echo FAILED TO PUSH
+# Login and verify we are properly logged in
+$LOGIN_SCRIPT_DIR/clasp_login.sh
+"$LOCAL_CLASP" login --status >/dev/null || { echo "❌ clasp status failed "; exit 1; }
+
 
 #
 BUILD_UI_DIR="$GIT_ROOT/build/ui"
@@ -41,9 +44,6 @@ BOOTSTRAP_SH="$COMMON_SCRIPTS_DIR/bootstrap.sh"
 cd "$GIT_ROOT"
 npm install --silent
 
-#( cd "$WORKING_PUSH_FOLDER" && "$LOCAL_CLASP" push --force ) || echo FAILED TO PUSH
-
-[[ -d "${WORKING_PUSH_FOLDER:-}" ]] || { echo "❌ WORKING_PUSH_FOLDER not set/dir"; exit 1; }
 
 # === Build from build/ui ===
 echo "🔧 Building from: $BUILD_UI_DIR"
@@ -99,7 +99,6 @@ cp "$UI_APPSSCRIPT_JSON" "$WORKING_PUSH_FOLDER/"
 echo "🚀 Pushing project to Apps Script"
 "$LOCAL_CLASP" push --force
 
-#( cd "$WORKING_PUSH_FOLDER" && "$LOCAL_CLASP" push --force ) || echo FAILED TO PUSH
 
 # 4) Optional remote smoke test
 echo "🏁 Running remote smokeTest (expects SUCCESS)"
