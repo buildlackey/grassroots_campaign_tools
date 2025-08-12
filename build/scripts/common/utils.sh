@@ -2,8 +2,8 @@
 #
 
 # Standard init entry point
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
+UTIL_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(git -C "$UTIL_SCRIPT_DIR" rev-parse --show-toplevel)"
 
 # === Load config ===
 CONFIG_FILE=$PROJECT_ROOT/maps_config.env

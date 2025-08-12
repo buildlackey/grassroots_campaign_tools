@@ -7,7 +7,8 @@
     "injectify": "bash -x scripts/convert_to_client_side_injectable.sh",
     "build:artifacts": "npm run compile && npm run injectify && bash ../../code/ui/test/raw/test_settings_dialog.sh",
     "prebuild": "npm run build:artifacts",
-    "build": "jest --config=jest.config.js"
+    "build": "jest --config=jest.config.js",
+    "dist": "npm run build && bash -x scripts/copy_to_dist.sh ui"
   }
 }
 

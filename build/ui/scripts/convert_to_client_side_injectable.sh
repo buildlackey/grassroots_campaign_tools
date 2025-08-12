@@ -18,7 +18,7 @@ for src_file in "$SRC_DIR"/*.js; do
 
   # Extract the base name and derive the JS global name
   filename="$(basename "$src_file")"
-  base="${filename%.js}"  # e.g., FormValidation_client_side_injectable
+  base="${filename%.js}"  
   global_name="$base"
 
   # Destination HTML file

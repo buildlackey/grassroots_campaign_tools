@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+
+
+
+####  I think this whole script might be deleteable...  seems redundant w/ what is in package.json
 set -euo pipefail
 
 echo "🔧 Bootstrapping project environment..."
