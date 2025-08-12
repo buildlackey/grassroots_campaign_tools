@@ -2,7 +2,8 @@
   "private": true,
   "name": "grassroots-campaign-tools",
   "workspaces": [
-    "build/ui"
+    "build/ui",
+    "build/gas"
   ],
   "devDependencies": {
     "@google/clasp": "2.5.0",

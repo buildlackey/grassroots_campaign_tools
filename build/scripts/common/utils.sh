@@ -1,4 +1,4 @@
-#  Assumes we have CONFIG_FILE path (to maps_config.env) set up
+#  Assumes we have CONFIG_FILE path (to maps_config.env) set up.   Ensures we have required node modules installed.
 #
 
 # Standard init entry point
@@ -9,6 +9,17 @@ PROJECT_ROOT="$(git -C "$UTIL_SCRIPT_DIR" rev-parse --show-toplevel)"
 CONFIG_FILE=$PROJECT_ROOT/maps_config.env
 [[ -f "$CONFIG_FILE" ]] || { echo "❌ Missing config: $CONFIG_FILE"; exit 1; }
 source $CONFIG_FILE
+
+
+# Ensure that node modules are installed.  
+LOCK_FILE="$PROJECT_ROOT/package-lock.json"
+NODE_MODULES="$PROJECT_ROOT/node_modules"
+if [ -d "$NODE_MODULES" ] && [ "$LOCK_FILE" -ot "$NODE_MODULES" ]; then
+  echo "✅ node_modules is present and up-to-date — skipping npm install"
+else
+  echo "📦 Installing/updating node_modules..."
+  npm install --prefix "$PROJECT_ROOT"
+fi
 
 # Project-level clasp (root install)
 LOCAL_CLASP="$PROJECT_ROOT/node_modules/.bin/clasp"
