@@ -50,19 +50,8 @@ build_ui() {
 }
 
 build_gas() {
-  if [[ -d "$BUILD_GAS_DIR" ]]; then
-    echo "🔧 Building GAS from: $BUILD_GAS_DIR"
     cd "$BUILD_GAS_DIR"
-    [[ -f package.json ]] && { [[ -d node_modules ]] || npm install; }
-    # Expect a 'dist' script analogous to build/ui
-    if npm run --silent | grep -qE '^  dist'; then
-      npm run dist
-    else
-      echo "⚠️ No 'dist' script defined in $BUILD_GAS_DIR/package.json — skipping GAS build step"
-    fi
-  else
-    echo "⚠️ Skipping GAS: directory not found at $BUILD_GAS_DIR"
-  fi
+    npm run dist
 }
 
 # === Build selected targets ===

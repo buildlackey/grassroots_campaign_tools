@@ -12,7 +12,7 @@ function include(filename) {
 /** Add a minimal menu to open the Settings dialog */
 function onOpen() {
   SpreadsheetApp.getUi()
-    .createMenu('⚙️ Settings Dialog mice')
+    .createMenu('⚙️ Settings Dialog ratcat')
     .addItem('Open Settings', 'showSettingsDialog')
     .addToUi();
 }

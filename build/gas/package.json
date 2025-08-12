@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "name": "@app/ui",
+  "scripts": {
+    "dist": "bash -x ../../build/scripts/ongoing_dev/copy_to_dist.sh -t gas"
+  }
+}
