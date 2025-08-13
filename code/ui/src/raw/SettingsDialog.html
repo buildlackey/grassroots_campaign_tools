@@ -72,8 +72,9 @@
       .ui-tooltip {
         max-width: 300px;
         white-space: normal;
-        z-index: 10000;
+        z-index: 2147483647; /* above Sheets & GAS chrome */
       }
+
 
       /* Button row styling */
       .button-row {
@@ -99,42 +100,46 @@
     </script>
 
     <script>
-      function initTooltips() {
-        $(".help-icon").tooltip({
-          items: ".help-icon",
-          content: function () {
-            return $(this).attr("data-help");
-          },
-          position: {
-            my: "center bottom-10",
-            at: "center top",
-            collision: "flipfit"
-          },
-          tooltipClass: "custom-tooltip",
-          track: true,
-          open: function (event, ui) {
-            // Keep tooltip open when mouse enters it
-            ui.tooltip.on("mouseenter", function () {
-              $(this).stop(true).fadeTo(200, 1); // Keep visible
-            }).on("mouseleave", function () {
-              $(this).fadeOut(200);
-            });
-          }
-        }).on("mouseleave", function () {
-          // Delay hide to allow moving into tooltip
-          const tooltip = $(this).tooltip("instance")._tooltip;
-          setTimeout(() => {
-            if (!tooltip.is(":hover")) {
-              $(this).tooltip("close");
-            }
-          }, 200);
-        });
-      }
+      (function () {
+        function initTooltips() {
+          // anchor tooltips to the dialog container so they’re not clipped
+          var $container = $("#settings-dialog-container").length
+            ? $("#settings-dialog-container") : $(document.body);
 
-      $(function () {
-        initTooltips();
-      });
+          $(".help-icon").tooltip({
+            appendTo: $container,           // ensure not inside a clipping ancestor
+            items: ".help-icon",
+            content: function () { return $(this).attr("data-help"); },
+            position: {
+              my: "left+8 center",
+              at: "right center",
+              within: $container,           // constrain inside the dialog
+              collision: "fit flipfit"
+            },
+            tooltipClass: "custom-tooltip",
+            track: false
+          }).on("mouseleave", function () {
+            const $el = $(this);
+            setTimeout(function () { if ($el.tooltip) $el.tooltip("close"); }, 150);
+          });
+        }
+
+        function waitForTooltipReady(maxMs, intervalMs) {
+          var start = Date.now();
+          (function tick() {
+            if (window.jQuery && $.fn && $.fn.tooltip) { initTooltips(); return; }
+            if (Date.now() - start >= maxMs) return; // silent give-up
+            setTimeout(tick, intervalMs);
+          })();
+        }
+
+        window.addEventListener("load", function () {
+          waitForTooltipReady(5000, 50);
+        });
+      })();
     </script>
+
+
   </head>
 
   <body>

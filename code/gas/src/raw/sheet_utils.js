@@ -57,7 +57,7 @@ function getSheetByName(name, ss) {
   return result;
 }
 
-function getHeaderInfo(sheetName) {
+function getHeadersForSheet(sheetName) {
   // Log that we entered the function
   console.log("📌 getHeaderInfo called for sheet:", sheetName);
 
@@ -73,8 +73,7 @@ function getHeaderInfo(sheetName) {
 
   // Log what we're about to return
   console.log("✅ Headers detected for sheet '" + sheetName + "':", headers);
-
-  return headers;
+  return { headers: headers };
 }
 
 
@@ -97,5 +96,5 @@ function ensureColumns(sheet, headerIndex, names) {
 }
 
 // Expose to GAS
-globalThis.sheets = { getSheetTabNames, getSheetByName, getHeaderInfo, ensureColumns };
+globalThis.sheets = { getSheetTabNames, getSheetByName, getHeadersForSheet, ensureColumns };
 
