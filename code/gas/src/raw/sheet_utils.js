@@ -26,6 +26,26 @@ function _detectHeaderRowTop_(sheet) {
   return [];
 }
 
+function getSheetTabsAndColumnNames() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheetTabNames = [];
+  const sheetTabToColumnNames = {};
+
+  ss.getSheets().forEach(function(sheet) {
+    const sheetName = sheet.getName();
+    sheetTabNames.push(sheetName);
+
+    // Use the smart header row detection
+    const headers = _detectHeaderRowTop_(sheet);
+    sheetTabToColumnNames[sheetName] = headers;
+  });
+
+  return {
+    sheetTabNames,
+    sheetTabToColumnNames
+  };
+}
+
 
 function findHeaderRowIndex_(values) {
   for (var r = 0; r < values.length; r++) {
@@ -95,6 +115,7 @@ function ensureColumns(sheet, headerIndex, names) {
   return result;
 }
 
-// Expose to GAS
+// In Jest/jsdom tests, the mock loader looks for functions under globalThis.sheets
+// so it can stub them... hence the line below:
 globalThis.sheets = { getSheetTabNames, getSheetByName, getHeadersForSheet, ensureColumns };
 

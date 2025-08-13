@@ -166,6 +166,21 @@ google.script.run
         if (popup) popup.remove();
       }
 
+function fetchSheetTabsAndColumns() {     // TODO - update to fetchSheetTabsAndColumnNames
+  console.log("Fetching sheet tabs and column names...");
+  google.script.run
+    .withSuccessHandler(function (data) {
+      console.log("✅ Data received:", data);
+      populateSheetDropdown(data.sheetTabNames);
+      populateColumnDropdown(data.sheetTabToColumnNames);
+    })
+    .withFailureHandler(function (err) {
+      console.error("❌ Failed to get sheet tabs and column names:", err);
+    })
+    .getSheetTabsAndColumnNames();
+}
+
+
 document.addEventListener('keydown', function (e) {
   if (e.key === 'Escape' || e.keyCode === 27) {
     e.preventDefault();

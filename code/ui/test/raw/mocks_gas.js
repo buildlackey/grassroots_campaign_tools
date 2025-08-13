@@ -1,57 +1,46 @@
-export function installMockGoogleScript(window: any) {
+/**
+ * Static GAS mock for local UI testing
+ *
+ * This is used when you open SettingsDialog.html directly in a browser without
+ * Apps Script running in the background.
+ *
+ * Always returns the same data:
+ *   - Sheet1: []
+ *   - Sheet2: ["Name", "Address", "Phone"]
+ *   - Sheet3: []
+ */
+export function installMockGoogleScript(window) {
   window.google = {
     script: {
       run: {
-        withSuccessHandler(successHandler: Function) {
-          // shared chain object that mimics GAS' proxy
-          const chain: any = {
-            _success: successHandler,
-            _failure: (e: any) => console.error("Mock failure:", e),
+        withSuccessHandler(successCallback) {
+          return {
+            withFailureHandler(failureCallback) {
+              return {
+                /**
+                 * Mock GAS: getSheetTabsAndColumnNames
+                 * Static data for manual UI testing
+                 */
+                getSheetTabsAndColumnNames() {
+                  console.log("📄 Static mock getSheetTabsAndColumnNames called");
 
-            withFailureHandler(failureHandler: Function) {
-              chain._failure = failureHandler;
-              return chain;
-            },
+                  const sheetTabNames = ["Sheet1", "Sheet2", "Sheet3"];
+                  const sheetTabToColumnNames = {
+                    Sheet1: [],
+                    Sheet2: ["Name", "Address", "Phone"], // Old mock preserved here
+                    Sheet3: []
+                  };
 
-            getSheetTabNames() {
-              console.log("📡 Mock getSheetTabNames called");
-              try {
-                chain._success(["Sheet1", "Sheet2", "Sheet3"]);
-              } catch (e) {
-                chain._failure(e);
-              }
-            },
-
-            getHeadersForSheet(sheetName: string) {
-              console.log("📡 Mock getHeadersForSheet called with:", sheetName);
-              const headers = sheetName === "Sheet2" ? ["Name", "Address"] : [];
-              try {
-                chain._success({ headers });
-              } catch (e) {
-                chain._failure(e);
-              }
-            },
-
-            savePreferences(prefs: Record<string, any>) {
-              console.log("💾 Saved preferences", prefs);
-              try {
-                chain._success(); // simulate success
-              } catch (e) {
-                chain._failure(e);
-              }
-            },
+                  successCallback({
+                    sheetTabNames,
+                    sheetTabToColumnNames
+                  });
+                }
+              };
+            }
           };
-
-          return chain; // methods are available immediately
-        },
-      },
-
-      host: {
-        close() {
-          console.log("🔒 Dialog closed");
-        },
-      },
-    },
+        }
+      }
+    }
   };
 }
-
