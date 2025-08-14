@@ -7,6 +7,7 @@
   ],
   "devDependencies": {
     "@google/clasp": "2.5.0",
+    "@testing-library/dom": "^10.4.1",
     "@types/google-apps-script": "^1.0.99",
     "@types/jest": "30.0.0",
     "@types/jsdom": "21.1.7",

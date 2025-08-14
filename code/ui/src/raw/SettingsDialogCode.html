@@ -1,191 +1,62 @@
-
       let sheets = [];
-      let headers = [];
+      let headersBySheet = {};
 
-      // --- gating helpers ---
-      function getSaveBtn() {
-        return document.getElementById("saveBtn");
-      }
-
+      function getSaveBtn() { return document.getElementById("saveBtn"); }
       function hasMapsKey() {
         var el = document.getElementById("mapsApiKey");
         var v = el && typeof el.value === "string" ? el.value : "";
         return v.trim().length > 0;
       }
-
       function hasAddressSelection() {
         var el = document.getElementById("addressSelect");
         var v = el && typeof el.value === "string" ? el.value : "";
         return v !== "";
       }
-
       function updateSaveButtonState() {
         var btn = getSaveBtn();
         if (!btn) return;
         var enabled = hasMapsKey() && hasAddressSelection();
         btn.disabled = !enabled;
-        console.log("🔒 Save button state:", {
-          enabled: enabled,
-          mapsKey: hasMapsKey(),
-          addressSelected: hasAddressSelection()
-        });
       }
-      // --- end helpers ---
-
 
       window.addEventListener("load", onOpen);
 
-
       function onOpen() {
-        console.log("🔍 Fetching sheet tabs...");
-        google.script.run.withSuccessHandler((sheetNames) => {
-          const sheetSelect = document.getElementById("sheetSelect");
-          sheets = sheetNames;
-          sheetSelect.innerHTML = sheets.map(name =>
-            `<option value="${name}">${name}</option>`).join('');
-          if (sheets.length > 0) {
-            sheetSelect.value = sheets[0];
-            onSheetChange(); // auto-load address columns
-          }
+        google.script.run
+          .withSuccessHandler((data) => {
+            sheets = data.sheetTabNames || [];
+            headersBySheet = data.sheetTabToColumnNames || {};
 
-          // Ensure initial save state is set even if headers are empty
-          updateSaveButtonState();
+            const sheetSelect = document.getElementById("sheetSelect");
+            sheetSelect.innerHTML = sheets.map(n => `<option value="${n}">${n}</option>`).join('');
 
-          // Bind UI listeners (idempotent if onOpen re-runs)
-          const maps = document.getElementById("mapsApiKey");
-          const addr = document.getElementById("addressSelect");
-          maps && maps.addEventListener("input", updateSaveButtonState);
-          addr && addr.addEventListener("change", updateSaveButtonState);
-        }).getSheetTabNames();
+            if (sheets.length > 0) {
+              sheetSelect.value = sheets[0];
+              renderHeadersFor(sheets[0]);
+            }
+
+            const maps = document.getElementById("mapsApiKey");
+            const addr = document.getElementById("addressSelect");
+            maps && maps.addEventListener("input", updateSaveButtonState);
+            addr && addr.addEventListener("change", updateSaveButtonState);
+
+            updateSaveButtonState();
+          })
+          .withFailureHandler((e) => console.error("❌ Failed to fetch tabs/columns:", e))
+          .getSheetTabsAndColumnNames();
       }
 
-    function onSheetChange() {
-      const sheetName = document.getElementById("sheetSelect").value;
-      console.log("📄 onSheetChange called with:", sheetName);
-      google.script.run
-        .withSuccessHandler((result) => {
-          console.log("📥 Headers returned from GAS:", result);
-          const addressSelect = document.getElementById("addressSelect");
-          headers = result.headers || [];
-          console.log("📑 Headers extracted:", headers);
-          addressSelect.innerHTML = headers.map(h =>
-            `<option value="${h}">${h}</option>`).join('');
-          const defaultAddr = headers.find(h => /address/i.test(h));
-          if (defaultAddr) {
-            addressSelect.value = defaultAddr;
-            console.log("✅ Default address column preselected:", defaultAddr);
-          } else {
-            console.warn("⚠️ No obvious address-like column found.");
-          }
-
-          // Update Save button after (re)populating address options
-          updateSaveButtonState();
-        })
-        .withFailureHandler((e) => {
-          console.error("❌ GAS call failed:", e);
-        })
-        .getHeadersForSheet(sheetName);
-    }
-
-
-      function toggleApiKeyVisibility(checkbox) {
-        const field = document.getElementById("mapsApiKey");
-        field.type = checkbox.checked ? "text" : "password";
-        updateSaveButtonState(); // keep state fresh on UX toggles
+      function onSheetChange() {
+        const name = document.getElementById("sheetSelect").value;
+        renderHeadersFor(name);
       }
 
-      function hideApiKeyOnBlur() {
-        const field = document.getElementById("mapsApiKey");
-        field.type = "password";
-        updateSaveButtonState(); // keep state fresh on UX toggles
+      function renderHeadersFor(name) {
+        const addressSelect = document.getElementById("addressSelect");
+        const headers = (headersBySheet && headersBySheet[name]) || [];
+        addressSelect.innerHTML = headers.map(h => `<option value="${h}">${h}</option>`).join('');
+        const defaultAddr = headers.find(h => /address/i.test(h));
+        if (defaultAddr) addressSelect.value = defaultAddr;
+        else if (headers.length) addressSelect.value = headers[0];
+        updateSaveButtonState();
       }
-
-      function cancelDialog() {
-        google.script.host.close();
-      }
-
-      function saveSettings() {
-        const sheet = document.getElementById("sheetSelect").value;
-        const addressCol = document.getElementById("addressSelect").value;
-        const apiKey = document.getElementById("mapsApiKey").value;
-        const showLatLng = document.getElementById("showLatLng").checked;
-        const debug = document.getElementById("debug").checked;
-
-        if (!addressCol) {
-          showHelp('addressColumn', event);
-          return;
-        }
-
-
-google.script.run
-  .withSuccessHandler(() => {
-    console.log("✅ Preferences saved, closing dialog...");
-    google.script.host.close();
-  })
-  .withFailureHandler(e => {
-    console.error("❌ Failed to save preferences:", e);
-    alert("Save failed: " + e.message);
-  })
-  .savePreferences({
-    sheetName: sheet,
-    addressColumn: addressCol,
-    mapsApiKey: apiKey,
-    showLatLong: showLatLng,
-    debug: debug
-  });
-
-      }
-
-      function showHelp(topic, event) {
-        closeHelp();  // Remove existing if present
-
-        const messages = {
-          mapsApiKey: `Enter your Google Maps API key. You can obtain this from the Google Cloud Console. Make sure the Maps JavaScript API is enabled.`,
-          sheetTab: `Select the sheet where your data is stored.`,
-          addressColumn: `Choose the column in your sheet that contains addresses.`,
-          showLatLng: `Check this box to display the Latitude and Longitude results in your sheet.`,
-          debug: `Enable this to log detailed debugging information for troubleshooting.`
-        };
-
-        const popup = document.createElement("div");
-        popup.className = "help-popup";
-        popup.innerText = messages[topic] || "No help available.";
-
-        const closeBtn = document.createElement("button");
-        closeBtn.textContent = "Dismiss";
-        closeBtn.style.marginTop = "10px";
-        closeBtn.onclick = () => popup.remove();
-
-        popup.appendChild(document.createElement("br"));
-        popup.appendChild(closeBtn);
-        document.body.appendChild(popup);
-      }
-
-      function closeHelp() {
-        const popup = document.querySelector(".help-popup");
-        if (popup) popup.remove();
-      }
-
-function fetchSheetTabsAndColumns() {     // TODO - update to fetchSheetTabsAndColumnNames
-  console.log("Fetching sheet tabs and column names...");
-  google.script.run
-    .withSuccessHandler(function (data) {
-      console.log("✅ Data received:", data);
-      populateSheetDropdown(data.sheetTabNames);
-      populateColumnDropdown(data.sheetTabToColumnNames);
-    })
-    .withFailureHandler(function (err) {
-      console.error("❌ Failed to get sheet tabs and column names:", err);
-    })
-    .getSheetTabsAndColumnNames();
-}
-
-
-document.addEventListener('keydown', function (e) {
-  if (e.key === 'Escape' || e.keyCode === 27) {
-    e.preventDefault();
-    google.script.host.close();
-  }
-});
-
-

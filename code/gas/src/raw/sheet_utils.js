@@ -61,14 +61,6 @@ function normalizeRow_(row) {
   return (row || []).map(function (cell) { return (cell == null ? '' : ('' + cell).trim()); });
 }
 
-function getSheetTabNames(ss) {
-  console.log("📥 ENTER getSheetTabNames", { ssProvided: !!ss });
-  ss = ss || SpreadsheetApp.getActiveSpreadsheet();
-  var result = ss.getSheets().map(function (s) { return s.getName(); });
-  console.log("📤 EXIT getSheetTabNames →", JSON.stringify(result));
-  return result;
-}
-
 function getSheetByName(name, ss) {
   console.log("📥 ENTER getSheetByName", { name: name, ssProvided: !!ss });
   ss = ss || SpreadsheetApp.getActiveSpreadsheet();
@@ -77,24 +69,6 @@ function getSheetByName(name, ss) {
   return result;
 }
 
-function getHeadersForSheet(sheetName) {
-  // Log that we entered the function
-  console.log("📌 getHeaderInfo called for sheet:", sheetName);
-
-  var ss = SpreadsheetApp.getActive();
-  var sheet = ss.getSheetByName(sheetName);
-  if (!sheet) {
-    console.log("⚠️ No sheet found with name:", sheetName);
-    return [];
-  }
-
-  // Detect headers (first non-empty row in top N rows)
-  var headers = _detectHeaderRowTop_(sheet);
-
-  // Log what we're about to return
-  console.log("✅ Headers detected for sheet '" + sheetName + "':", headers);
-  return { headers: headers };
-}
 
 
 function ensureColumns(sheet, headerIndex, names) {
@@ -117,5 +91,5 @@ function ensureColumns(sheet, headerIndex, names) {
 
 // In Jest/jsdom tests, the mock loader looks for functions under globalThis.sheets
 // so it can stub them... hence the line below:
-globalThis.sheets = { getSheetTabNames, getSheetByName, getHeadersForSheet, ensureColumns };
+globalThis.sheets = {  getSheetByName,  ensureColumns };
 

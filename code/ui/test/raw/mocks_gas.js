@@ -9,38 +9,26 @@
  *   - Sheet2: ["Name", "Address", "Phone"]
  *   - Sheet3: []
  */
-export function installMockGoogleScript(window) {
-  window.google = {
-    script: {
-      run: {
-        withSuccessHandler(successCallback) {
-          return {
-            withFailureHandler(failureCallback) {
-              return {
-                /**
-                 * Mock GAS: getSheetTabsAndColumnNames
-                 * Static data for manual UI testing
-                 */
-                getSheetTabsAndColumnNames() {
-                  console.log("📄 Static mock getSheetTabsAndColumnNames called");
-
-                  const sheetTabNames = ["Sheet1", "Sheet2", "Sheet3"];
-                  const sheetTabToColumnNames = {
-                    Sheet1: [],
-                    Sheet2: ["Name", "Address", "Phone"], // Old mock preserved here
-                    Sheet3: []
-                  };
-
-                  successCallback({
-                    sheetTabNames,
-                    sheetTabToColumnNames
-                  });
-                }
-              };
+// code/ui/test/raw/mocks_gas.js
+function installMockGoogleScript(window) {
+  window.google = window.google || {};
+  window.google.script = window.google.script || {};
+  window.google.script.run = {
+    withSuccessHandler(callback) {
+      return {
+        withFailureHandler: function () { return this; },
+        getSheetTabsAndColumnNames: function () {
+          callback({
+            sheetTabNames: ["Sheet1", "Sheet2", "Sheet3"],
+            sheetTabToColumnNames: {
+              Sheet1: [],
+              Sheet2: ["Name", "Address", "Phone"],
+              Sheet3: []
             }
-          };
+          });
         }
-      }
+      };
     }
   };
 }
+module.exports = { installMockGoogleScript };

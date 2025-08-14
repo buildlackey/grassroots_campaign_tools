@@ -29,17 +29,16 @@ function showSettingsDialog() {
   SpreadsheetApp.getUi().showModalDialog(html, 'Settings');
 }
 
-/** Always return mock sheet names */
-function getSheetTabNames() {
-  Logger.log('📡 Mock getSheetTabNames called');
-  return ['Sheet1', 'Sheet2', 'Sheet3'];
-}
-
-/** Always return mock headers (Sheet2 has ["Name", "Address"], others empty) */
-function getHeadersForSheet(sheetName) {
-  Logger.log('📡 Mock getHeadersForSheet called with: %s', sheetName);
-  var headers = (sheetName === 'Sheet2') ? ['Name', 'Address'] : [];
-  return { headers: headers };
+function getSheetTabsAndColumnNames() {
+  Logger.log('📡 Mock getSheetTabsAndColumnNames called');
+  return {
+    sheetTabNames: ['Sheet1', 'Sheet2', 'Sheet3'],
+    sheetTabToColumnNames: {
+      Sheet1: [],
+      Sheet2: ['Name', 'Address'],
+      Sheet3: []
+    }
+  };
 }
 
 /** Simulate saving preferences (no persistence) */
