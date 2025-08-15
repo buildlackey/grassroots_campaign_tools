@@ -7,6 +7,8 @@
   } else {
     var api = factory();
     root.setupMock = api.setupMock;             // Browser global
+    root.applyMockConfig = api.applyMockConfig;  // Browser global for tests
+
   }
 }(typeof self !== "undefined" ? self : this, function () {
 
@@ -64,5 +66,17 @@
     };
   }
 
-  return { setupMock: setupMock };
+   function applyMockConfig(win) {
+     var config = (win && win.__MOCK_CONFIG__) || {};
+     try {
+       var input = win.document && win.document.getElementById && win.document.getElementById("mapsApiKey");
+       if (input && typeof config.mapsApiKey === "string") {
+         input.value = config.mapsApiKey;
+         try {
+           input.dispatchEvent(new win.Event("input", { bubbles: true }));
+         } catch (_) { /* jsdom-safe */ }
+       }
+     } catch (_) { /* no-op */ }
+   }
+  return { setupMock: setupMock, applyMockConfig: applyMockConfig };
 }));

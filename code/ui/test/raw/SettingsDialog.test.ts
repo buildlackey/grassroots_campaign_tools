@@ -44,11 +44,22 @@ function dumpState(tag: string, doc: Document) {
 
 // --- helper: drive onOpen if the function isn't exported by the page ---
 function driveOpenIfNeeded(win: any, doc: Document) {
-  if (typeof win.onOpen === "function") {
-    console.log("[test] dispatch window 'load'");
-    win.dispatchEvent(new win.Event("load"));
-    return;
-  }
+      if (typeof win.onOpen === "function") {
+      console.log("[test] dispatch window 'load'");
+      win.dispatchEvent(new win.Event("load"));
+
+      // NEW: Prefill Maps key from __MOCK_CONFIG__ after page init (test-only)
+      try {
+        const cfg = (win as any).__MOCK_CONFIG__ || {};
+        const input = doc.getElementById("mapsApiKey") as HTMLInputElement | null;
+        if (input && typeof cfg.mapsApiKey === "string" && cfg.mapsApiKey) {
+          input.value = cfg.mapsApiKey;
+          input.dispatchEvent(new win.Event("input", { bubbles: true }));
+        }
+      } catch (_) {}
+      return;
+    }
+
 
   // Minimal fallback: hydrate from __MOCK_CONFIG__ like the page would
   console.log("[fallback] onOpen shim running (no window.onOpen)");
@@ -117,6 +128,8 @@ describe("SettingsDialog Save Button / Maps API key (config-driven)", () => {
       defaultSheet: "Sheet1",
     };
 
+   (window as any).applyMockConfig?.(window);
+
     driveOpenIfNeeded(window, document);
     dumpState("after-load", document);
 
@@ -126,10 +139,6 @@ describe("SettingsDialog Save Button / Maps API key (config-driven)", () => {
       return sel && sel.options.length > 0;
     });
 
-    // ensure the key path was exercised (real code listens to input)
-    const keyInput = document.querySelector("#mapsApiKey") as HTMLInputElement;
-    keyInput.value = "key1";
-    keyInput.dispatchEvent(new window.Event("input", { bubbles: true }));
     dumpState("after-key", document);
 
     await waitFor(() => {
@@ -161,11 +170,6 @@ describe("SettingsDialog Save Button / Maps API key (config-driven)", () => {
     const sheetSelect = document.querySelector("#sheetSelect") as HTMLSelectElement;
     sheetSelect.value = "Sheet2";
     sheetSelect.dispatchEvent(new window.Event("change", { bubbles: true }));
-
-    // Make sure the maps key is set and listeners run
-    const keyInput = document.querySelector("#mapsApiKey") as HTMLInputElement;
-    keyInput.value = "key1";
-    keyInput.dispatchEvent(new window.Event("input", { bubbles: true }));
 
     // Wait for address options to be present for Sheet2
     await waitFor(() => {
