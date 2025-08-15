@@ -16,7 +16,14 @@
     // Prefill Maps key if present
     try {
       var input = win.document && win.document.getElementById && win.document.getElementById("mapsApiKey");
-      if (input && typeof config.mapsApiKey === "string") input.value = config.mapsApiKey;
+      if (input && typeof config.mapsApiKey === "string") {
+         input.value = config.mapsApiKey;
+         try {
+           input.dispatchEvent(new win.Event("input", { bubbles: true }));
+         } catch (_) {
+           // jsdom-safe: ignore if Event ctor differs
+         }
+       }
     } catch (_) {}
 
     win.google = {
