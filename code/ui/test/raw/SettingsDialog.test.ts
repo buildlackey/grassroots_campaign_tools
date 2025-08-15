@@ -87,7 +87,11 @@ describe("SettingsDialog Save Button / Maps API key (config-driven)", () => {
       runScripts: "dangerously",
       resources: "usable",
       pretendToBeVisual: true,
+      beforeParse(win) {
+        (win as any).__IN_JEST__ = true;
+      },
     });
+
 
     window = dom.window;
     document = window.document;
