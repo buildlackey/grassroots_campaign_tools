@@ -1,6 +1,7 @@
 import { JSDOM } from "jsdom";
 import { waitFor } from "@testing-library/dom";
-import { installMockGoogleScript } from "./mocks_gas";
+import { setupMock } from "./setupMock";
+
 
 import * as fs from "fs";
 import * as path from "path";
@@ -107,7 +108,8 @@ describe("SettingsDialog Save Button / Maps API key (config-driven)", () => {
     window = dom.window;
     document = window.document;
 
-    installMockGoogleScript(window);
+    setupMock(window);
+
 
     // Make sure the ad-hoc inlined mock in the HTML does not auto-run under Jest
     (window as any).__IN_JEST__ = true;
