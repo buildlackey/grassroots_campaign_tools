@@ -4,7 +4,7 @@
   "scripts": {
     "clean": "rm -rf ../../built/ui",
     "injectify": "bash -x scripts/convert_to_client_side_injectable.sh",
-    "build:artifacts": "npm run injectify && bash ../../code/ui/test/raw/test_settings_dialog.sh",
+    "build:artifacts": "bash ../../code/ui/test/raw/test_settings_dialog.sh",
     "prebuild": "npm run build:artifacts",
     "build": "jest --config=jest.config.js",
     "dist": "npm run build && bash -x ../../build/scripts/ongoing_dev/copy_to_dist.sh -t ui"
