@@ -3,7 +3,6 @@
   "name": "@app/ui",
   "scripts": {
     "clean": "rm -rf ../../built/ui",
-    "injectify": "bash -x scripts/convert_to_client_side_injectable.sh",
     "build:artifacts": "bash ../../code/ui/test/raw/test_settings_dialog.sh",
     "prebuild": "npm run build:artifacts",
     "build": "jest --config=jest.config.js",
