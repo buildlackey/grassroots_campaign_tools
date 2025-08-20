@@ -7,7 +7,6 @@ combined_upload.txt  # throw-away intermediate work file
 # clasp cruft that we don't need
 .clasp.json
 .clasprc.json 
-package-lock.json
 
 
 **/node_modules/
