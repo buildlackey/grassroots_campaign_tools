@@ -3,9 +3,8 @@
   "name": "@app/ui",
   "scripts": {
     "clean": "rm -rf ../../built/ui",
-    "build:artifacts": "bash ../../code/ui/test/raw/test_settings_dialog.sh",
-    "prebuild": "npm run build:artifacts",
-    "build": "jest --config=jest.config.js",
+    "setup:fixture": "bash ../../code/ui/test/raw/test_settings_dialog.sh",
+    "build": "npm run setup:fixture && jest --config=jest.config.js",
     "dist": "npm run build && bash -x ../../build/scripts/ongoing_dev/copy_to_dist.sh -t ui"
   }
 
