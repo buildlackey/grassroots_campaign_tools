@@ -1,43 +1,43 @@
+// build/gas/webpack.gas.config.js
 const path = require("path");
 const GasPlugin = require("gas-webpack-plugin");
 
 module.exports = {
-    mode: "production",
-
-    entry: {
-        gas_bundle: path.resolve(__dirname, "../../code/gas/src/logic/IntegrationTest.ts"),
-    },
-
+    mode: "development",
+    entry: path.resolve(__dirname, "../../code/gas/src/logic/IntegrationTest.ts"),
+    // build/gas/webpack.gas.config.js
     output: {
         path: path.resolve(__dirname, "../../built/gas/gas_safe_staging"),
-        filename: "[name].js",   // => gas_bundle.js
-        library: "global",
-        libraryTarget: "this",   // ensures GAS globals attach correctly
+        filename: "gas_bundle.js",
+        // ⬇️ Avoids 'this' being undefined in GAS
+        library: { type: "assign", name: "globalThis.GASMOD" },
+        pathinfo: true
     },
 
-    resolve: {
-        extensions: [".ts", ".js"],
-    },
 
+    target: ["web", "es5"],
+    devtool: "source-map",
+    optimization: {
+        minimize: false,
+        concatenateModules: false,
+        mangleExports: false,
+    },
     module: {
         rules: [
             {
-                test: /\.ts$/,
-                use: [
-                    {
-                        loader: "ts-loader",
-                        options: {
-                            configFile: path.resolve(__dirname, "tsconfig.json"), // force correct config
-                        },
+                test: /\.tsx?$/,
+                use: {
+                    loader: "ts-loader",
+                    options: {
+                        configFile: path.resolve(__dirname, "tsconfig.json"),
                     },
-                ],
+                },
                 exclude: /node_modules/,
             },
         ],
     },
-
-    plugins: [
-        new GasPlugin(),
-    ],
+    resolve: { extensions: [".ts", ".tsx", ".js"] },
+    plugins: [new GasPlugin()],
+    stats: "errors-warnings",
+    infrastructureLogging: { level: "warn" },
 };
-
