@@ -20,8 +20,21 @@ function showSettingsDialog() {
 }
 
 function smokeTest() {
-    if (!globalThis.GASMOD || typeof globalThis.GASMOD.runIntegrationTest !== "function") {
-        throw new Error("Bundle not loaded: GASMOD.runIntegrationTest is missing");
+    if (!globalThis.GASMOD || !globalThis.GASMOD.PreferenceSvc) {
+        throw new Error("Bundle not loaded: PreferenceSvc is missing from GASMOD");
     }
-    return globalThis.GASMOD.runIntegrationTest();
+
+    var svc = globalThis.GASMOD.PreferenceSvc.forGAS();
+
+    var key = "TEST_KEY_" + Math.random().toString(36).slice(2);
+    svc.clearPreferences({ document: false, user: true });
+    svc.savePreferences({ mapsApiKey: key }, []);
+    var prefs = svc.getPreferences();
+
+    if (prefs.mapsApiKey !== key) {
+        throw new Error("PreferenceSvc failed: expected " + key + ", got " + prefs.mapsApiKey);
+    }
+
+    return "INTEGRATION SUCCESS";
 }
+
