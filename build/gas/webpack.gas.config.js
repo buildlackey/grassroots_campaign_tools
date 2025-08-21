@@ -7,7 +7,7 @@ module.exports = {
     entry: path.resolve(__dirname, "../../code/gas/src/logic/IntegrationTest.ts"),
     // build/gas/webpack.gas.config.js
     output: {
-        path: path.resolve(__dirname, "../../built/gas/gas_safe_staging"),
+        path: path.resolve(__dirname, "../../dist/gas/gas_safe_staging"),
         filename: "gas_bundle.js",
         // ⬇️ Avoids 'this' being undefined in GAS
         library: { type: "assign", name: "globalThis.GASMOD" },

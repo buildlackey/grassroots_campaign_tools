@@ -2,7 +2,7 @@
   "private": true,
   "name": "@app/gas",
   "scripts": {
-    "clean": "rm -rf ../../built/gas/gas_safe_staging",
+    "clean": "rm -rf ../../dist/gas/gas_safe_staging",
     "bundle": "webpack --config webpack.gas.config.js",
     "dist": "npm run bundle && bash -x ../../build/scripts/ongoing_dev/copy_to_dist.sh -t gas"
   },

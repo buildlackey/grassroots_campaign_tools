@@ -5,6 +5,6 @@ module.exports = {
   testMatch: ["<rootDir>/../../code/ui/test/raw/*.test.ts"],
   transform: { "^.+\\.tsx?$": "ts-jest" },
   testEnvironment: "jest-environment-jsdom",
-  testPathIgnorePatterns: ["<rootDir>/../../built/"],
+  testPathIgnorePatterns: ["<rootDir>/../../dist/"],
   setupFiles: ["<rootDir>/jest.setup.js"],   // ← add this
 };

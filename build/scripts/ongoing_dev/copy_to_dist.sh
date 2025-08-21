@@ -40,11 +40,11 @@ COMMON_SCRIPTS_DIR="$GIT_ROOT/build/scripts/common"
 echo "📌 Target selected: $TARGET"
 
 # TODO: change this to dist_dir if needed
-BUILD_DIR="$GIT_ROOT/built/$TARGET/gas_safe_staging"   # webpack/inject output
+BUILD_DIR="$GIT_ROOT/dist/$TARGET/gas_safe_staging"   # webpack/inject output
 RAW_DIR="$GIT_ROOT/code/$TARGET/src/raw"               # raw fragments
 
-# 0) Copy built artifacts
-[[ -d "$BUILD_DIR" ]] || { echo "❌ Built output not found: $BUILD_DIR"; exit 1; }
+# 0) Copy dist artifacts
+[[ -d "$BUILD_DIR" ]] || { echo "❌ dist output not found: $BUILD_DIR"; exit 1; }
 cp -a "$BUILD_DIR"/. "$WORKING_PUSH_FOLDER"/
 
 # 1) Copy raw assets

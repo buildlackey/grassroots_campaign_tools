@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES5",
     "module": "ESNext",
-    "outDir": "../../built/gas/gas_safe_staging",
+    "outDir": "../../dist/gas/gas_safe_staging",
     "rootDir": "../../code/gas/src/logic",
     "strict": true,
     "lib": ["ES2015"],

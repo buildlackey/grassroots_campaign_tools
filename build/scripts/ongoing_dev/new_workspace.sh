@@ -60,7 +60,7 @@ SCRIPTS_ROOT=$PROJECT_ROOT/build/scripts/
 bash $SCRIPTS_ROOT/common/full_log_out.sh
 
 
-# 1. Create WORKING_PUSH_FOLDER where built artifacts are staged then pushed
+# 1. Create WORKING_PUSH_FOLDER where dist artifacts are staged then pushed
 export WORKING_PUSH_FOLDER=$(mktemp -d -t clasp_login_create_XXXXXX)
 cd "$WORKING_PUSH_FOLDER"
 echo "📁 Using working dir: $WORKING_PUSH_FOLDER"
