@@ -44,9 +44,8 @@ BUILD_DIR="$GIT_ROOT/built/$TARGET/gas_safe_staging"   # webpack/inject output
 RAW_DIR="$GIT_ROOT/code/$TARGET/src/raw"               # raw fragments
 
 # 0) Copy built artifacts
-#[[ -d "$BUILD_DIR" ]] || { echo "❌ Built output not found: $BUILD_DIR"; exit 1; }
-echo "📦 SKIPPING..  since we are not building w/ webpack for gas  /    Copying built artifacts from: $BUILD_DIR"
-#cp -a "$BUILD_DIR"/. "$WORKING_PUSH_FOLDER"/
+[[ -d "$BUILD_DIR" ]] || { echo "❌ Built output not found: $BUILD_DIR"; exit 1; }
+cp -a "$BUILD_DIR"/. "$WORKING_PUSH_FOLDER"/
 
 # 1) Copy raw assets
 [[ -d "$RAW_DIR" ]] || { echo "❌ Raw source dir not found: $RAW_DIR"; exit 1; }

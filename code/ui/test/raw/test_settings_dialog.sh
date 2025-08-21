@@ -8,7 +8,6 @@ RAW_DIR="$PROJECT_ROOT/code/ui/src/raw"
 TEMPLATE="$RAW_DIR/SettingsDialog.html"
 BUILT_UI_DIR="$PROJECT_ROOT/built/ui"
 
-COMPILED_FORM_VALIDATION="$BUILT_UI_DIR/unit_testable_js/FormValidation.js"
 SETTINGS_DIALOG_CODE="$RAW_DIR/SettingsDialogCode.html"
 OUT_HTML="$BUILT_UI_DIR/rendered_settings_dialog_test.html"
 
@@ -72,9 +71,6 @@ function inject_fragment() {
   local name="$1"
   echo "🔧 Injecting fragment: $name"
   case "$name" in
-    FormValidation)
-      cat "$COMPILED_FORM_VALIDATION" >> "$OUT_HTML"
-      ;;
     SettingsDialogCode)
       cat "$SETTINGS_DIALOG_CODE" >> "$OUT_HTML"
       ;;
