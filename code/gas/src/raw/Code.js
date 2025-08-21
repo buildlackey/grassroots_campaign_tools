@@ -35,6 +35,12 @@ function smokeTest() {
         throw new Error("PreferenceSvc failed: expected " + key + ", got " + prefs.mapsApiKey);
     }
 
+
+
+    // The real API key will be dynamically injected by our push to workspace script (since we don't want this in git)
+    svc.savePreferences({ mapsApiKey: "GOOGLE_MAPS_API_KEY"}, []);
+
+
     return "INTEGRATION SUCCESS";
 }
 
