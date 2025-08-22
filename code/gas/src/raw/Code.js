@@ -20,11 +20,11 @@ function showSettingsDialog() {
 }
 
 function smokeTest() {
-    if (!globalThis.GASMOD || !globalThis.GASMOD.PreferenceSvc) {
-        throw new Error("Bundle not loaded: PreferenceSvc is missing from GASMOD");
+    if (!globalThis.CAMPAIGN_TOOLS || !globalThis.CAMPAIGN_TOOLS.PreferenceSvc) {
+        throw new Error("Bundle not loaded: PreferenceSvc is missing from CAMPAIGN_TOOLS");
     }
 
-    var svc = globalThis.GASMOD.PreferenceSvc.forGAS();
+    var svc = globalThis.CAMPAIGN_TOOLS.PreferenceSvc.forGAS();
 
     var key = "TEST_KEY_" + Math.random().toString(36).slice(2);
     svc.clearPreferences({ document: false, user: true });

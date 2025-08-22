@@ -10,7 +10,7 @@ module.exports = {
         path: path.resolve(__dirname, "../../dist/gas/gas_safe_staging"),
         filename: "gas_bundle.js",
         // ⬇️ Avoids 'this' being undefined in GAS
-        library: { type: "assign", name: "globalThis.GASMOD" },
+        library: { type: "assign", name: "globalThis.CAMPAIGN_TOOLS" },
         pathinfo: true
     },
 
