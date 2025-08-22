@@ -4,7 +4,7 @@ function include(filename) {
 
 function onOpen() {
     SpreadsheetApp.getUi()
-        .createMenu('📍 Campaign Figs')
+        .createMenu('📍 Campaign Tools')
         .addItem('Open Settings', 'showSettingsDialog')
         .addToUi();
 }
@@ -17,6 +17,12 @@ function showSettingsDialog() {
         .setWidth(380)
         .setHeight(400);
     SpreadsheetApp.getUi().showModalDialog(html, 'Settings');
+}
+function savePreferences(prefs, columns) {
+    if (globalThis.CAMPAIGN_TOOLS && globalThis.CAMPAIGN_TOOLS.PreferenceSvc) {
+        return globalThis.CAMPAIGN_TOOLS.PreferenceSvc.forGAS().savePreferences(prefs, columns);
+    }
+    throw new Error("PreferenceSvc unavailable in runtime");
 }
 
 function smokeTest() {
@@ -42,5 +48,17 @@ function smokeTest() {
 
 
     return "INTEGRATION SUCCESS";
+}
+
+
+function verifyMapsApiKeySaved() {
+    if (globalThis.CAMPAIGN_TOOLS && globalThis.CAMPAIGN_TOOLS.PreferenceSvc) {
+        var svc = globalThis.CAMPAIGN_TOOLS.PreferenceSvc.forGAS();
+        var prefs = svc.getPreferences();
+        return prefs && prefs.mapsApiKey
+            ? "✅ Maps API key stored: " + prefs.mapsApiKey
+            : "❌ No Maps API key found in user properties.";
+    }
+    throw new Error("PreferenceSvc unavailable in runtime");
 }
 

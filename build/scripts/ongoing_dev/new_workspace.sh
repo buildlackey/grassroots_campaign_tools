@@ -1,6 +1,5 @@
 ###############################################################################
-# Script: create_sheet_script_context.sh
-# 
+#
 # Arguments:    none
 #
 # Purpose:
