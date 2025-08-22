@@ -6,14 +6,14 @@ PROJECT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
 
 RAW_DIR="$PROJECT_ROOT/code/ui/src/raw"
 TEMPLATE="$RAW_DIR/SettingsDialog.html"
-BUILT_UI_DIR="$PROJECT_ROOT/built/ui"
+BUILT_UI_DIR="$PROJECT_ROOT/dist/ui"
 
 SETTINGS_DIALOG_CODE="$RAW_DIR/SettingsDialogCode.html"
 OUT_HTML="$BUILT_UI_DIR/rendered_settings_dialog_test.html"
-
-# NEW: path to the single JS mock you’ll keep
 SETUP_MOCK_JS="$PROJECT_ROOT/code/ui/test/raw/setupMock.js"
 
+
+mkdir -p $BUILT_UI_DIR
 echo "📄 Reading template: $TEMPLATE"
 rm -f "$OUT_HTML"
 

@@ -10,6 +10,6 @@ combined_upload.txt  # throw-away intermediate work file
 
 
 **/node_modules/
-**/built/
+**/dist/
 
 node_modules/.package-lock.json

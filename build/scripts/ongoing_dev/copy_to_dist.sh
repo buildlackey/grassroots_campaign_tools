@@ -43,12 +43,14 @@ echo "📌 Target selected: $TARGET"
 BUILD_DIR="$GIT_ROOT/dist/$TARGET/gas_safe_staging"   # webpack/inject output
 RAW_DIR="$GIT_ROOT/code/$TARGET/src/raw"               # raw fragments
 
-# 0) Copy dist artifacts
-[[ -d "$BUILD_DIR" ]] || { echo "❌ dist output not found: $BUILD_DIR"; exit 1; }
-cp -a "$BUILD_DIR"/. "$WORKING_PUSH_FOLDER"/
 
-# 1) Copy raw assets
+#  Copy raw assets
 [[ -d "$RAW_DIR" ]] || { echo "❌ Raw source dir not found: $RAW_DIR"; exit 1; }
 echo "📄 Copying raw assets from: $RAW_DIR"
 cp -a "$RAW_DIR"/. "$WORKING_PUSH_FOLDER"/
 
+# 0) Copy dist artifacts  - for ui we dont have logic, just raw
+if [ "$TARGET" != "ui" ] ; then
+  [[ -d "$BUILD_DIR" ]] || { echo "❌ dist output not found: $BUILD_DIR"; exit 1; }
+  cp -a "$BUILD_DIR"/. "$WORKING_PUSH_FOLDER"/
+fi

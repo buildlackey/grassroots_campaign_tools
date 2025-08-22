@@ -7,7 +7,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 const repoRoot = path.resolve(__dirname, "../../../../");
-const htmlPath = path.resolve(repoRoot, "built/ui/rendered_settings_dialog_test.html");
+const htmlPath = path.resolve(repoRoot, "dist/ui/rendered_settings_dialog_test.html");
 const htmlContent = fs.readFileSync(htmlPath, "utf-8");
 
 function delay(ms: number) {
