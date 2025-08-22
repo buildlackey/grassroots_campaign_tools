@@ -1,4 +1,16 @@
 
+paste key ^p
+
+settings dialog - not responding to dismiss / (save?)   esc
+
+
+unit_testable -> better name? needed?
+
+run a test where we deliberately save with an error (e.g., maps key is empty)
+  also.. how about :  select a sheet tab w/ no col's and then call extra button..
+    regular save button should be disabled
+
+
 change built -> dist
 change unit_testable to something more reflective of purpose
 
