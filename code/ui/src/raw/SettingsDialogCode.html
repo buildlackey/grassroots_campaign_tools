@@ -60,3 +60,80 @@
         else if (headers.length) addressSelect.value = headers[0];
         updateSaveButtonState();
       }
+      /* ===== dialog control ===== */
+      function closeDialog() {
+        try {
+          if (google && google.script && google.script.host && typeof google.script.host.close === 'function') {
+            google.script.host.close();
+            return;
+          }
+        } catch (_) {}
+        // local/JSDOM fallback — just hide the container
+        var c = document.getElementById('settings-dialog-container') || document.body;
+        c.style.display = 'none';
+      }
+
+      /* ===== actions ===== */
+      function saveSettings() {
+        var btn = document.getElementById('saveBtn');
+        if (btn) btn.disabled = true;
+
+        var sheetName = (document.getElementById("sheetSelect") || {}).value || "";
+        var address   = (document.getElementById("addressSelect") || {}).value || "";
+        var mapsKey   = (document.getElementById("mapsApiKey")  || {}).value || "";
+        var showLL    = !!(document.getElementById("showLatLng") && document.getElementById("showLatLng").checked);
+        var debug     = !!(document.getElementById("debug")      && document.getElementById("debug").checked);
+
+        var columns = (headersBySheet && headersBySheet[sheetName]) || [];
+        var payload = {
+          sheetTabName: sheetName,
+          addressColumn: address,
+          mapsApiKey: mapsKey,
+          showLatLong: showLL,
+          debug: debug
+        };
+
+        // guard (updateSaveButtonState should prevent this)
+        if (!mapsKey || !address) { if (btn) btn.disabled = false; return; }
+
+        google.script.run
+          .withSuccessHandler(function () { closeDialog(); })
+          .withFailureHandler(function (e) {
+            console.error("❌ Failed to save preferences:", e);
+            if (btn) btn.disabled = false;
+            try { alert("Failed to save preferences."); } catch (_) {}
+          })
+          .savePreferences(payload, columns);
+      }
+
+      function cancelDialog() {
+        closeDialog();
+      }
+
+      /* ===== API key visibility helpers (used by HTML) ===== */
+      function toggleApiKeyVisibility(checkbox) {
+        var input = document.getElementById("mapsApiKey");
+        if (!input) return;
+        input.type = (checkbox && checkbox.checked) ? "text" : "password";
+      }
+
+      function hideApiKeyOnBlur() {
+        var cb = document.getElementById("showApiKey");
+        if (cb && !cb.checked) {
+          var input = document.getElementById("mapsApiKey");
+          if (input) input.type = "password";
+        }
+      }
+
+      /* ===== keyboard: ESC closes dialog ===== */
+      (function () {
+        function onKeydown(e) {
+          if (e && (e.key === 'Escape' || e.key === 'Esc')) {
+            e.preventDefault();
+            e.stopPropagation();
+            cancelDialog();
+          }
+        }
+        window.addEventListener('keydown', onKeydown, true);
+      })();
+
