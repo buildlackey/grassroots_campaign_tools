@@ -65,9 +65,13 @@ cd "$WORKING_PUSH_FOLDER"
 echo "📁 Using working dir: $WORKING_PUSH_FOLDER"
 update_env_var WORKING_PUSH_FOLDER $WORKING_PUSH_FOLDER
 
-# 2. Create dummy files to bypass clasp internals
+# 2. Create dummy files to bypass clasp login requirements. The dummy .clasp.json is only here
+# to trick clasp’s login command. This is because clasp login --creds ... insists that a .clasp.json
+# exists, even though the real project doesn’t exist yet. So we “stub” it with a fake scriptId.
 echo '{}' > package.json
-echo '{ "scriptId": "PLACEHOLDER", "projectId": "$PROJECT_ID" }' > .clasp.json
+echo '{ "scriptId": "PLACEHOLDER" }' > .clasp.json
+"$LOCAL_CLASP" setting projectId "$PROJECT_ID"        # Let clasp populate it -- this is safer
+
 
 
 cat > appsscript.json <<EOF
