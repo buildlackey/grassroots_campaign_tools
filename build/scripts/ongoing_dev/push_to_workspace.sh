@@ -83,14 +83,17 @@ if [[ "$CLASP_SCRIPT_ID" != "$SCRIPT_ID" ]]; then
   exit 1
 fi
 
-# 2) Copy appsscript.json if present (UI path), otherwise tolerate absence
-UI_APPSSCRIPT_JSON="$GIT_ROOT/ui/appsscript.json"
-if [[ -f "$UI_APPSSCRIPT_JSON" ]]; then
-  echo "📄 Syncing appsscript.json from UI"
-  cp "$UI_APPSSCRIPT_JSON" "$WORKING_PUSH_FOLDER/"
-else
-  echo "ℹ️ No UI appsscript.json found at $UI_APPSSCRIPT_JSON — leaving existing one in place"
-fi
+# 2)  Need run time V8 in  appsscript.json to ensure latest java script syntax respected
+cat > $WORKING_PUSH_FOLDER/appsscript.json <<END
+{
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8",
+  "executionApi": {
+    "access": "ANYONE"
+  }
+}
+END
+
 
 # 3) 🔑 Inject real Maps API key into Code.js (placeholder "GOOGLE_MAPS_API_KEY")
 #    Only touch Code.js in the staging folder right before push.
