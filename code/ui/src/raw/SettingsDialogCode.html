@@ -1,6 +1,8 @@
       let sheets = [];
       let headersBySheet = {};
 
+      function log(...args){ try{ console.log("[SettingsDialog]", ...args); }catch(_){ } }
+
       function getSaveBtn() { return document.getElementById("saveBtn"); }
       function hasMapsKey() {
         var el = document.getElementById("mapsApiKey");
@@ -16,24 +18,25 @@
         var btn = getSaveBtn();
         if (!btn) return;
         var enabled = hasMapsKey() && hasAddressSelection();
+        log("updateSaveButtonState →", { enabled });
         btn.disabled = !enabled;
       }
 
       window.addEventListener("load", onOpen);
 
-
       function bindRequired(id, event, handler) {
           const el = document.getElementById(id);
           if (!el) throw new Error(`Missing required element #${id}`);
           el.addEventListener(event, handler);
+          log("bindRequired OK", { id, event });
           return el;
       }
 
-
-
 function onOpen() {
+  log("ENTER onOpen");
   google.script.run
     .withSuccessHandler((data) => {
+      log("getSheetTabsAndColumnNames success", data);
       sheets = data.sheetTabNames || [];
       headersBySheet = data.sheetTabToColumnNames || {};
 
@@ -44,7 +47,7 @@ function onOpen() {
         renderHeadersFor(sheets[0]);
       }
 
-      // === strict wiring: throw if element is missing ===
+      // strict wiring: throw if element is missing
       bindRequired("sheetSelect", "change", onSheetChange);
       bindRequired("mapsApiKey", "input", updateSaveButtonState);
       bindRequired("mapsApiKey", "blur", hideApiKeyOnBlur);
@@ -56,18 +59,23 @@ function onOpen() {
       });
 
       updateSaveButtonState();
+      log("EXIT onOpen");
     })
-    .withFailureHandler((e) => console.error("❌ Failed to fetch tabs/columns:", e))
+    .withFailureHandler((e) => {
+      console.error("❌ Failed to fetch tabs/columns:", e);
+      log("EXIT onOpen with failure");
+    })
     .getSheetTabsAndColumnNames();
 }
 
-
       function onSheetChange() {
         const name = document.getElementById("sheetSelect").value;
+        log("onSheetChange", { name });
         renderHeadersFor(name);
       }
 
       function renderHeadersFor(name) {
+        log("ENTER renderHeadersFor", { name });
         const addressSelect = document.getElementById("addressSelect");
         const headers = (headersBySheet && headersBySheet[name]) || [];
         addressSelect.innerHTML = headers.map(h => `<option value="${h}">${h}</option>`).join('');
@@ -75,41 +83,25 @@ function onOpen() {
         if (defaultAddr) addressSelect.value = defaultAddr;
         else if (headers.length) addressSelect.value = headers[0];
         updateSaveButtonState();
-      }
-      /* ===== dialog control ===== */
-
-
-   /* ===== toast utility (CSS in page stylesheet) ===== */
-      function showToast(msg) {
-        var t = document.createElement("div");
-        t.className = "toast";
-        t.textContent = msg;
-        document.body.appendChild(t);
-        // trigger fade-in
-        requestAnimationFrame(function () { t.classList.add("show"); });
-        // fade-out then remove
-        setTimeout(function () {
-          t.classList.remove("show");
-          setTimeout(function () { t.remove(); }, 300);
-        }, 2000);
+        log("EXIT renderHeadersFor", { count: headers.length, selected: addressSelect.value || "" });
       }
 
 
       function closeDialog() {
+        log("closeDialog");
         try {
           if (google && google.script && google.script.host && typeof google.script.host.close === 'function') {
             google.script.host.close();
             return;
           }
         } catch (_) {}
-        // local/JSDOM fallback — just hide the container
         var c = document.getElementById('settings-dialog-container') || document.body;
         c.style.display = 'none';
       }
 
       /* ===== actions ===== */
-
       function saveSettings() {
+        log("ENTER saveSettings");
         var btn = document.getElementById('saveBtn');
         if (btn) btn.disabled = true;
 
@@ -127,18 +119,18 @@ function onOpen() {
           showLatLong: showLL,
           debug: debug
         };
+        log("saveSettings payload", payload, { columns });
 
-        // guard (updateSaveButtonState should prevent this)
         if (!mapsKey || !address) {
-              if (btn)
-                btn.disabled = true;
-              alert("❌ You must provide both a Maps API key and an Address column before saving.");
-              return;
-      }
+          if (btn) btn.disabled = true;
+          console.error("❌ Missing required input(s):", { hasMapsKey: !!mapsKey, hasAddress: !!address });
+          alert("❌ You must provide both a Maps API key and an Address column before saving.");
+          return;
+        }
 
-      
         google.script.run
           .withSuccessHandler(function () {
+            log("saveSettings success → closing dialog");
             closeDialog(); // toast already shown server-side
           })
           .withFailureHandler(function (e) {
@@ -147,22 +139,23 @@ function onOpen() {
             alert("Failed to save preferences.");
           })
           .savePreferences(payload, columns);
-
-
       }
 
       function cancelDialog() {
+        log("cancelDialog");
         closeDialog();
       }
 
       /* ===== API key visibility helpers (used by HTML) ===== */
       function toggleApiKeyVisibility(checkbox) {
+        log("toggleApiKeyVisibility", { checked: !!(checkbox && checkbox.checked) });
         var input = document.getElementById("mapsApiKey");
         if (!input) return;
         input.type = (checkbox && checkbox.checked) ? "text" : "password";
       }
 
       function hideApiKeyOnBlur() {
+        log("hideApiKeyOnBlur");
         var cb = document.getElementById("showApiKey");
         if (cb && !cb.checked) {
           var input = document.getElementById("mapsApiKey");
@@ -176,6 +169,7 @@ function onOpen() {
           if (e && (e.key === 'Escape' || e.key === 'Esc')) {
             e.preventDefault();
             e.stopPropagation();
+            log("keyboard escape → cancelDialog");
             cancelDialog();
           }
         }
