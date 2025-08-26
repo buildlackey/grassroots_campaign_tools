@@ -51,21 +51,52 @@
         white-space: nowrap;
       }
 
-      /* Help icon style (tooltip target) */
+      /* ===== Help icon base (tooltip target) ===== */
       .help-icon {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         font-size: 12px;
-        width: 15px;
+        width: 15px; /* default size (info) */
         height: 15px;
         text-align: center;
         line-height: 14px;
         border-radius: 50%;
-        background: #e0f0ff;
-        color: #2a7ddf;
         cursor: help;
         user-select: none;
         vertical-align: top;
         margin-left: 6px;
+        position: relative; /* anchor for CSS tooltips if needed */
+      }
+
+      /* Blue info style (for "?") */
+      .help-icon.info {
+        background: #e0f0ff;
+        color: #2a7ddf;
+        border: 1px solid #cfe3ff;
+        font-weight: bold;
+      }
+
+      /* Yellow caution style (SVG triangle) */
+      .help-icon.caution {
+        background: transparent;
+        color: inherit;
+        border: none;
+        border-radius: 0;
+        width: 18px;
+        height: 18px;
+        padding: 0;
+      }
+      .help-icon.caution svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      /* Keyboard focus hint */
+      .help-icon:focus {
+        outline: 2px solid #d39e00;
+        outline-offset: 2px;
       }
 
       /* Ensure tooltip text can wrap and isn't clipped */
@@ -83,17 +114,17 @@
         gap: 4mm;                  /* ~4 mm between buttons */
         margin-top: 8mm;
         width: 100%;
-        max-width: 320px;          /* same cap as inputs so edges line up */
+        max-width: 320px;
       }
 
       /* Equal size and padding for both buttons */
       .button-row button {
         padding: 6px 16px;
-        min-width: 90px;           /* ensures equal width */
+        min-width: 90px;
         box-sizing: border-box;
       }
 
-      /* ===== Toast styles (CSS-only; JS adds/removes .show) ===== */
+      /* ===== Toast styles ===== */
       .toast {
         position: fixed;
         bottom: 20px;
@@ -107,7 +138,7 @@
         font-size: 14px;
         opacity: 0;
         transition: opacity 0.3s ease;
-        pointer-events: none; /* avoid intercepting clicks */
+        pointer-events: none;
       }
       .toast.show { opacity: 1; }
     </style>
@@ -115,18 +146,17 @@
     <script>
       (function () {
         function initTooltips() {
-          // anchor tooltips to the dialog container so they’re not clipped
           var $container = $("#settings-dialog-container").length
             ? $("#settings-dialog-container") : $(document.body);
 
           $(".help-icon").tooltip({
-            appendTo: $container,           // ensure not inside a clipping ancestor
+            appendTo: $container,
             items: ".help-icon",
             content: function () { return $(this).attr("data-help"); },
             position: {
               my: "left+8 center",
               at: "right center",
-              within: $container,           // constrain inside the dialog
+              within: $container,
               collision: "fit flipfit"
             },
             tooltipClass: "custom-tooltip",
@@ -141,7 +171,7 @@
           var start = Date.now();
           (function tick() {
             if (window.jQuery && $.fn && $.fn.tooltip) { initTooltips(); return; }
-            if (Date.now() - start >= maxMs) return; // silent give-up
+            if (Date.now() - start >= maxMs) return;
             setTimeout(tick, intervalMs);
           })();
         }
@@ -156,9 +186,21 @@
   <body>
     <label for="mapsApiKey">
       Maps API Key:
-      <span class="help-icon"
-        data-help='Enter your Google Maps API key. Make sure the Maps JavaScript API is enabled in your project. You can enable it here: <a href="https://console.cloud.google.com/apis/library/maps-backend.googleapis.com" target="_blank">Google Cloud Console</a>'>
-        ?
+      <span
+        class="help-icon caution"
+        tabindex="0"
+        role="img"
+        aria-label="Maps API key required"
+        data-help='⚠ Enter your Google Maps API <strong>carefully</strong> (we do not yet check for validity). To verify the Maps JavaScript API is enabled and to view your key, go here: <a href="https://console.cloud.google.com/apis/library/maps-backend.googleapis.com" target="_blank">Google Cloud Console</a>'>
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <polygon points="12,2 22,20 2,20"
+                   fill="#fff3cd"
+                   stroke="#d39e00"
+                   stroke-width="2"
+                   stroke-linejoin="round"/>
+          <rect x="11" y="8" width="2" height="7" fill="#7a5a00"/>
+          <circle cx="12" cy="17.5" r="1.3" fill="#7a5a00"/>
+        </svg>
       </span>
     </label>
     <input id="mapsApiKey" type="text" />
@@ -170,19 +212,15 @@
 
     <label for="sheetSelect">
       Sheet Tab:
-      <span class="help-icon" 
-            data-help="Select the sheet tab where your data is stored. (Typically 'Sheet1' for new sheets)">
-        ?
-      </span>
+      <span class="help-icon info" 
+            data-help="Select the sheet tab where your data is stored. (Typically 'Sheet1' for new sheets)">?</span>
     </label>
     <select id="sheetSelect"></select>
 
     <label for="addressSelect">
       Address Column:
-      <span class="help-icon" 
-            data-help="Choose the column that contains addresses for the sheet tab selected above.">
-        ?
-      </span>
+      <span class="help-icon info" 
+            data-help="Choose the column that contains addresses for the selected sheet tab.">?</span>
     </label>
     <select id="addressSelect"></select>
 
@@ -190,10 +228,8 @@
       <input type="checkbox" id="showLatLng">
       <label for="showLatLng">
         Show Lat/Lng columns
-        <span class="help-icon" 
-              data-help="If enabled, Latitude and Longitude columns will be shown/filled in your sheet.">
-          ?
-        </span>
+        <span class="help-icon info" 
+              data-help="If enabled, Latitude and Longitude columns will be shown/filled in your sheet.">?</span>
       </label>
     </div>
 
@@ -201,10 +237,8 @@
       <input type="checkbox" id="debug">
       <label for="debug">
         Enable Debug Logging
-        <span class="help-icon" 
-              data-help="Enable verbose logging to help troubleshoot issues.">
-          ?
-        </span>
+        <span class="help-icon info" 
+              data-help="Enable verbose logging to help troubleshoot issues.">?</span>
       </label>
     </div>
 
