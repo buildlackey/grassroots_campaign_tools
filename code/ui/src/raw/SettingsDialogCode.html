@@ -33,8 +33,14 @@
       }
 
 
+      
+
 function onOpen() {
   log("ENTER onOpen");
+
+  // 🔄 Show loading overlay
+  const overlay = document.getElementById("loading-overlay");
+  if (overlay) overlay.style.display = "flex";
 
   google.script.run
     .withSuccessHandler((data) => {
@@ -80,12 +86,19 @@ function onOpen() {
 
       updateSaveButtonState();
       log("EXIT onOpen");
+
+      // ✅ Hide loader
+      if (overlay) overlay.style.display = "none";
     })
     .withFailureHandler((e) => {
       console.error("❌ Failed to fetch init data:", e);
+
+      // ❌ Hide loader on error too
+      if (overlay) overlay.style.display = "none";
     })
     .getInitData();
 }
+
 
 
       function onSheetChange() {

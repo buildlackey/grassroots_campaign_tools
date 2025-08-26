@@ -62,7 +62,7 @@
         text-align: center;
         line-height: 14px;
         border-radius: 50%;
-        cursor: help;
+        cursor: pointer;       /* subtle; not obtrusive */
         user-select: none;
         vertical-align: top;
         margin-left: 6px;
@@ -141,6 +141,39 @@
         pointer-events: none;
       }
       .toast.show { opacity: 1; }
+
+      /* ===== Loading overlay (spinner + pulsing "Working…") ===== */
+      #loading-overlay {
+        position: absolute;
+        top: 40%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        z-index: 2000;       /* below tooltips, above content */
+        display: block;      /* visible by default until data loads */
+      }
+      .loader {
+        border: 4px solid #f0f0f0;
+        border-top: 4px solid #2a7ddf; /* matches info blue */
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        margin: 0 auto 10px;
+        animation: spin 1s linear infinite;
+      }
+      .loading-text {
+        font-size: 14px;
+        color: #444;
+        animation: pulse 1.6s ease-in-out infinite;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 1; letter-spacing: 0.2px; }
+        50% { opacity: 0.4; letter-spacing: 0.8px; }
+      }
     </style>
 
     <script>
@@ -176,14 +209,92 @@
           })();
         }
 
+        /* ===== Loading overlay helpers + google.script.run patch ===== */
+        function showLoading() {
+          var n = document.getElementById("loading-overlay");
+          if (n) n.style.display = "block";
+        }
+        function hideLoading() {
+          var n = document.getElementById("loading-overlay");
+          if (n) n.style.display = "none";
+        }
+        function patchGoogleRunForLoading() {
+          try {
+            if (!window.google || !google.script || !google.script.run) return false;
+            var run = google.script.run;
+            if (run.__loadingPatched) return true;
+
+            var origWithSuccess = run.withSuccessHandler && run.withSuccessHandler.bind(run);
+            if (typeof origWithSuccess === "function") {
+              run.withSuccessHandler = function (success) {
+                var wrappedSuccess = function () {
+                  try { hideLoading(); } catch (_) {}
+                  if (typeof success === "function") return success.apply(this, arguments);
+                };
+                var chain = origWithSuccess(wrappedSuccess);
+
+                if (chain && typeof chain.withFailureHandler === "function") {
+                  var origWithFailure = chain.withFailureHandler;
+                  chain.withFailureHandler = function (failure) {
+                    var wrappedFailure = function () {
+                      try { hideLoading(); } catch (_) {}
+                      if (typeof failure === "function") return failure.apply(this, arguments);
+                    };
+                    return origWithFailure.call(chain, wrappedFailure);
+                  };
+                }
+                return chain;
+              };
+            }
+
+            run.__loadingPatched = true;
+            return true;
+          } catch (_) {
+            return false;
+          }
+        }
+
         window.addEventListener("load", function () {
+          // Show loader as soon as dialog is shown
+          showLoading();
+
+          // Prepare tooltips
           waitForTooltipReady(5000, 50);
+
+          // Patch google.script.run when available
+          if (!patchGoogleRunForLoading()) {
+            // Retry a few times in case google.script.run is not ready yet
+            var retries = 20;
+            var iv = setInterval(function () {
+              if (patchGoogleRunForLoading() || --retries <= 0) {
+                clearInterval(iv);
+              }
+            }, 100);
+          }
+
+          // Fallback: hide loader when the Sheet select gets options
+          var sel = document.getElementById("sheetSelect");
+          if (sel && window.MutationObserver) {
+            var ob = new MutationObserver(function () {
+              if (sel.options && sel.options.length > 0) {
+                hideLoading();
+                ob.disconnect();
+              }
+            });
+            ob.observe(sel, { childList: true });
+          }
         });
       })();
     </script>
   </head>
 
   <body>
+    <!-- Loading overlay (visible by default; hidden once init completes) -->
+    <div id="loading-overlay" role="status" aria-live="polite" aria-label="Working">
+      <div class="loader"></div>
+      <div class="loading-text">Fetching Data...</div>
+    </div>
+
     <label for="mapsApiKey">
       Maps API Key:
       <span
