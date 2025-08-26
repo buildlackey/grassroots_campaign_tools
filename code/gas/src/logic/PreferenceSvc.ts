@@ -46,70 +46,88 @@ export class PreferenceSvc {
     };
   }
 
-  savePreferences(prefs: Partial<Preferences>, columnNames: string[]): Preferences {
-    const current = this.getPreferences();
+    savePreferences(prefs: Partial<Preferences>, columnNames: string[]): Preferences {
+        Logger.log("📥 [PreferenceSvc.savePreferences] called with prefs=%s, columns=%s",
+            JSON.stringify(prefs), JSON.stringify(columnNames));
 
-    const next: Preferences = {
-      sheetTabName: prefs.sheetTabName ?? current.sheetTabName,
-      addressColumn: prefs.addressColumn ?? current.addressColumn,
-      mapsApiKey: prefs.mapsApiKey ?? current.mapsApiKey,
-      showLatLong: typeof prefs.showLatLong === 'boolean' ? prefs.showLatLong : current.showLatLong,
-      debug: typeof prefs.debug === 'boolean' ? prefs.debug : current.debug,
-    };
+        const current = this.getPreferences();
+        Logger.log("🔎 Current prefs: %s", JSON.stringify(current));
 
-    const callHasOnlyKey =
-      !!prefs.mapsApiKey &&
-      !prefs.sheetTabName &&
-      !prefs.addressColumn &&
-      typeof prefs.showLatLong === 'undefined' &&
-      typeof prefs.debug === 'undefined' &&
-      (!Array.isArray(columnNames) || columnNames.length === 0);
+        const next: Preferences = {
+            sheetTabName: prefs.sheetTabName ?? current.sheetTabName,
+            addressColumn: prefs.addressColumn ?? current.addressColumn,
+            mapsApiKey: prefs.mapsApiKey ?? current.mapsApiKey,
+            showLatLong: typeof prefs.showLatLong === 'boolean' ? prefs.showLatLong : current.showLatLong,
+            debug: typeof prefs.debug === 'boolean' ? prefs.debug : current.debug,
+        };
 
-    const callHasFullSet =
-      !!prefs.mapsApiKey &&
-      !!prefs.sheetTabName &&
-      !!prefs.addressColumn &&
-      typeof prefs.showLatLong === 'boolean' &&
-      typeof prefs.debug === 'boolean' &&
-      Array.isArray(columnNames) &&
-      columnNames.length > 0;
+        Logger.log("➡️  Computed next prefs: %s", JSON.stringify(next));
 
-    if (!(callHasOnlyKey || callHasFullSet)) {
-      throw new Error(
-        'Invalid preferences: provide either only {mapsApiKey}, or provide {mapsApiKey, sheetTabName, addressColumn, showLatLong, debug} plus columnNames[].'
-      );
+        const callHasOnlyKey =
+            !!prefs.mapsApiKey &&
+            !prefs.sheetTabName &&
+            !prefs.addressColumn &&
+            typeof prefs.showLatLong === 'undefined' &&
+            typeof prefs.debug === 'undefined' &&
+            (!Array.isArray(columnNames) || columnNames.length === 0);
+
+        const callHasFullSet =
+            !!prefs.mapsApiKey &&
+            !!prefs.sheetTabName &&
+            !!prefs.addressColumn &&
+            typeof prefs.showLatLong === 'boolean' &&
+            typeof prefs.debug === 'boolean' &&
+            Array.isArray(columnNames) &&
+            columnNames.length > 0;
+
+        Logger.log("🧾 Call type: onlyKey=%s fullSet=%s", callHasOnlyKey, callHasFullSet);
+
+        if (!(callHasOnlyKey || callHasFullSet)) {
+            Logger.log("❌ Invalid prefs detected");
+            throw new Error(
+                'Invalid preferences: provide either only {mapsApiKey}, or provide {mapsApiKey, sheetTabName, addressColumn, showLatLong, debug} plus columnNames[].'
+            );
+        }
+
+        // Persist user fields if present in the call
+        if (prefs.mapsApiKey !== undefined) {
+            Logger.log("💾 Storing user property: mapsApiKey");
+            this.userProps.setProperty(PreferenceSvc.USER_KEYS.MAPS_KEY, next.mapsApiKey);
+        }
+        if (prefs.debug !== undefined) {
+            Logger.log("💾 Storing user property: debug=%s", next.debug);
+            this.userProps.setProperty(PreferenceSvc.USER_KEYS.DEBUG, PreferenceSvc.fromBool(!!prefs.debug));
+        }
+
+        // Full set → persist doc primaries + derived
+        if (callHasFullSet) {
+            const idx = columnNames.indexOf(next.addressColumn);
+            if (idx === -1) throw new Error('addressColumn must be one of columnNames.');
+
+            Logger.log("💾 Storing doc properties: sheetTab=%s addrCol=%s showLatLong=%s colOffset=%s",
+                next.sheetTabName, next.addressColumn, next.showLatLong, idx);
+
+            if (prefs.sheetTabName !== undefined) {
+                this.docProps.setProperty(PreferenceSvc.DOC_KEYS.SHEET_TAB_NAME, next.sheetTabName);
+            }
+            if (prefs.addressColumn !== undefined) {
+                this.docProps.setProperty(PreferenceSvc.DOC_KEYS.ADDRESS_COL, next.addressColumn);
+            }
+            if (prefs.showLatLong !== undefined) {
+                this.docProps.setProperty(PreferenceSvc.DOC_KEYS.SHOW_LATLNG, PreferenceSvc.fromBool(!!next.showLatLong));
+            }
+
+            this.docProps.setProperty(PreferenceSvc.DOC_KEYS.ADDRESS_COL_OFFSET, String(idx));
+        }
+
+        const finalPrefs = this.getPreferences();
+        Logger.log("✅ Final prefs saved: %s", JSON.stringify(finalPrefs));
+
+        return finalPrefs;
     }
 
-    // Persist user fields if present in the call
-    if (prefs.mapsApiKey !== undefined) {
-      this.userProps.setProperty(PreferenceSvc.USER_KEYS.MAPS_KEY, next.mapsApiKey);
-    }
-    if (prefs.debug !== undefined) {
-      this.userProps.setProperty(PreferenceSvc.USER_KEYS.DEBUG, PreferenceSvc.fromBool(!!prefs.debug));
-    }
 
-    // Full set → persist doc primaries + derived
-    if (callHasFullSet) {
-      const idx = columnNames.indexOf(next.addressColumn);
-      if (idx === -1) throw new Error('addressColumn must be one of columnNames.');
-
-      if (prefs.sheetTabName !== undefined) {
-        this.docProps.setProperty(PreferenceSvc.DOC_KEYS.SHEET_TAB_NAME, next.sheetTabName);
-      }
-      if (prefs.addressColumn !== undefined) {
-        this.docProps.setProperty(PreferenceSvc.DOC_KEYS.ADDRESS_COL, next.addressColumn);
-      }
-      if (prefs.showLatLong !== undefined) {
-        this.docProps.setProperty(PreferenceSvc.DOC_KEYS.SHOW_LATLNG, PreferenceSvc.fromBool(!!next.showLatLong));
-      }
-
-      this.docProps.setProperty(PreferenceSvc.DOC_KEYS.ADDRESS_COL_OFFSET, String(idx));
-    }
-
-    return this.getPreferences();
-  }
-
-  clearPreferences(opts: { document?: boolean; user?: boolean } = {}): void {
+    clearPreferences(opts: { document?: boolean; user?: boolean } = {}): void {
     const clearDoc = opts.document === undefined ? true : !!opts.document;
     const clearUser = !!opts.user;
 
@@ -134,10 +152,6 @@ export class PreferenceSvc {
   }
 }
 
-// GAS entry shims (optional; only if you deploy TS→JS to GAS directly)
-(globalThis as any).getPreferences = () => PreferenceSvc.forGAS().getPreferences();
-(globalThis as any).savePreferences = (prefs: Preferences, cols: string[]) =>
-  PreferenceSvc.forGAS().savePreferences(prefs, cols);
-(globalThis as any).clearPreferences = (opts: { document?: boolean; user?: boolean }) =>
-  PreferenceSvc.forGAS().clearPreferences(opts);
-
+// === Namespace exposure only (no global function shims) ===
+(globalThis as any).CAMPAIGN_TOOLS = (globalThis as any).CAMPAIGN_TOOLS || {};
+(globalThis as any).CAMPAIGN_TOOLS.PreferenceSvc = PreferenceSvc;

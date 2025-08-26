@@ -77,6 +77,24 @@ function onOpen() {
         updateSaveButtonState();
       }
       /* ===== dialog control ===== */
+
+
+   /* ===== toast utility (CSS in page stylesheet) ===== */
+      function showToast(msg) {
+        var t = document.createElement("div");
+        t.className = "toast";
+        t.textContent = msg;
+        document.body.appendChild(t);
+        // trigger fade-in
+        requestAnimationFrame(function () { t.classList.add("show"); });
+        // fade-out then remove
+        setTimeout(function () {
+          t.classList.remove("show");
+          setTimeout(function () { t.remove(); }, 300);
+        }, 2000);
+      }
+
+
       function closeDialog() {
         try {
           if (google && google.script && google.script.host && typeof google.script.host.close === 'function') {
@@ -90,6 +108,7 @@ function onOpen() {
       }
 
       /* ===== actions ===== */
+
       function saveSettings() {
         var btn = document.getElementById('saveBtn');
         if (btn) btn.disabled = true;
@@ -110,16 +129,26 @@ function onOpen() {
         };
 
         // guard (updateSaveButtonState should prevent this)
-        if (!mapsKey || !address) { if (btn) btn.disabled = false; return; }
+        if (!mapsKey || !address) {
+              if (btn)
+                btn.disabled = true;
+              alert("❌ You must provide both a Maps API key and an Address column before saving.");
+              return;
+      }
 
+      
         google.script.run
-          .withSuccessHandler(function () { closeDialog(); })
+          .withSuccessHandler(function () {
+            closeDialog(); // toast already shown server-side
+          })
           .withFailureHandler(function (e) {
             console.error("❌ Failed to save preferences:", e);
             if (btn) btn.disabled = false;
-            try { alert("Failed to save preferences."); } catch (_) {}
+            alert("Failed to save preferences.");
           })
           .savePreferences(payload, columns);
+
+
       }
 
       function cancelDialog() {

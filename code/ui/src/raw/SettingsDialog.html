@@ -92,6 +92,24 @@
         min-width: 90px;           /* ensures equal width */
         box-sizing: border-box;
       }
+
+      /* ===== Toast styles (CSS-only; JS adds/removes .show) ===== */
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #323232;
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 4px;
+        z-index: 2147483647;
+        font-size: 14px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none; /* avoid intercepting clicks */
+      }
+      .toast.show { opacity: 1; }
     </style>
 
     <script>
@@ -200,5 +218,4 @@
     </script>
   </body>
 </html>
-
 

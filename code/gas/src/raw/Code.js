@@ -18,9 +18,16 @@ function showSettingsDialog() {
         .setHeight(400);
     SpreadsheetApp.getUi().showModalDialog(html, 'Settings');
 }
+
 function savePreferences(prefs, columns) {
+    Logger.log("📥 [Code.js:savePreferences] called with prefs=%s, columns=%s", JSON.stringify(prefs), JSON.stringify(columns));
+
     if (globalThis.CAMPAIGN_TOOLS && globalThis.CAMPAIGN_TOOLS.PreferenceSvc) {
-        return globalThis.CAMPAIGN_TOOLS.PreferenceSvc.forGAS().savePreferences(prefs, columns);
+        const result = globalThis.CAMPAIGN_TOOLS.PreferenceSvc.forGAS().savePreferences(prefs, columns);
+        Logger.log("before toast");
+        SpreadsheetApp.getActiveSpreadsheet().toast("✅ Settings saved", "Campaign Tools", 3);
+        Logger.log("after toast");
+        return result;
     }
     throw new Error("PreferenceSvc unavailable in runtime");
 }
@@ -60,5 +67,9 @@ function verifyMapsApiKeySaved() {
             : "❌ No Maps API key found in user properties.";
     }
     throw new Error("PreferenceSvc unavailable in runtime");
+}
+
+function showToastInSheets(msg) {
+    SpreadsheetApp.getActiveSpreadsheet().toast(msg, "Campaign Tools", 3);
 }
 
