@@ -97,10 +97,4 @@ cat >> "$OUT_HTML" <<EOF
 </html>
 EOF
 
-echo "✅ Rendered HTML saved to: $OUT_HTML"
-
-if command -v xdg-open >/dev/null; then
-  xdg-open "$OUT_HTML"
-else
-  echo "🌐 Please open $OUT_HTML manually in your browser."
-fi
+echo "✅ Rendered HTML saved to: $OUT_HTML   - bring up in browser for ad hoc testing"
