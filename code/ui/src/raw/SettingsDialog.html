@@ -361,42 +361,43 @@
     </div>
 
     <label for="mapsApiKey">
-      Maps API Key:
-      <!-- CLICKABLE caution icon -> opens popover -->
-      <button
-        id="maps-help-btn"
-        type="button"
-        class="help-icon caution popover-help"
-        aria-haspopup="dialog"
-        aria-expanded="false"
-        aria-controls="maps-help-popover"
-        title="Maps API key help">
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <polygon points="12,2 22,20 2,20"
-                   fill="#fff3cd"
-                   stroke="#d39e00"
-                   stroke-width="2"
-                   stroke-linejoin="round"/>
-          <rect x="11" y="8" width="2" height="7" fill="#7a5a00"/>
-          <circle cx="12" cy="17.5" r="1.3" fill="#7a5a00"/>
-        </svg>
-      </button>
-      <!-- Popover content lives in the DOM (click to open/close) -->
-      <div id="maps-help-popover" class="popover" role="dialog" aria-modal="false" aria-labelledby="maps-help-title">
-        <div class="popover-arrow"></div>
-        <div class="popover-body">
-          <button class="popover-close" aria-label="Close">×</button>
-          <div id="maps-help-title" style="font-weight:600; margin-bottom:6px;">Maps API key required</div>
-          <div>
-            Enter your Google Maps API <strong>carefully</strong> (we don’t auto-validate yet).
-            To verify the Maps JavaScript API is enabled and to view your key, open:
-            <br>
-            <a href="https://console.cloud.google.com/apis/library/maps-backend.googleapis.com" target="_blank" rel="noopener">Google Cloud Console</a>
-          </div>
+        Maps API Key:
+        <!-- CLICKABLE caution icon -> opens popover -->
+        <button
+                id="maps-help-btn"
+                type="button"
+                class="help-icon caution popover-help"
+                aria-haspopup="dialog"
+                aria-expanded="false"
+                aria-controls="maps-help-popover"
+                title="Click here for important caveats!">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <polygon points="12,2 22,20 2,20"
+                         fill="#fff3cd"
+                         stroke="#d39e00"
+                         stroke-width="2"
+                         stroke-linejoin="round"/>
+                <rect x="11" y="8" width="2" height="7" fill="#7a5a00"/>
+                <circle cx="12" cy="17.5" r="1.3" fill="#7a5a00"/>
+            </svg>
+        </button>
+        <!-- Popover content -->
+        <div id="maps-help-popover" class="popover" role="dialog" aria-modal="false">
+            <div class="popover-arrow"></div>
+            <div class="popover-body">
+                <button class="popover-close" aria-label="Close">×</button>
+                <div>
+                    Enter your Google Maps API <strong>carefully</strong> (we don’t auto-validate yet).
+                    To verify the Maps JavaScript API is enabled and to view your key, open:
+                    <br>
+                    <a href="https://console.cloud.google.com/apis/library/maps-backend.googleapis.com"
+                       target="_blank" rel="noopener">Google Cloud Console</a>
+                </div>
+            </div>
         </div>
-      </div>
     </label>
     <input id="mapsApiKey" type="text" />
+
 
     <div class="checkbox-group">
       <input type="checkbox" id="showApiKey">
