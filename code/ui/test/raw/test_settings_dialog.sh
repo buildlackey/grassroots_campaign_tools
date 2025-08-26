@@ -9,6 +9,7 @@ TEMPLATE="$RAW_DIR/SettingsDialog.html"
 BUILT_UI_DIR="$PROJECT_ROOT/dist/ui"
 
 SETTINGS_DIALOG_CODE="$RAW_DIR/SettingsDialogCode.html"
+SETTINGS_DIALOG_HELP_UI_CODE="$RAW_DIR/SettingsDialogHelpUICode.html"
 OUT_HTML="$BUILT_UI_DIR/rendered_settings_dialog_test.html"
 SETUP_MOCK_JS="$PROJECT_ROOT/code/ui/test/raw/setupMock.js"
 
@@ -73,6 +74,9 @@ function inject_fragment() {
   case "$name" in
     SettingsDialogCode)
       cat "$SETTINGS_DIALOG_CODE" >> "$OUT_HTML"
+      ;;
+    SettingsDialogHelpUICode)
+      cat "$SETTINGS_DIALOG_HELP_UI_CODE" >> "$OUT_HTML"
       ;;
     *)
       echo "❌ Unknown include fragment: $name" >&2

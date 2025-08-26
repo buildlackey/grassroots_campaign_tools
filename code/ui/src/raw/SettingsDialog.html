@@ -443,6 +443,18 @@
     <script>
       <?!= include('SettingsDialogCode') ?>
     </script>
+
+  <script>
+  <?!= include('SettingsDialogHelpUICode') ?>
+
+  if (typeof demoAlert === "function") {
+    demoAlert("External include is wired up ✅");
+  } else {
+    console.warn("⚠ demoAlert was not defined by SettingsDialogHelpUICode include.");
+  }
+</script>
+
+  
   </body>
 </html>
 
