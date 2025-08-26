@@ -20,14 +20,9 @@
         position: relative;
       }
 
-      label {
-        display: block;
-        margin: 10px 0 5px;
-      }
+      label { display: block; margin: 10px 0 5px; }
 
-      input[type="text"],
-      input[type="password"],
-      select {
+      input[type="text"], input[type="password"], select {
         width: 100%;
         max-width: 320px;      /* ~39 chars + small buffer */
         padding: 6px;
@@ -40,16 +35,8 @@
         align-items: center;
         margin: 8px 0;
       }
-
-      .checkbox-group input[type="checkbox"] {
-        margin-right: 8px;
-        flex-shrink: 0;
-      }
-
-      .checkbox-group label {
-        margin: 0;
-        white-space: nowrap;
-      }
+      .checkbox-group input[type="checkbox"] { margin-right: 8px; flex-shrink: 0; }
+      .checkbox-group label { margin: 0; white-space: nowrap; }
 
       /* ===== Help icon base (tooltip target) ===== */
       .help-icon {
@@ -57,10 +44,8 @@
         align-items: center;
         justify-content: center;
         font-size: 12px;
-        width: 15px; /* default size (info) */
-        height: 15px;
-        text-align: center;
-        line-height: 14px;
+        width: 15px; height: 15px;
+        text-align: center; line-height: 14px;
         border-radius: 50%;
         cursor: pointer;       /* subtle; not obtrusive */
         user-select: none;
@@ -77,34 +62,64 @@
         font-weight: bold;
       }
 
-      /* Yellow caution style (SVG triangle) */
+      /* Yellow caution style (SVG triangle) — used as a button for popover */
       .help-icon.caution {
         background: transparent;
-        color: inherit;
         border: none;
         border-radius: 0;
-        width: 18px;
-        height: 18px;
-        padding: 0;
+        width: 18px; height: 18px; padding: 0;
       }
-      .help-icon.caution svg {
-        width: 100%;
-        height: 100%;
-        display: block;
-      }
+      .help-icon.caution svg { width: 100%; height: 100%; display: block; }
 
       /* Keyboard focus hint */
-      .help-icon:focus {
-        outline: 2px solid #d39e00;
-        outline-offset: 2px;
-      }
+      .help-icon:focus { outline: 2px solid #d39e00; outline-offset: 2px; }
 
-      /* Ensure tooltip text can wrap and isn't clipped */
+      /* jQuery UI tooltip look (for the blue "?" icons only) */
       .ui-tooltip {
         max-width: 300px;
         white-space: normal;
         z-index: 2147483647; /* above Sheets & GAS chrome */
+        pointer-events: auto; /* ensure links receive clicks if any */
       }
+
+      /* ===== Click popover for Maps API help ===== */
+      .popover {
+        position: absolute;
+        display: none;
+        max-width: 320px;
+        background: #fffdf7;
+        border: 1px solid #d39e00;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        border-radius: 6px;
+        z-index: 2147483647;
+      }
+      .popover.show { display: block; }
+      .popover .popover-body {
+        position: relative;
+        padding: 10px 12px 12px 12px;
+        font-size: 13px;
+        color: #3b3b3b;
+      }
+      .popover .popover-close {
+        position: absolute;
+        top: 4px; right: 6px;
+        background: transparent;
+        border: none;
+        font-size: 16px;
+        line-height: 1;
+        cursor: pointer;
+        color: #7a5a00;
+      }
+      .popover .popover-arrow {
+        position: absolute;
+        left: -6px; top: 50%;
+        transform: translateY(-50%);
+        width: 0; height: 0;
+        border-top: 6px solid transparent;
+        border-bottom: 6px solid transparent;
+        border-right: 6px solid #d39e00; /* border color aligns with popover */
+      }
+      .popover a { color: #0b63bd; text-decoration: underline; }
 
       /* Button row styling */
       .button-row {
@@ -116,8 +131,6 @@
         width: 100%;
         max-width: 320px;
       }
-
-      /* Equal size and padding for both buttons */
       .button-row button {
         padding: 6px 16px;
         min-width: 90px;
@@ -149,42 +162,35 @@
         left: 50%;
         transform: translate(-50%, -50%);
         text-align: center;
-        z-index: 2000;       /* below tooltips, above content */
+        z-index: 2000;       /* below tooltips/popovers, above content */
         display: block;      /* visible by default until data loads */
       }
       .loader {
         border: 4px solid #f0f0f0;
         border-top: 4px solid #2a7ddf; /* matches info blue */
         border-radius: 50%;
-        width: 40px;
-        height: 40px;
+        width: 40px; height: 40px;
         margin: 0 auto 10px;
         animation: spin 1s linear infinite;
       }
       .loading-text {
-        font-size: 14px;
-        color: #444;
+        font-size: 14px; color: #444;
         animation: pulse 1.6s ease-in-out infinite;
       }
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-      @keyframes pulse {
-        0%, 100% { opacity: 1; letter-spacing: 0.2px; }
-        50% { opacity: 0.4; letter-spacing: 0.8px; }
-      }
+      @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+      @keyframes pulse { 0%, 100% { opacity: 1; letter-spacing: 0.2px; } 50% { opacity: 0.4; letter-spacing: 0.8px; } }
     </style>
 
     <script>
       (function () {
+        /* ===== jQuery UI tooltips for blue "?" icons ONLY (exclude popover-help) ===== */
         function initTooltips() {
           var $container = $("#settings-dialog-container").length
             ? $("#settings-dialog-container") : $(document.body);
 
-          $(".help-icon").tooltip({
+          $(".help-icon:not(.popover-help)").tooltip({
             appendTo: $container,
-            items: ".help-icon",
+            items: ".help-icon:not(.popover-help)",
             content: function () { return $(this).attr("data-help"); },
             position: {
               my: "left+8 center",
@@ -194,9 +200,6 @@
             },
             tooltipClass: "custom-tooltip",
             track: false
-          }).on("mouseleave", function () {
-            const $el = $(this);
-            setTimeout(function () { if ($el.tooltip) $el.tooltip("close"); }, 150);
           });
         }
 
@@ -209,15 +212,78 @@
           })();
         }
 
+        /* ===== Click-popover for Maps API help (robust locally & in GAS) ===== */
+        function positionPopover(btn, pop) {
+          var rect = btn.getBoundingClientRect();
+          var bodyScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+          var bodyScrollX = window.scrollX || document.documentElement.scrollLeft || 0;
+
+          // Place to the right of the icon, vertically centered
+          pop.style.top = Math.max(10, rect.top + bodyScrollY + (rect.height / 2) - (pop.offsetHeight / 2)) + "px";
+          pop.style.left = (rect.left + bodyScrollX + rect.width + 10) + "px";
+
+          // Keep within viewport (basic)
+          var vw = document.documentElement.clientWidth;
+          var vh = document.documentElement.clientHeight;
+          var popRect = pop.getBoundingClientRect();
+          if (popRect.right > vw - 8) {
+            pop.style.left = (vw - popRect.width - 8 + bodyScrollX) + "px";
+          }
+          if (popRect.top < 8) {
+            pop.style.top = (8 + bodyScrollY) + "px";
+          } else if (popRect.bottom > vh - 8) {
+            pop.style.top = (vh - popRect.height - 8 + bodyScrollY) + "px";
+          }
+        }
+
+        function initMapsPopover() {
+          var btn = document.getElementById("maps-help-btn");
+          var pop = document.getElementById("maps-help-popover");
+          if (!btn || !pop) return;
+
+          function openPop() {
+            pop.classList.add("show");
+            positionPopover(btn, pop);
+            btn.setAttribute("aria-expanded", "true");
+          }
+          function closePop() {
+            pop.classList.remove("show");
+            btn.setAttribute("aria-expanded", "false");
+          }
+          function togglePop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (pop.classList.contains("show")) closePop(); else openPop();
+          }
+
+          btn.addEventListener("click", togglePop);
+          btn.addEventListener("keydown", function (e) {
+            if (e.key === "Enter" || e.key === " ") { e.preventDefault(); togglePop(e); }
+            if (e.key === "Escape") { closePop(); }
+          });
+
+          // Close with Esc anywhere, outside click, or close button
+          document.addEventListener("click", function (e) {
+            if (!pop.classList.contains("show")) return;
+            if (e.target === btn || pop.contains(e.target)) return;
+            closePop();
+          });
+          document.addEventListener("keydown", function (e) {
+            if (e.key === "Escape") closePop();
+          });
+          var closeBtn = pop.querySelector(".popover-close");
+          if (closeBtn) closeBtn.addEventListener("click", function (e) {
+            e.preventDefault(); e.stopPropagation(); closePop();
+          });
+
+          // Reposition on resize/scroll
+          window.addEventListener("resize", function () { if (pop.classList.contains("show")) positionPopover(btn, pop); });
+          window.addEventListener("scroll", function () { if (pop.classList.contains("show")) positionPopover(btn, pop); }, true);
+        }
+
         /* ===== Loading overlay helpers + google.script.run patch ===== */
-        function showLoading() {
-          var n = document.getElementById("loading-overlay");
-          if (n) n.style.display = "block";
-        }
-        function hideLoading() {
-          var n = document.getElementById("loading-overlay");
-          if (n) n.style.display = "none";
-        }
+        function showLoading() { var n = document.getElementById("loading-overlay"); if (n) n.style.display = "block"; }
+        function hideLoading() { var n = document.getElementById("loading-overlay"); if (n) n.style.display = "none"; }
         function patchGoogleRunForLoading() {
           try {
             if (!window.google || !google.script || !google.script.run) return false;
@@ -246,24 +312,23 @@
                 return chain;
               };
             }
-
             run.__loadingPatched = true;
             return true;
-          } catch (_) {
-            return false;
-          }
+          } catch (_) { return false; }
         }
 
         window.addEventListener("load", function () {
           // Show loader as soon as dialog is shown
           showLoading();
 
-          // Prepare tooltips
+          // Prepare hover-tooltips for the blue "?" icons
           waitForTooltipReady(5000, 50);
+
+          // Init click-popover for the Maps help
+          initMapsPopover();
 
           // Patch google.script.run when available
           if (!patchGoogleRunForLoading()) {
-            // Retry a few times in case google.script.run is not ready yet
             var retries = 20;
             var iv = setInterval(function () {
               if (patchGoogleRunForLoading() || --retries <= 0) {
@@ -297,12 +362,15 @@
 
     <label for="mapsApiKey">
       Maps API Key:
-      <span
-        class="help-icon caution"
-        tabindex="0"
-        role="img"
-        aria-label="Maps API key required"
-        data-help='⚠ Enter your Google Maps API <strong>carefully</strong> (we do not yet check for validity). To verify the Maps JavaScript API is enabled and to view your key, go here: <a href="https://console.cloud.google.com/apis/library/maps-backend.googleapis.com" target="_blank">Google Cloud Console</a>'>
+      <!-- CLICKABLE caution icon -> opens popover -->
+      <button
+        id="maps-help-btn"
+        type="button"
+        class="help-icon caution popover-help"
+        aria-haspopup="dialog"
+        aria-expanded="false"
+        aria-controls="maps-help-popover"
+        title="Maps API key help">
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
           <polygon points="12,2 22,20 2,20"
                    fill="#fff3cd"
@@ -312,7 +380,21 @@
           <rect x="11" y="8" width="2" height="7" fill="#7a5a00"/>
           <circle cx="12" cy="17.5" r="1.3" fill="#7a5a00"/>
         </svg>
-      </span>
+      </button>
+      <!-- Popover content lives in the DOM (click to open/close) -->
+      <div id="maps-help-popover" class="popover" role="dialog" aria-modal="false" aria-labelledby="maps-help-title">
+        <div class="popover-arrow"></div>
+        <div class="popover-body">
+          <button class="popover-close" aria-label="Close">×</button>
+          <div id="maps-help-title" style="font-weight:600; margin-bottom:6px;">Maps API key required</div>
+          <div>
+            Enter your Google Maps API <strong>carefully</strong> (we don’t auto-validate yet).
+            To verify the Maps JavaScript API is enabled and to view your key, open:
+            <br>
+            <a href="https://console.cloud.google.com/apis/library/maps-backend.googleapis.com" target="_blank" rel="noopener">Google Cloud Console</a>
+          </div>
+        </div>
+      </div>
     </label>
     <input id="mapsApiKey" type="text" />
 
@@ -323,14 +405,14 @@
 
     <label for="sheetSelect">
       Sheet Tab:
-      <span class="help-icon info" 
+      <span class="help-icon info"
             data-help="Select the sheet tab where your data is stored. (Typically 'Sheet1' for new sheets)">?</span>
     </label>
     <select id="sheetSelect"></select>
 
     <label for="addressSelect">
       Address Column:
-      <span class="help-icon info" 
+      <span class="help-icon info"
             data-help="Choose the column that contains addresses for the selected sheet tab.">?</span>
     </label>
     <select id="addressSelect"></select>
@@ -339,7 +421,7 @@
       <input type="checkbox" id="showLatLng">
       <label for="showLatLng">
         Show Lat/Lng columns
-        <span class="help-icon info" 
+        <span class="help-icon info"
               data-help="If enabled, Latitude and Longitude columns will be shown/filled in your sheet.">?</span>
       </label>
     </div>
@@ -348,7 +430,7 @@
       <input type="checkbox" id="debug">
       <label for="debug">
         Enable Debug Logging
-        <span class="help-icon info" 
+        <span class="help-icon info"
               data-help="Enable verbose logging to help troubleshoot issues.">?</span>
       </label>
     </div>
