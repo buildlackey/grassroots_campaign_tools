@@ -1,32 +1,40 @@
-// SettingsDialogHelpUICode.html
 (function (global) {
   var SDH = global.SDH || {};
+  SDH.UI = SDH.UI || {};
 
-  SDH.showLoading = function () {
+  SDH.UI.showLoading = function () {
     var n = document.getElementById("loading-overlay");
     if (n) n.style.display = "block";
   };
 
-  SDH.hideLoading = function () {
+  SDH.UI.hideLoading = function () {
     var n = document.getElementById("loading-overlay");
     if (n) n.style.display = "none";
   };
 
+  SDH.UI.toggleApiKeyVisibility = function (checkbox) {
+    log("toggleApiKeyVisibility", { checked: !!(checkbox && checkbox.checked) });
+    var input = document.getElementById("mapsApiKey");
+    if (!input) return;
+    input.type = (checkbox && checkbox.checked) ? "text" : "password";
+  };
+
+  SDH.UI.hideApiKeyOnBlur = function () {
+    log("hideApiKeyOnBlur");
+    var cb = document.getElementById("showApiKey");
+    if (cb && !cb.checked) {
+      var input = document.getElementById("mapsApiKey");
+      if (input) input.type = "password";
+    }
+  };
+
+  SDH.UI.updateSaveButtonState = function () {
+    var btn = document.getElementById("saveBtn");
+    if (!btn) return;
+    var enabled = hasMapsKey() && hasAddressSelection();
+    try { console.log("[SettingsDialog/updateSaveButtonState]", { enabled }); } catch (_) {}
+    btn.disabled = !enabled;
+  };
+
   global.SDH = SDH;
 })(window);
-
-function toggleApiKeyVisibility(checkbox) {
-  log("toggleApiKeyVisibility", { checked: !!(checkbox && checkbox.checked) });
-  var input = document.getElementById("mapsApiKey");
-  if (!input) return;
-  input.type = (checkbox && checkbox.checked) ? "text" : "password";
-}
-
-function hideApiKeyOnBlur() {
-  log("hideApiKeyOnBlur");
-  var cb = document.getElementById("showApiKey");
-  if (cb && !cb.checked) {
-    var input = document.getElementById("mapsApiKey");
-    if (input) input.type = "password";
-  }
-}

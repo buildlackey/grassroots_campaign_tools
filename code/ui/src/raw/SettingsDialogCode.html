@@ -14,13 +14,6 @@
         var v = el && typeof el.value === "string" ? el.value : "";
         return v !== "";
       }
-      function updateSaveButtonState() {
-        var btn = getSaveBtn();
-        if (!btn) return;
-        var enabled = hasMapsKey() && hasAddressSelection();
-        log("updateSaveButtonState →", { enabled });
-        btn.disabled = !enabled;
-      }
 
       window.addEventListener("load", onOpen);
 
@@ -75,16 +68,21 @@ function onOpen() {
       }
 
       // Wire up events
+
+
       bindRequired("sheetSelect", "change", onSheetChange);
-      bindRequired("mapsApiKey", "input", updateSaveButtonState);
-      bindRequired("mapsApiKey", "blur", hideApiKeyOnBlur);
-      bindRequired("addressSelect", "change", updateSaveButtonState);
       bindRequired("saveBtn", "click", saveSettings);
+
+      bindRequired("addressSelect", "change", SDH.UI.updateSaveButtonState);
+      bindRequired("mapsApiKey", "input", SDH.UI.updateSaveButtonState);
+      bindRequired("mapsApiKey", "blur", SDH.UI.hideApiKeyOnBlur);
       bindRequired("showApiKey", "change", function () {
-        toggleApiKeyVisibility(this);
+      SDH.UI.toggleApiKeyVisibility(this);
       });
 
-      updateSaveButtonState();
+      SDH.UI.updateSaveButtonState();
+
+
       log("EXIT onOpen");
 
       // ✅ Hide loader
@@ -115,7 +113,7 @@ function onOpen() {
         const defaultAddr = headers.find(h => /address/i.test(h));
         if (defaultAddr) addressSelect.value = defaultAddr;
         else if (headers.length) addressSelect.value = headers[0];
-        updateSaveButtonState();
+        SDH.UI.updateSaveButtonState();
         log("EXIT renderHeadersFor", { count: headers.length, selected: addressSelect.value || "" });
       }
 

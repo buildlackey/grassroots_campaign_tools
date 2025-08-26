@@ -61,7 +61,7 @@ function driveOpenIfNeeded(win: any, doc: Document) {
       return;
     }
 
-
+  // TODO - consider whether or not we can drop or simplify stuff below
   // Minimal fallback: hydrate from __MOCK_CONFIG__ like the page would
   console.log("[fallback] onOpen shim running (no window.onOpen)");
   const cfg = (win as any).__MOCK_CONFIG__ || {};
@@ -87,10 +87,11 @@ function driveOpenIfNeeded(win: any, doc: Document) {
     keyInput.dispatchEvent(new win.Event("input", { bubbles: true }));
   }
 
-  // Nudge page logic if it exposed an updater
-  if (typeof (win as any).updateSaveButtonState === "function") {
-    (win as any).updateSaveButtonState();
+    // Nudge page logic if it exposed an updater
+  if (win.SDH && win.SDH.UI && typeof win.SDH.UI.updateSaveButtonState === "function") {
+      win.SDH.UI.updateSaveButtonState();
   }
+
 }
 
 describe("SettingsDialog Save Button / Maps API key (config-driven)", () => {

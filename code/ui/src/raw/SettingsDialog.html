@@ -316,7 +316,7 @@
 
         window.addEventListener("load", function () {
           // Show loader as soon as dialog is shown
-          SDH.showLoading();
+          SDH.UI.showLoading();
 
           // Prepare hover-tooltips for the blue "?" icons
           waitForTooltipReady(5000, 50);
@@ -339,7 +339,7 @@
           if (sel && window.MutationObserver) {
             var ob = new MutationObserver(function () {
               if (sel.options && sel.options.length > 0) {
-                SDH.hideLoading();
+                SDH.UI.hideLoading();
                 ob.disconnect();
               }
             });
