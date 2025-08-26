@@ -1,6 +1,16 @@
-// SettingsDialogHelpUI.html
+// SettingsDialogHelpUICode.html
 (function (global) {
-  global.demoAlert = function (msg) {
-    console.log("SettingsDialogHelpUI include says:", msg || "Hello world ✅");
+  var SDH = global.SDH || {};
+
+  SDH.showLoading = function () {
+    var n = document.getElementById("loading-overlay");
+    if (n) n.style.display = "block";
   };
+
+  SDH.hideLoading = function () {
+    var n = document.getElementById("loading-overlay");
+    if (n) n.style.display = "none";
+  };
+
+  global.SDH = SDH;
 })(window);
