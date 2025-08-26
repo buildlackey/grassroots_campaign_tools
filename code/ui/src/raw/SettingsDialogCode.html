@@ -32,28 +32,48 @@
           return el;
       }
 
+
 function onOpen() {
   log("ENTER onOpen");
+
   google.script.run
     .withSuccessHandler((data) => {
-      log("getSheetTabsAndColumnNames success", data);
+      log("getInitData success", data);
+
       sheets = data.sheetTabNames || [];
       headersBySheet = data.sheetTabToColumnNames || {};
+      var prefs = data.prefs || {};
 
       const sheetSelect = document.getElementById("sheetSelect");
       sheetSelect.innerHTML = sheets.map(n => `<option value="${n}">${n}</option>`).join('');
+
       if (sheets.length > 0) {
-        sheetSelect.value = sheets[0];
-        renderHeadersFor(sheets[0]);
+        sheetSelect.value =
+          prefs.sheetTabName && sheets.includes(prefs.sheetTabName)
+            ? prefs.sheetTabName
+            : sheets[0];
+        renderHeadersFor(sheetSelect.value);
       }
 
-      // strict wiring: throw if element is missing
+      if (prefs.mapsApiKey) {
+        document.getElementById("mapsApiKey").value = prefs.mapsApiKey;
+      }
+      if (prefs.addressColumn) {
+        document.getElementById("addressSelect").value = prefs.addressColumn;
+      }
+      if (typeof prefs.showLatLong === "boolean") {
+        document.getElementById("showLatLng").checked = prefs.showLatLong;
+      }
+      if (typeof prefs.debug === "boolean") {
+        document.getElementById("debug").checked = prefs.debug;
+      }
+
+      // Wire up events
       bindRequired("sheetSelect", "change", onSheetChange);
       bindRequired("mapsApiKey", "input", updateSaveButtonState);
       bindRequired("mapsApiKey", "blur", hideApiKeyOnBlur);
       bindRequired("addressSelect", "change", updateSaveButtonState);
       bindRequired("saveBtn", "click", saveSettings);
-      bindRequired("cancelBtn", "click", cancelDialog);
       bindRequired("showApiKey", "change", function () {
         toggleApiKeyVisibility(this);
       });
@@ -62,11 +82,11 @@ function onOpen() {
       log("EXIT onOpen");
     })
     .withFailureHandler((e) => {
-      console.error("❌ Failed to fetch tabs/columns:", e);
-      log("EXIT onOpen with failure");
+      console.error("❌ Failed to fetch init data:", e);
     })
-    .getSheetTabsAndColumnNames();
+    .getInitData();
 }
+
 
       function onSheetChange() {
         const name = document.getElementById("sheetSelect").value;

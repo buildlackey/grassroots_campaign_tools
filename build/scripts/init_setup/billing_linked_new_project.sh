@@ -198,8 +198,8 @@ fi
 echo THIS PART NOT COMPLETELY TESTED 
 MAPS_KEY_URL=https://console.cloud.google.com/apis/credentials?project=$PROJECT_ID
 echo "Retrieve your Maps API key (or if needed, generate a new one) from this link: $MAPS_KEY_URL"
-read -rp "Enter MAPS API key> " MAPS_API_KEY
-echo "MAPS_API_KEY=\"$MAPS_API_KEY\"" >> "$CONFIG_FILE"
+read -rp "Enter MAPS API key> " GOOGLE_MAPS_API_KEY
+echo "GOOGLE_MAPS_API_KEY=\"$GOOGLE_MAPS_API_KEY\"" >> "$CONFIG_FILE"
 
 
 URL=https://console.cloud.google.com/apis/credentials/consent?project=$PROJECT_ID

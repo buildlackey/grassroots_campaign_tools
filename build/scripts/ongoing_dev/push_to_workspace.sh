@@ -97,30 +97,9 @@ END
 
 # 3) 🔑 Inject real Maps API key into Code.js (placeholder "GOOGLE_MAPS_API_KEY")
 #    Only touch Code.js in the staging folder right before push.
-if [[ -f "$WORKING_PUSH_FOLDER/Code.js" ]]; then
-  if [[ -n "${MAPS_API_KEY:-}" ]]; then
-    if grep -q '"GOOGLE_MAPS_API_KEY"' "$WORKING_PUSH_FOLDER/Code.js"; then
-      echo "🔑 Injecting Maps API key into Code.js..."
-      # Replace the quoted placeholder to avoid accidental partial matches
-      sed -i "s|\"GOOGLE_MAPS_API_KEY\"|\"${MAPS_API_KEY}\"|g" "$WORKING_PUSH_FOLDER/Code.js"
+sed -i "s|\"GOOGLE_MAPS_API_KEY\"|\"${GOOGLE_MAPS_API_KEY}\"|g" "$WORKING_PUSH_FOLDER/Code.js"
 
-      # Verify substitution took effect
-      if grep -q '"GOOGLE_MAPS_API_KEY"' "$WORKING_PUSH_FOLDER/Code.js"; then
-        echo "❌ Injection check failed: placeholder still present in Code.js after sed"
-        exit 1
-      else
-        echo "✅ API key injected into Code.js"
-      fi
-    else
-      echo "ℹ️ No placeholder found in Code.js; skipping API key injection"
-    fi
-  else
-    echo "⚠️ MAPS_API_KEY not set in environment (maps_config.env). Skipping injection; Code.js will keep placeholder."
-  fi
-else
-  echo "❌ Code.js not found in $WORKING_PUSH_FOLDER — cannot inject API key"
-  exit 1
-fi
+
 # 4) Push
 echo "🚀 Pushing project to Apps Script"
 "$LOCAL_CLASP" push --force

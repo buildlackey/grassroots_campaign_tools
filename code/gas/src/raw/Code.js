@@ -56,8 +56,9 @@ function smokeTest() {
         throw new Error("PreferenceSvc failed: expected " + key + ", got " + prefs.mapsApiKey);
     }
 
-    // The real API key will be dynamically injected by our push to workspace script (since we don't want this in git)
+    // real API key is injected by push script
     svc.savePreferences({ mapsApiKey: "GOOGLE_MAPS_API_KEY"}, []);
+    // The real API key will be dynamically injected by our push to workspace script (since we don't want this in git)
     Logger.log("🧪 [Code.js/smokeTest] EXIT success");
 
 
@@ -81,4 +82,17 @@ function showToastInSheets(msg) {
     SpreadsheetApp.getActiveSpreadsheet().toast(msg, "Campaign Tools", 3);
 }
 
+
+function getInitData() {
+    var svc = globalThis.CAMPAIGN_TOOLS.PreferenceSvc.forGAS();
+    var prefs = svc.getPreferences();
+
+    var tabsAndColumnNames = getSheetTabsAndColumnNames();
+
+    return {
+        sheetTabNames: tabsAndColumnNames.sheetTabNames,
+        sheetTabToColumnNames: tabsAndColumnNames.sheetTabToColumnNames,
+        prefs: prefs,
+    };
+}
 

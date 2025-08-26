@@ -41,15 +41,25 @@
                 return chain;
               },
 
-              getSheetTabsAndColumnNames: function () {
+              getInitData: function () {
                 try {
                   var sheets = config.sheets || { Sheet1: [], Sheet2: [], Sheet3: [] };
                   var names = Object.keys(sheets);
+
                   chain._success({
                     sheetTabNames: names,
-                    sheetTabToColumnNames: sheets
+                    sheetTabToColumnNames: sheets,
+                    prefs: {
+                      mapsApiKey: config.mapsApiKey || "",
+                      sheetTabName: config.defaultSheet || names[0] || "",
+                      addressColumn: (sheets[config.defaultSheet || names[0] || ""] || [])[0] || "",
+                      showLatLong: !!config.showLatLong,
+                      debug: !!config.debug,
+                    }
                   });
-                } catch (e) { chain._failure(e); }
+                } catch (e) {
+                  chain._failure(e);
+                }
               },
 
               savePreferences: function (prefs) {
