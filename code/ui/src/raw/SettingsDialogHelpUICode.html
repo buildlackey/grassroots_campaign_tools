@@ -14,3 +14,19 @@
 
   global.SDH = SDH;
 })(window);
+
+function toggleApiKeyVisibility(checkbox) {
+  log("toggleApiKeyVisibility", { checked: !!(checkbox && checkbox.checked) });
+  var input = document.getElementById("mapsApiKey");
+  if (!input) return;
+  input.type = (checkbox && checkbox.checked) ? "text" : "password";
+}
+
+function hideApiKeyOnBlur() {
+  log("hideApiKeyOnBlur");
+  var cb = document.getElementById("showApiKey");
+  if (cb && !cb.checked) {
+    var input = document.getElementById("mapsApiKey");
+    if (input) input.type = "password";
+  }
+}
