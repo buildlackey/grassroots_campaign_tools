@@ -75,7 +75,6 @@
         z-index: 2147483647; /* above Sheets & GAS chrome */
       }
 
-
       /* Button row styling */
       .button-row {
         display: flex;
@@ -94,7 +93,6 @@
         box-sizing: border-box;
       }
     </style>
-
 
     <script>
       (function () {
@@ -135,8 +133,6 @@
         });
       })();
     </script>
-
-
   </head>
 
   <body>
@@ -147,10 +143,10 @@
         ?
       </span>
     </label>
-    <input id="mapsApiKey" type="text" onblur="hideApiKeyOnBlur()" />
+    <input id="mapsApiKey" type="text" />
 
     <div class="checkbox-group">
-      <input type="checkbox" id="showApiKey" onchange="toggleApiKeyVisibility(this)">
+      <input type="checkbox" id="showApiKey">
       <label for="showApiKey">Show API Key</label>
     </div>
 
@@ -161,7 +157,7 @@
         ?
       </span>
     </label>
-    <select id="sheetSelect" onchange="onSheetChange()"></select>
+    <select id="sheetSelect"></select>
 
     <label for="addressSelect">
       Address Column:
@@ -195,8 +191,8 @@
     </div>
 
     <div class="button-row">
-      <button onclick="cancelDialog()">Dismiss</button>
-      <button id="saveBtn" onclick="saveSettings()" disabled>Save</button>
+      <button id="cancelBtn">Dismiss</button>
+      <button id="saveBtn" disabled>Save</button>
     </div>
 
     <script>
@@ -204,4 +200,5 @@
     </script>
   </body>
 </html>
+
 

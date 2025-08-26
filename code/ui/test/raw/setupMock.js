@@ -66,17 +66,18 @@
     };
   }
 
-   function applyMockConfig(win) {
-     var config = (win && win.__MOCK_CONFIG__) || {};
-     try {
-       var input = win.document && win.document.getElementById && win.document.getElementById("mapsApiKey");
-       if (input && typeof config.mapsApiKey === "string") {
-         input.value = config.mapsApiKey;
-         try {
-           input.dispatchEvent(new win.Event("input", { bubbles: true }));
-         } catch (_) { /* jsdom-safe */ }
-       }
-     } catch (_) { /* no-op */ }
-   }
-  return { setupMock: setupMock, applyMockConfig: applyMockConfig };
+  function applyMockConfig(win) {
+        var config = (win && win.__MOCK_CONFIG__) || {};
+        // Prefill key
+        var input = win.document.getElementById("mapsApiKey");
+        if (input && typeof config.mapsApiKey === "string") {
+            input.value = config.mapsApiKey;
+            input.dispatchEvent(new win.Event("input", { bubbles: true }));
+        }
+        // ALSO repopulate headersBySheet for test-driven configs
+        win.headersBySheet = config.sheets || {};
+  }
+
+
+    return { setupMock: setupMock, applyMockConfig: applyMockConfig };
 }));
