@@ -59,9 +59,10 @@
 
 
   global.SDH = SDH;
-// SDH.UI.ready = true;                   // <-- new sentinel
-//document.dispatchEvent(new Event('sdh-ui-ready'));  // <-- event for waiters
-//console.log("[SettingsDialogHelpUICode] sentinel set");
+
+  SDH.UI.ready = true;                   // <-- new sentinel
+  document.dispatchEvent(new Event('sdh-ui-ready'));  // <-- event for waiters
+  console.log("[SettingsDialogHelpUICode] sentinel set");
 
 
   // Signal ready for consumers that poll SDH.UI.ready
