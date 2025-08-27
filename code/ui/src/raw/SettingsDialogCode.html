@@ -1,123 +1,162 @@
+      console.log("[SettingsDialogCode] vA1 loading");
+
       let sheets = [];
       let headersBySheet = {};
 
+      // --- tiny logger ---
       function log(...args){ try{ console.log("[SettingsDialog]", ...args); }catch(_){ } }
 
+      // --- DOM helpers ---
       function getSaveBtn() { return document.getElementById("saveBtn"); }
       function hasMapsKey() {
-        var el = document.getElementById("mapsApiKey");
-        var v = el && typeof el.value === "string" ? el.value : "";
+        const el = document.getElementById("mapsApiKey");
+        const v = el && typeof el.value === "string" ? el.value : "";
         return v.trim().length > 0;
       }
       function hasAddressSelection() {
-        var el = document.getElementById("addressSelect");
-        var v = el && typeof el.value === "string" ? el.value : "";
+        const el = document.getElementById("addressSelect");
+        const v = el && typeof el.value === "string" ? el.value : "";
         return v !== "";
       }
 
+      // Bind + assert presence
+      function bindRequired(id, event, handler) {
+        const el = document.getElementById(id);
+        if (!el) throw new Error(`Missing required element #${id}`);
+        el.addEventListener(event, handler);
+        log("bindRequired OK", { id, event });
+        return el;
+      }
+
+      // ========= Simple readiness waiters (no custom events, no stubs) =========
+      function waitFor(cond, { timeout = 4000, interval = 25 } = {}) {
+        return new Promise((resolve, reject) => {
+          if (cond()) return resolve();
+          const start = Date.now();
+          const iv = setInterval(() => {
+            if (cond()) { clearInterval(iv); resolve(); }
+            else if (Date.now() - start >= timeout) {
+              clearInterval(iv);
+              reject(new Error("Timeout waiting for condition"));
+            }
+          }, interval);
+        });
+      }
+
+      // Are the helper methods present?
+      function uiFnsReady() {
+        return !!(window.SDH &&
+                  SDH.UI &&
+                  typeof SDH.UI.renderHeadersFor === "function" &&
+                  typeof SDH.UI.updateSaveButtonState === "function" &&
+                  typeof SDH.UI.onSheetChange === "function" &&
+                  typeof SDH.UI.hideApiKeyOnBlur === "function" &&
+                  typeof SDH.UI.toggleApiKeyVisibility === "function");
+      }
+
+      // Optional sentinel (ok if absent; we also check for functions themselves)
+      function sentinelReady() {
+        return !!(window.SDH && SDH.UI && SDH.UI.ready === true);
+      }
+
+      function waitForUIHelpers() {
+        // Succeeds as soon as either the functions are present OR the sentinel flips
+        return waitFor(() => uiFnsReady() || sentinelReady());
+      }
+      // =========================================================================
+
       window.addEventListener("load", onOpen);
 
-      function bindRequired(id, event, handler) {
-          const el = document.getElementById(id);
-          if (!el) throw new Error(`Missing required element #${id}`);
-          el.addEventListener(event, handler);
-          log("bindRequired OK", { id, event });
-          return el;
+      function onOpen() {
+        log("ENTER onOpen");
+
+        // 🔄 Show loading overlay
+        const overlay = document.getElementById("loading-overlay");
+        if (overlay) overlay.style.display = "flex";
+
+        // Small helper so we never depend on a UI helper just to hide the overlay
+        function hideOverlay() {
+          try {
+            const o = document.getElementById("loading-overlay");
+            if (o) o.style.display = "none";
+          } catch(_) {}
+        }
+
+        const chain =
+          google.script.run
+            .withSuccessHandler(async (data) => {
+              log("getInitData success", data);
+
+              sheets = data.sheetTabNames || [];
+              headersBySheet = data.sheetTabToColumnNames || {};
+
+              // Keep namespaced state in sync (used by helpers)
+              window.SDH = window.SDH || {};
+              SDH.UI = SDH.UI || {};
+              SDH.UI.state = SDH.UI.state || {};
+              SDH.UI.state.headersBySheet = headersBySheet;
+
+              const prefs = data.prefs || {};
+              const sheetSelect = document.getElementById("sheetSelect");
+
+              // Populate sheet list
+              sheetSelect.innerHTML = sheets.map(n => `<option value="${n}">${n}</option>`).join('');
+
+              if (sheets.length > 0) {
+                sheetSelect.value =
+                  (prefs.sheetTabName && sheets.includes(prefs.sheetTabName))
+                    ? prefs.sheetTabName
+                    : sheets[0];
+              }
+
+              // Pre-fill prefs
+              if (prefs.mapsApiKey) document.getElementById("mapsApiKey").value = prefs.mapsApiKey;
+              if (prefs.addressColumn) document.getElementById("addressSelect").value = prefs.addressColumn;
+              if (typeof prefs.showLatLong === "boolean") document.getElementById("showLatLng").checked = prefs.showLatLong;
+              if (typeof prefs.debug === "boolean")     document.getElementById("debug").checked     = prefs.debug;
+
+              // ✅ Wait until helper functions are definitely loaded
+              await waitForUIHelpers();
+
+              // Wire events (now that helpers exist)
+              bindRequired("sheetSelect", "change", SDH.UI.onSheetChange);
+              bindRequired("saveBtn", "click", saveSettings);
+
+              // Inputs that should flip the Save button’s enabled state
+              bindRequired("addressSelect", "change", SDH.UI.updateSaveButtonState);
+              bindRequired("mapsApiKey", "input", SDH.UI.updateSaveButtonState);
+              bindRequired("mapsApiKey", "blur", SDH.UI.hideApiKeyOnBlur);
+              bindRequired("showApiKey", "change", function () {
+                SDH.UI.toggleApiKeyVisibility(this);
+              });
+
+              // Initial render + one-time state compute:
+              //  - render headers for the currently selected sheet
+              //  - call updateSaveButtonState() ONCE so Save reflects current values
+              //
+              // Why we invoke updateSaveButtonState() directly (vs only binding):
+              // The Save button state depends on the *current* inputs (key & address).
+              // After wiring listeners, we still need a first pass to reflect whatever
+              // initial values we set from prefs/data. This single direct call is that
+              // first “compute” — subsequent changes come from the bound events.
+              if (sheets.length > 0) {
+                SDH.UI.renderHeadersFor(sheetSelect.value);
+              }
+              SDH.UI.updateSaveButtonState();
+
+              hideOverlay();
+              log("EXIT onOpen");
+            })
+            .withFailureHandler((e) => {
+              console.error("❌ Failed to fetch init data:", e);
+              hideOverlay();
+            });
+
+        // No `.finally(...)` here — jsdom mocks don’t provide it on the run chain
+        chain.getInitData();
       }
 
-
-      
-
-function onOpen() {
-  log("ENTER onOpen");
-
-  // 🔄 Show loading overlay
-  const overlay = document.getElementById("loading-overlay");
-  if (overlay) overlay.style.display = "flex";
-
-  google.script.run
-    .withSuccessHandler((data) => {
-      log("getInitData success", data);
-
-      sheets = data.sheetTabNames || [];
-      headersBySheet = data.sheetTabToColumnNames || {};
-      var prefs = data.prefs || {};
-
-      const sheetSelect = document.getElementById("sheetSelect");
-      sheetSelect.innerHTML = sheets.map(n => `<option value="${n}">${n}</option>`).join('');
-
-      if (sheets.length > 0) {
-        sheetSelect.value =
-          prefs.sheetTabName && sheets.includes(prefs.sheetTabName)
-            ? prefs.sheetTabName
-            : sheets[0];
-        renderHeadersFor(sheetSelect.value);
-      }
-
-      if (prefs.mapsApiKey) {
-        document.getElementById("mapsApiKey").value = prefs.mapsApiKey;
-      }
-      if (prefs.addressColumn) {
-        document.getElementById("addressSelect").value = prefs.addressColumn;
-      }
-      if (typeof prefs.showLatLong === "boolean") {
-        document.getElementById("showLatLng").checked = prefs.showLatLong;
-      }
-      if (typeof prefs.debug === "boolean") {
-        document.getElementById("debug").checked = prefs.debug;
-      }
-
-      // Wire up events
-
-
-      bindRequired("sheetSelect", "change", onSheetChange);
-      bindRequired("saveBtn", "click", saveSettings);
-
-      bindRequired("addressSelect", "change", SDH.UI.updateSaveButtonState);
-      bindRequired("mapsApiKey", "input", SDH.UI.updateSaveButtonState);
-      bindRequired("mapsApiKey", "blur", SDH.UI.hideApiKeyOnBlur);
-      bindRequired("showApiKey", "change", function () {
-      SDH.UI.toggleApiKeyVisibility(this);
-      });
-
-      SDH.UI.updateSaveButtonState();
-
-
-      log("EXIT onOpen");
-
-      // ✅ Hide loader
-      if (overlay) overlay.style.display = "none";
-    })
-    .withFailureHandler((e) => {
-      console.error("❌ Failed to fetch init data:", e);
-
-      // ❌ Hide loader on error too
-      if (overlay) overlay.style.display = "none";
-    })
-    .getInitData();
-}
-
-
-
-      function onSheetChange() {
-        const name = document.getElementById("sheetSelect").value;
-        log("onSheetChange", { name });
-        renderHeadersFor(name);
-      }
-
-      function renderHeadersFor(name) {
-        log("ENTER renderHeadersFor", { name });
-        const addressSelect = document.getElementById("addressSelect");
-        const headers = (headersBySheet && headersBySheet[name]) || [];
-        addressSelect.innerHTML = headers.map(h => `<option value="${h}">${h}</option>`).join('');
-        const defaultAddr = headers.find(h => /address/i.test(h));
-        if (defaultAddr) addressSelect.value = defaultAddr;
-        else if (headers.length) addressSelect.value = headers[0];
-        SDH.UI.updateSaveButtonState();
-        log("EXIT renderHeadersFor", { count: headers.length, selected: addressSelect.value || "" });
-      }
-
-
+      // ===== dialog controls =====
       function closeDialog() {
         log("closeDialog");
         try {
@@ -126,24 +165,24 @@ function onOpen() {
             return;
           }
         } catch (_) {}
-        var c = document.getElementById('settings-dialog-container') || document.body;
+        const c = document.getElementById('settings-dialog-container') || document.body;
         c.style.display = 'none';
       }
 
-      /* ===== actions ===== */
+      // ===== actions =====
       function saveSettings() {
         log("ENTER saveSettings");
-        var btn = document.getElementById('saveBtn');
+        const btn = document.getElementById('saveBtn');
         if (btn) btn.disabled = true;
 
-        var sheetName = (document.getElementById("sheetSelect") || {}).value || "";
-        var address   = (document.getElementById("addressSelect") || {}).value || "";
-        var mapsKey   = (document.getElementById("mapsApiKey")  || {}).value || "";
-        var showLL    = !!(document.getElementById("showLatLng") && document.getElementById("showLatLng").checked);
-        var debug     = !!(document.getElementById("debug")      && document.getElementById("debug").checked);
+        const sheetName = (document.getElementById("sheetSelect") || {}).value || "";
+        const address   = (document.getElementById("addressSelect") || {}).value || "";
+        const mapsKey   = (document.getElementById("mapsApiKey")  || {}).value || "";
+        const showLL    = !!(document.getElementById("showLatLng") && document.getElementById("showLatLng").checked);
+        const debug     = !!(document.getElementById("debug")      && document.getElementById("debug").checked);
 
-        var columns = (headersBySheet && headersBySheet[sheetName]) || [];
-        var payload = {
+        const columns = (headersBySheet && headersBySheet[sheetName]) || [];
+        const payload = {
           sheetTabName: sheetName,
           addressColumn: address,
           mapsApiKey: mapsKey,
@@ -177,9 +216,7 @@ function onOpen() {
         closeDialog();
       }
 
-
-
-      /* ===== keyboard: ESC closes dialog ===== */
+      // ===== keyboard: ESC closes dialog =====
       (function () {
         function onKeydown(e) {
           if (e && (e.key === 'Escape' || e.key === 'Esc')) {

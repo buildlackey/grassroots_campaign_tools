@@ -291,7 +291,7 @@
             if (typeof origWithSuccess === "function") {
               run.withSuccessHandler = function (success) {
                 var wrappedSuccess = function () {
-                  try { SDH.hideLoading(); } catch (_) {}
+                  try { SDH.UI.hideLoading(); } catch (_) {}
                   if (typeof success === "function") return success.apply(this, arguments);
                 };
                 var chain = origWithSuccess(wrappedSuccess);
@@ -300,7 +300,7 @@
                   var origWithFailure = chain.withFailureHandler;
                   chain.withFailureHandler = function (failure) {
                     var wrappedFailure = function () {
-                      try { SDH.hideLoading(); } catch (_) {}
+                      try { SDH.UI.hideLoading(); } catch (_) {}
                       if (typeof failure === "function") return failure.apply(this, arguments);
                     };
                     return origWithFailure.call(chain, wrappedFailure);
@@ -314,7 +314,12 @@
           } catch (_) { return false; }
         }
 
-        window.addEventListener("load", function () {
+        // Ensure that any unexpected error hides the overlay in which the 'busy' spinner lives
+          window.addEventListener("error", () => { try { SDH.UI.hideLoading(); } catch (_) {} });
+          window.addEventListener("unhandledrejection", () => { try { SDH.UI.hideLoading(); } catch (_) {} });
+
+
+          window.addEventListener("load", function () {
           // Show loader as soon as dialog is shown
           SDH.UI.showLoading();
 
@@ -439,15 +444,14 @@
       <button id="saveBtn" disabled>Save</button>
     </div>
 
+    <script>  <!-- Order is important -- this  must load before SettingsDialogCode -->
+        <?!= include('SettingsDialogHelpUICode') ?>
+    </script>
+
     <script>
       <?!= include('SettingsDialogCode') ?>
     </script>
 
-    <script>
-      <?!= include('SettingsDialogHelpUICode') ?>
-    </script>
-
-  
   </body>
 </html>
 

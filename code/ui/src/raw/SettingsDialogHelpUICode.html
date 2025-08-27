@@ -1,4 +1,5 @@
 (function (global) {
+  console.log("[SettingsDialogHelpUICode] vA1 loading");
   var SDH = global.SDH || {};
   SDH.UI = SDH.UI || {};
 
@@ -36,5 +37,37 @@
     btn.disabled = !enabled;
   };
 
+  SDH.UI.renderHeadersFor = function (name) {
+    log("ENTER renderHeadersFor", { name: name });
+    var addressSelect = document.getElementById("addressSelect");
+    var headers = (global.SDH.UI && SDH.UI.state && SDH.UI.state.headersBySheet && SDH.UI.state.headersBySheet[name])
+      || (typeof headersBySheet !== "undefined" && headersBySheet[name])
+      || [];
+    addressSelect.innerHTML = headers.map(function (h) { return '<option value="' + h + '">' + h + '</option>'; }).join('');
+    var defaultAddr = headers.find(function (h) { return /address/i.test(h); });
+    if (defaultAddr) addressSelect.value = defaultAddr;
+    else if (headers.length) addressSelect.value = headers[0];
+    SDH.UI.updateSaveButtonState();
+    log("EXIT renderHeadersFor", { count: headers.length, selected: addressSelect.value || "" });
+  };
+
+  SDH.UI.onSheetChange = function () {
+    var name = document.getElementById("sheetSelect").value;
+    log("onSheetChange", { name: name });
+    SDH.UI.renderHeadersFor(name);
+  };
+
+
   global.SDH = SDH;
+// SDH.UI.ready = true;                   // <-- new sentinel
+//document.dispatchEvent(new Event('sdh-ui-ready'));  // <-- event for waiters
+//console.log("[SettingsDialogHelpUICode] sentinel set");
+
+
+  // Signal ready for consumers that poll SDH.UI.ready
+  SDH.UI.ready = true;
+
+  // Signal that SDH.UI (and its methods like renderHeadersFor) is ready
+  document.dispatchEvent(new Event('sdh-ui-ready'));
+
 })(window);
