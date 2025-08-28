@@ -183,18 +183,26 @@
 
     <script>
       (function () {
-            function safeShowLoading() {
-                try {
-                    var ui = (window.SDH && window.SDH.UI) || null;
-                    if (ui && typeof ui.showLoading === "function") ui.showLoading();
-                } catch (_) {}
-            }
-            function safeHideLoading() {
-                try {
-                    var ui = (window.SDH && window.SDH.UI) || null;
-                    if (ui && typeof ui.hideLoading === "function") ui.hideLoading();
-                } catch (_) {}
-            }
+          function safeShowLoading() {
+              try {
+                  var ui = (window.SDH && window.SDH.UI) || null;
+                  if (ui && typeof ui.showLoading === "function") return ui.showLoading();
+              } catch (_) {}
+              // Fallback: toggle overlay directly
+              var o = document.getElementById("loading-overlay");
+              if (o) o.style.display = "block";
+          }
+
+          function safeHideLoading() {
+              try {
+                  var ui = (window.SDH && window.SDH.UI) || null;
+                  if (ui && typeof ui.hideLoading === "function") return ui.hideLoading();
+              } catch (_) {}
+              // Fallback: toggle overlay directly
+              var o = document.getElementById("loading-overlay");
+              if (o) o.style.display = "none";
+          }
+
 
         /* ===== jQuery UI tooltips for blue "?" icons ONLY (exclude popover-help) ===== */
         function initTooltips() {
