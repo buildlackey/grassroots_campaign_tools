@@ -1,67 +1,94 @@
 (function (global) {
-  console.log("[SettingsDialogHelpUICode] vA1 loading");
-  var SDH = global.SDH || {};
-  SDH.UI = SDH.UI || {};
+    console.log("[SettingsDialogHelpUICode] stripped v2 loading");
+    var SDH = global.SDH || {};
+    SDH.UI = SDH.UI || {};
+    SDH.UI.state = SDH.UI.state || {};
 
-  SDH.UI.showLoading = function () {
-    var n = document.getElementById("loading-overlay");
-    if (n) n.style.display = "block";
-  };
+    /* === updateSaveButtonState (working) === */
+    SDH.UI.updateSaveButtonState = function () {
+        var btn = document.getElementById("saveBtn");
+        if (!btn) {
+            console.warn("[updateSaveButtonState] Save button not found");
+            return;
+        }
+        var mapsEl = document.getElementById("mapsApiKey");
+        var key = (mapsEl && typeof mapsEl.value === "string") ? mapsEl.value.trim() : "";
 
-  SDH.UI.hideLoading = function () {
-    var n = document.getElementById("loading-overlay");
-    if (n) n.style.display = "none";
-  };
+        var addrEl = document.getElementById("addressSelect");
+        var addr = (addrEl && typeof addrEl.value === "string") ? addrEl.value : "";
 
-  SDH.UI.toggleApiKeyVisibility = function (checkbox) {
-    log("toggleApiKeyVisibility", { checked: !!(checkbox && checkbox.checked) });
-    var input = document.getElementById("mapsApiKey");
-    if (!input) return;
-    input.type = (checkbox && checkbox.checked) ? "text" : "password";
-  };
+        btn.disabled = !(key.length > 0 && addr !== "");
+        console.log("[updateSaveButtonState] ->", !btn.disabled);
+    };
 
-  SDH.UI.hideApiKeyOnBlur = function () {
-    log("hideApiKeyOnBlur");
-    var cb = document.getElementById("showApiKey");
-    if (cb && !cb.checked) {
-      var input = document.getElementById("mapsApiKey");
-      if (input) input.type = "password";
+
+    SDH.UI.renderHeadersFor = function (name) {
+        function formatOption(h) {
+            return '<option value="%s">%s</option>'.replace(/%s/g, h);
+        }
+
+        console.log("[renderHeadersFor] start", name);
+
+// get headers for the sheet, or empty array
+        var headers = [];
+        if (SDH.UI.state && SDH.UI.state.headersBySheet && SDH.UI.state.headersBySheet[name]) {
+            headers = SDH.UI.state.headersBySheet[name];
+        }
+
+// normalize to strings and drop empties
+        var clean = headers
+            .filter(h => h != null && String(h).length > 0)
+            .map(h => String(h));
+
+// get the <select> element
+        var select = document.getElementById("addressSelect");
+        if (!select) {
+            console.warn("[renderHeadersFor] addressSelect not found");
+            return;
+        }
+
+        // build <option> list
+        var html = clean.map(formatOption).join('');
+        select.innerHTML = html;
+
+        // choose a default option
+        var defaultAddr = clean.find(h => /address/i.test(h)) || clean[0] || "";
+        if (defaultAddr) select.value = defaultAddr;
+
+        // update save button state
+        if (SDH.UI && typeof SDH.UI.updateSaveButtonState === "function") {
+            SDH.UI.updateSaveButtonState();
+        }
+
+        console.log("[renderHeadersFor] exit", {count: clean.length, selected: select.value || ""});
+    };
+
+
+    /* === onSheetChange === */
+    SDH.UI.onSheetChange = function () {
+        var sel = document.getElementById("sheetSelect");
+        var name = sel ? sel.value : "";
+        console.log("[onSheetChange] ->", name);
+        SDH.UI.renderHeadersFor(name);
+    };
+
+    /* === stubs === */
+    SDH.UI.hideApiKeyOnBlur = function () {
+        console.log("[hideApiKeyOnBlur] stub");
+    };
+    SDH.UI.toggleApiKeyVisibility = function () {
+        console.log("[toggleApiKeyVisibility] stub");
+    };
+
+    // Sentinel ready
+    SDH.UI.ready = true;
+    try {
+        var ev = document.createEvent("Event");
+        ev.initEvent("sdh-ui-ready", true, true);
+        document.dispatchEvent(ev);
+    } catch (e) {
     }
-  };
+    console.log("[SettingsDialogHelpUICode] sentinel set");
 
-  SDH.UI.updateSaveButtonState = function () {
-    var btn = document.getElementById("saveBtn");
-    if (!btn) return;
-    var enabled = hasMapsKey() && hasAddressSelection();
-    try { console.log("[SettingsDialog/updateSaveButtonState]", { enabled }); } catch (_) {}
-    btn.disabled = !enabled;
-  };
-
-  SDH.UI.renderHeadersFor = function (name) {
-    log("ENTER renderHeadersFor", { name: name });
-    var addressSelect = document.getElementById("addressSelect");
-    var headers = (global.SDH.UI && SDH.UI.state && SDH.UI.state.headersBySheet && SDH.UI.state.headersBySheet[name])
-      || (typeof headersBySheet !== "undefined" && headersBySheet[name])
-      || [];
-    addressSelect.innerHTML = headers.map(function (h) { return '<option value="' + h + '">' + h + '</option>'; }).join('');
-    var defaultAddr = headers.find(function (h) { return /address/i.test(h); });
-    if (defaultAddr) addressSelect.value = defaultAddr;
-    else if (headers.length) addressSelect.value = headers[0];
-    SDH.UI.updateSaveButtonState();
-    log("EXIT renderHeadersFor", { count: headers.length, selected: addressSelect.value || "" });
-  };
-
-  SDH.UI.onSheetChange = function () {
-    var name = document.getElementById("sheetSelect").value;
-    log("onSheetChange", { name: name });
-    SDH.UI.renderHeadersFor(name);
-  };
-
-
-  global.SDH = SDH;
-  SDH.UI.ready = true;                   // <-- new sentinel
-  document.dispatchEvent(new Event('sdh-ui-ready'));  // <-- event for waiters
-  console.log("[SettingsDialogHelpUICode] sentinel set");
-
-
+    global.SDH = SDH;
 })(window);
