@@ -33,7 +33,7 @@
     var btn = document.getElementById("saveBtn");
     if (!btn) return;
     var enabled = hasMapsKey() && hasAddressSelection();
-    try { console.log("[SettingsDialog/updateSaveButtonState]", { enabled }); } catch (_) {}
+    try { console.log("[SettingsDialog/updateSaveButtonState]", { enabled: enabled }); } catch (_) {}
     btn.disabled = !enabled;
   };
 
@@ -57,18 +57,11 @@
     SDH.UI.renderHeadersFor(name);
   };
 
-
   global.SDH = SDH;
 
   SDH.UI.ready = true;                   // <-- new sentinel
-  document.dispatchEvent(new Event('sdh-ui-ready'));  // <-- event for waiters
+  document.dispatchEvent(new Event("sdh-ui-ready"));  // <-- event for waiters
   console.log("[SettingsDialogHelpUICode] sentinel set");
 
-
-  // Signal ready for consumers that poll SDH.UI.ready
-  SDH.UI.ready = true;
-
-  // Signal that SDH.UI (and its methods like renderHeadersFor) is ready
-  document.dispatchEvent(new Event('sdh-ui-ready'));
-
 })(window);
+

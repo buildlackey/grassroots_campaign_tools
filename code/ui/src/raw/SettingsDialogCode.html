@@ -22,9 +22,9 @@
       // Bind + assert presence
       function bindRequired(id, event, handler) {
         const el = document.getElementById(id);
-        if (!el) throw new Error(`Missing required element #${id}`);
+        if (!el) throw new Error("Missing required element #" + id);
         el.addEventListener(event, handler);
-        log("bindRequired OK", { id, event });
+        log("bindRequired OK", { id: id, event: event });
         return el;
       }
 
@@ -70,7 +70,7 @@
       function onOpen() {
         log("ENTER onOpen");
 
-        // 🔄 Show loading overlay
+        // Show loading overlay
         const overlay = document.getElementById("loading-overlay");
         if (overlay) overlay.style.display = "flex";
 
@@ -100,7 +100,7 @@
               const sheetSelect = document.getElementById("sheetSelect");
 
               // Populate sheet list
-              sheetSelect.innerHTML = sheets.map(n => `<option value="${n}">${n}</option>`).join('');
+              sheetSelect.innerHTML = sheets.map(n => "<option value=\"" + n + "\">" + n + "</option>").join("");
 
               if (sheets.length > 0) {
                 sheetSelect.value =
@@ -115,14 +115,14 @@
               if (typeof prefs.showLatLong === "boolean") document.getElementById("showLatLng").checked = prefs.showLatLong;
               if (typeof prefs.debug === "boolean")     document.getElementById("debug").checked     = prefs.debug;
 
-              // ✅ Wait until helper functions are definitely loaded
+              // Wait until helper functions are definitely loaded
               await waitForUIHelpers();
 
               // Wire events (now that helpers exist)
               bindRequired("sheetSelect", "change", SDH.UI.onSheetChange);
               bindRequired("saveBtn", "click", saveSettings);
 
-              // Inputs that should flip the Save button’s enabled state
+              // Inputs that should flip the Save button's enabled state
               bindRequired("addressSelect", "change", SDH.UI.updateSaveButtonState);
               bindRequired("mapsApiKey", "input", SDH.UI.updateSaveButtonState);
               bindRequired("mapsApiKey", "blur", SDH.UI.hideApiKeyOnBlur);
@@ -135,10 +135,10 @@
               //  - call updateSaveButtonState() ONCE so Save reflects current values
               //
               // Why we invoke updateSaveButtonState() directly (vs only binding):
-              // The Save button state depends on the *current* inputs (key & address).
+              // The Save button state depends on the current inputs (key & address).
               // After wiring listeners, we still need a first pass to reflect whatever
               // initial values we set from prefs/data. This single direct call is that
-              // first “compute” — subsequent changes come from the bound events.
+              // first "compute" - subsequent changes come from the bound events.
               if (sheets.length > 0) {
                 SDH.UI.renderHeadersFor(sheetSelect.value);
               }
@@ -148,11 +148,11 @@
               log("EXIT onOpen");
             })
             .withFailureHandler((e) => {
-              console.error("❌ Failed to fetch init data:", e);
+              console.error("Failed to fetch init data:", e);
               hideOverlay();
             });
 
-        // No `.finally(...)` here — jsdom mocks don’t provide it on the run chain
+        // No .finally(...) here - jsdom mocks do not provide it on the run chain
         chain.getInitData();
       }
 
@@ -160,19 +160,19 @@
       function closeDialog() {
         log("closeDialog");
         try {
-          if (google && google.script && google.script.host && typeof google.script.host.close === 'function') {
+          if (google && google.script && google.script.host && typeof google.script.host.close === "function") {
             google.script.host.close();
             return;
           }
         } catch (_) {}
-        const c = document.getElementById('settings-dialog-container') || document.body;
-        c.style.display = 'none';
+        const c = document.getElementById("settings-dialog-container") || document.body;
+        c.style.display = "none";
       }
 
       // ===== actions =====
       function saveSettings() {
         log("ENTER saveSettings");
-        const btn = document.getElementById('saveBtn');
+        const btn = document.getElementById("saveBtn");
         if (btn) btn.disabled = true;
 
         const sheetName = (document.getElementById("sheetSelect") || {}).value || "";
@@ -189,22 +189,22 @@
           showLatLong: showLL,
           debug: debug
         };
-        log("saveSettings payload", payload, { columns });
+        log("saveSettings payload", payload, { columns: columns });
 
         if (!mapsKey || !address) {
           if (btn) btn.disabled = true;
-          console.error("❌ Missing required input(s):", { hasMapsKey: !!mapsKey, hasAddress: !!address });
-          alert("❌ You must provide both a Maps API key and an Address column before saving.");
+          console.error("Missing required input(s):", { hasMapsKey: !!mapsKey, hasAddress: !!address });
+          alert("You must provide both a Maps API key and an Address column before saving.");
           return;
         }
 
         google.script.run
           .withSuccessHandler(function () {
-            log("saveSettings success → closing dialog");
+            log("saveSettings success -> closing dialog");
             closeDialog(); // toast already shown server-side
           })
           .withFailureHandler(function (e) {
-            console.error("❌ Failed to save preferences:", e);
+            console.error("Failed to save preferences:", e);
             if (btn) btn.disabled = false;
             alert("Failed to save preferences.");
           })
@@ -219,13 +219,13 @@
       // ===== keyboard: ESC closes dialog =====
       (function () {
         function onKeydown(e) {
-          if (e && (e.key === 'Escape' || e.key === 'Esc')) {
+          if (e && (e.key === "Escape" || e.key === "Esc")) {
             e.preventDefault();
             e.stopPropagation();
-            log("keyboard escape → cancelDialog");
+            log("keyboard escape -> cancelDialog");
             cancelDialog();
           }
         }
-        window.addEventListener('keydown', onKeydown, true);
+        window.addEventListener("keydown", onKeydown, true);
       })();
 
