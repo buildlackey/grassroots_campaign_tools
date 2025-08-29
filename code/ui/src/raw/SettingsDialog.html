@@ -176,7 +176,7 @@
         window.addEventListener("unhandledrejection", () => { safeHideLoading(); });
 
         window.addEventListener("load", function () {
-          // safeShowLoading();  // ⛔ disabled while debugging tooltips
+          safeShowLoading();  // ⛔ disabled while debugging tooltips
           waitForTooltipReady(5000, 50);  // prepare hover-tooltips for blue "?" icons
           initMapsPopover();
 
@@ -195,12 +195,10 @@
   </head>
 
   <body>
-    <!-- Loading overlay (disabled for tooltip debugging)
     <div id="loading-overlay" role="status" aria-live="polite" aria-label="Working">
       <div class="loader"></div>
       <div class="loading-text">Fetching Data...</div>
     </div>
-    -->
 
     <label for="mapsApiKey">
       Maps API Key:
