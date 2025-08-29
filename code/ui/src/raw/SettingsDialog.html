@@ -14,50 +14,53 @@
 
     <script>
       (function () {
-            function directShowOverlay() {
-              try { var o = document.getElementById("loading-overlay"); if (o) o.style.display = "flex"; } catch(_) {}
-            }
-            function directHideOverlay() {
-              try { var o = document.getElementById("loading-overlay"); if (o) o.style.display = "none"; } catch(_) {}
-            }
-            function safeShowLoading() {
-                try {
-                    var ui = (window.SDH && window.SDH.UI) || null;
-                    if (ui && typeof ui.showLoading === "function") { ui.showLoading(); return; }
-                } catch (_) {}
-                directShowOverlay();
-            }
-            function safeHideLoading() {
-                try {
-                    var ui = (window.SDH && window.SDH.UI) || null;
-                    if (ui && typeof ui.hideLoading === "function") { ui.hideLoading(); return; }
-                } catch (_) {}
-                directHideOverlay();
-            }
+        function directShowOverlay() {
+          try { var o = document.getElementById("loading-overlay"); if (o) o.style.display = "flex"; } catch(_) {}
+        }
+        function directHideOverlay() {
+          try { var o = document.getElementById("loading-overlay"); if (o) o.style.display = "none"; } catch(_) {}
+        }
+        function safeShowLoading() {
+          try {
+            var ui = (window.SDH && window.SDH.UI) || null;
+            if (ui && typeof ui.showLoading === "function") { ui.showLoading(); return; }
+          } catch (_) {}
+          directShowOverlay();
+        }
+        function safeHideLoading() {
+          try {
+            var ui = (window.SDH && window.SDH.UI) || null;
+            if (ui && typeof ui.hideLoading === "function") { ui.hideLoading(); return; }
+          } catch (_) {}
+          directHideOverlay();
+        }
 
         /* ===== jQuery UI tooltips for blue "?" icons ONLY (exclude popover-help) ===== */
         function initTooltips() {
-          var $container = $("#settings-dialog-container").length
-            ? $("#settings-dialog-container") : $(document.body);
+              // In GAS environment, append to body (the iframe root), not our inner container
+              var $target = $(".help-icon:not(.popover-help)");
+              if ($target.length === 0) return;
 
-          $(".help-icon:not(.popover-help)").tooltip({
-            appendTo: $container,
-            items: ".help-icon:not(.popover-help)",
-            content: function () { return $(this).attr("data-help"); },
-            position: {
-              my: "left+8 center",
-              at: "right center",
-              within: $container,
-              collision: "flipfit"   // reduce jitter vs "fit flipfit"
-            },
-            tooltipClass: "custom-tooltip",
-            track: false,
-            show: { delay: 200, duration: 100 },
-            hide: { delay: 200, duration: 100 }
-          });
-        }
+              $target.tooltip({
+                  appendTo: "body",   // 🔑 force tooltips into iframe root, not scrolling div
+                  items: ".help-icon:not(.popover-help)",
+                  content: function () { return $(this).attr("data-help"); },
+                  position: {
+                      my: "left+8 center",
+                      at: "right center",
+                      within: window,      // keeps inside iframe viewport
+                      collision: "flip" // flips left if clipped
+                  },
+                  tooltipClass: "custom-tooltip",
+                  track: false,
+                  show: { delay: 200, duration: 100 },
+                  hide: { delay: 200, duration: 100 }
+              });
+          }
 
-        function waitForTooltipReady(maxMs, intervalMs) {
+
+
+          function waitForTooltipReady(maxMs, intervalMs) {
           var start = Date.now();
           (function tick() {
             if (window.jQuery && $.fn && $.fn.tooltip) { initTooltips(); return; }
@@ -168,19 +171,13 @@
           } catch (_) { return false; }
         }
 
-        // Ensure that any unexpected error hides the overlay in which the 'busy' spinner lives
-          window.addEventListener("error", () => { safeHideLoading(); });
-          window.addEventListener("unhandledrejection", () => { safeHideLoading(); });
+        // Always hide overlay on unexpected error (harmless when overlay is disabled)
+        window.addEventListener("error", () => { safeHideLoading(); });
+        window.addEventListener("unhandledrejection", () => { safeHideLoading(); });
 
-
-          window.addEventListener("load", function () {
-          // Show loader as soon as dialog is shown
-          safeShowLoading();
-
-          // Prepare hover-tooltips for the blue "?" icons
-          waitForTooltipReady(5000, 50);
-
-          // Init click-popover for the Maps help
+        window.addEventListener("load", function () {
+          // safeShowLoading();  // ⛔ disabled while debugging tooltips
+          waitForTooltipReady(5000, 50);  // prepare hover-tooltips for blue "?" icons
           initMapsPopover();
 
           // Patch google.script.run when available
@@ -192,70 +189,58 @@
               }
             }, 100);
           }
-
-          // Fallback: hide loader when the Sheet select gets options
-          var sel = document.getElementById("sheetSelect");
-          if (sel && window.MutationObserver) {
-            var ob = new MutationObserver(function () {
-              if (sel.options && sel.options.length > 0) {
-                safeHideLoading();
-                ob.disconnect();
-              }
-            });
-            ob.observe(sel, { childList: true });
-          }
         });
       })();
     </script>
   </head>
 
   <body>
-    <!-- Loading overlay (visible by default; hidden once init completes) -->
+    <!-- Loading overlay (disabled for tooltip debugging)
     <div id="loading-overlay" role="status" aria-live="polite" aria-label="Working">
       <div class="loader"></div>
       <div class="loading-text">Fetching Data...</div>
     </div>
+    -->
 
     <label for="mapsApiKey">
-        Maps API Key:
-        <!-- CLICKABLE caution icon -> opens popover -->
-        <button
-                id="maps-help-btn"
-                type="button"
-                class="help-icon caution popover-help"
-                aria-haspopup="dialog"
-                aria-expanded="false"
-                aria-controls="maps-help-popover"
-                title="Click here for important caveats!">
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <polygon points="12,2 22,20 2,20"
-                         fill="#fff3cd"
-                         stroke="#d39e00"
-                         stroke-width="2"
-                         stroke-linejoin="round"/>
-                <rect x="11" y="8" width="2" height="7" fill="#7a5a00"/>
-                <circle cx="12" cy="17.5" r="1.3" fill="#7a5a00"/>
-            </svg>
-        </button>
-        <!-- Popover content -->
-        <div id="maps-help-popover" class="popover" role="dialog" aria-modal="false">
-            <div class="popover-arrow"></div>
-            <div class="popover-body">
-                <button class="popover-close" aria-label="Close">×</button>
-                <div>
-                    Enter your Google Maps API <strong>carefully</strong> (we don't auto-validate yet).
-                    To verify the Maps JavaScript API is enabled and to view your key, open:
-                    <br>
-                    <a href="https://console.cloud.google.com/apis/library/maps-backend.googleapis.com"
-                       target="_blank" rel="noopener">Google Cloud Console</a>
-                    Choose your project in the upper left corner. Click 'Manage', then select 'Keys & Credentials'
-                    from the options panel on the left hand side of window..
-                </div>
-            </div>
+      Maps API Key:
+      <!-- CLICKABLE caution icon -> opens popover -->
+      <button
+        id="maps-help-btn"
+        type="button"
+        class="help-icon caution popover-help"
+        aria-haspopup="dialog"
+        aria-expanded="false"
+        aria-controls="maps-help-popover"
+        title="Click here for important caveats!">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <polygon points="12,2 22,20 2,20"
+                   fill="#fff3cd"
+                   stroke="#d39e00"
+                   stroke-width="2"
+                   stroke-linejoin="round"/>
+          <rect x="11" y="8" width="2" height="7" fill="#7a5a00"/>
+          <circle cx="12" cy="17.5" r="1.3" fill="#7a5a00"/>
+        </svg>
+      </button>
+      <!-- Popover content -->
+      <div id="maps-help-popover" class="popover" role="dialog" aria-modal="false">
+        <div class="popover-arrow"></div>
+        <div class="popover-body">
+          <button class="popover-close" aria-label="Close">×</button>
+          <div>
+            Enter your Google Maps API <strong>carefully</strong> (we don't auto-validate yet).
+            To verify the Maps JavaScript API is enabled and to view your key, open:
+            <br>
+            <a href="https://console.cloud.google.com/apis/library/maps-backend.googleapis.com"
+               target="_blank" rel="noopener">Google Cloud Console</a>
+            Choose your project in the upper left corner. Click 'Manage', then select 'Keys & Credentials'
+            from the options panel on the left hand side of window..
+          </div>
         </div>
+      </div>
     </label>
     <input id="mapsApiKey" type="text" />
-
 
     <div class="checkbox-group">
       <input type="checkbox" id="showApiKey">
@@ -298,10 +283,10 @@
       <button id="saveBtn" disabled>Save</button>
     </div>
 
-    <!-- Order is important -- this  must load before SettingsDialogCode -->
-    <script>  
-        <?!= include('SettingsDialogHelpUICode') ?>
-        //# sourceURL=SettingsDialogHelpUICode.js
+    <!-- Order is important -- this must load before SettingsDialogCode -->
+    <script>
+      <?!= include('SettingsDialogHelpUICode') ?>
+      //# sourceURL=SettingsDialogHelpUICode.js
     </script>
 
     <script>
@@ -309,6 +294,8 @@
       //# sourceURL=SettingsDialogCode.js
     </script>
 
+    <!-- Container for tooltip 'within' and general scoping -->
+    <div id="settings-dialog-container"></div>
   </body>
 </html>
 

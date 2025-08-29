@@ -43,13 +43,14 @@ input[type="text"], input[type="password"], select {
   position: relative;
 }
 
-/* Blue info style (for "?") */
+/* Blue info style (for "?") — working settings */
 .help-icon.info {
   background: #e0f0ff;
   color: #2a7ddf;
   border: 1px solid #cfe3ff;
   font-weight: bold;
-  padding: 2px;
+  padding: 4px;       /* larger hit/hover area */
+  line-height: 1;
 }
 
 /* Yellow caution style (SVG triangle) — used as a button for popover */
@@ -156,7 +157,7 @@ input[type="text"], input[type="password"], select {
 }
 .toast.show { opacity: 1; }
 
-/* Loading overlay (spinner + pulsing "Working…") */
+/* Loading overlay (spinner UI kept; HTML is disabled while debugging) */
 #loading-overlay {
   position: absolute;
   top: 40%;
@@ -164,7 +165,7 @@ input[type="text"], input[type="password"], select {
   transform: translate(-50%, -50%);
   text-align: center;
   z-index: 2000;
-  display: block; /* visible by default until data loads */
+  display: block;
 }
 .loader {
   border: 4px solid #f0f0f0;
