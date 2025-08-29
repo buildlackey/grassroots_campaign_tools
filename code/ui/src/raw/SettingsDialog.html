@@ -9,200 +9,31 @@
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 
     <style>
-      /* Tight container + no horizontal scroll */
-      html, body { overflow-x: hidden; }
-      body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
-        width: auto;           /* let it size naturally */
-        max-width: 420px;      /* keep the dialog compact */
-        box-sizing: border-box;
-        position: relative;
-      }
-
-      label { display: block; margin: 10px 0 5px; }
-
-      input[type="text"], input[type="password"], select {
-        width: 100%;
-        max-width: 320px;      /* ~39 chars + small buffer */
-        padding: 6px;
-        font-size: 14px;
-        box-sizing: border-box;
-      }
-
-      .checkbox-group {
-        display: flex;
-        align-items: center;
-        margin: 8px 0;
-      }
-      .checkbox-group input[type="checkbox"] { margin-right: 8px; flex-shrink: 0; }
-      .checkbox-group label { margin: 0; white-space: nowrap; }
-
-      /* ===== Help icon base (tooltip target) ===== */
-      .help-icon {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 12px;
-        width: 15px; height: 15px;
-        text-align: center; line-height: 14px;
-        border-radius: 50%;
-        cursor: pointer;       /* subtle; not obtrusive */
-        user-select: none;
-        vertical-align: top;
-        margin-left: 6px;
-        position: relative; /* anchor for CSS tooltips if needed */
-      }
-
-      /* Blue info style (for "?") */
-      .help-icon.info {
-        background: #e0f0ff;
-        color: #2a7ddf;
-        border: 1px solid #cfe3ff;
-        font-weight: bold;
-      }
-
-      /* Yellow caution style (SVG triangle) — used as a button for popover */
-      .help-icon.caution {
-        background: transparent;
-        border: none;
-        border-radius: 0;
-        width: 18px; height: 18px; padding: 0;
-      }
-      .help-icon.caution svg { width: 100%; height: 100%; display: block; }
-
-      /* Keyboard focus hint */
-      .help-icon:focus { outline: 2px solid #d39e00; outline-offset: 2px; }
-
-      /* jQuery UI tooltip look (for the blue "?" icons only) */
-      .ui-tooltip {
-        max-width: 300px;
-        white-space: normal;
-        z-index: 2147483647; /* above Sheets & GAS chrome */
-        pointer-events: auto; /* ensure links receive clicks if any */
-      }
-
-      /* ===== Click popover for Maps API help ===== */
-      .popover {
-        position: absolute;
-        display: none;
-        max-width: 320px;
-        background: #fffdf7;
-        border: 1px solid #d39e00;
-        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-        border-radius: 6px;
-        z-index: 2147483647;
-      }
-      .popover.show { display: block; }
-      .popover .popover-body {
-        position: relative;
-        padding: 10px 12px 12px 12px;
-        font-size: 13px;
-        color: #3b3b3b;
-      }
-      .popover .popover-close {
-        position: absolute;
-        top: 4px; right: 6px;
-        background: transparent;
-        border: none;
-        font-size: 16px;
-        line-height: 1;
-        cursor: pointer;
-        color: #7a5a00;
-      }
-      .popover .popover-arrow {
-        position: absolute;
-        left: -6px; top: 50%;
-        transform: translateY(-50%);
-        width: 0; height: 0;
-        border-top: 6px solid transparent;
-        border-bottom: 6px solid transparent;
-        border-right: 6px solid #d39e00; /* border color aligns with popover */
-      }
-      .popover a { color: #0b63bd; text-decoration: underline; }
-
-      /* Button row styling */
-      .button-row {
-        display: flex;
-        justify-content: flex-end; /* align to inputs' right edge */
-        align-items: center;
-        gap: 4mm;                  /* ~4 mm between buttons */
-        margin-top: 8mm;
-        width: 100%;
-        max-width: 320px;
-      }
-      .button-row button {
-        padding: 6px 16px;
-        min-width: 90px;
-        box-sizing: border-box;
-      }
-
-      /* ===== Toast styles ===== */
-      .toast {
-        position: fixed;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #323232;
-        color: #fff;
-        padding: 10px 20px;
-        border-radius: 4px;
-        z-index: 2147483647;
-        font-size: 14px;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-        pointer-events: none;
-      }
-      .toast.show { opacity: 1; }
-
-      /* ===== Loading overlay (spinner + pulsing "Working…") ===== */
-      #loading-overlay {
-        position: absolute;
-        top: 40%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        text-align: center;
-        z-index: 2000;       /* below tooltips/popovers, above content */
-        display: block;      /* visible by default until data loads */
-      }
-      .loader {
-        border: 4px solid #f0f0f0;
-        border-top: 4px solid #2a7ddf; /* matches info blue */
-        border-radius: 50%;
-        width: 40px; height: 40px;
-        margin: 0 auto 10px;
-        animation: spin 1s linear infinite;
-      }
-      .loading-text {
-        font-size: 14px; color: #444;
-        animation: pulse 1.6s ease-in-out infinite;
-      }
-      @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-      @keyframes pulse { 0%, 100% { opacity: 1; letter-spacing: 0.2px; } 50% { opacity: 0.4; letter-spacing: 0.8px; } }
+      <?!= include('SettingsDialogCSS') ?>
     </style>
 
     <script>
       (function () {
-          function safeShowLoading() {
-              try {
-                  var ui = (window.SDH && window.SDH.UI) || null;
-                  if (ui && typeof ui.showLoading === "function") return ui.showLoading();
-              } catch (_) {}
-              // Fallback: toggle overlay directly
-              var o = document.getElementById("loading-overlay");
-              if (o) o.style.display = "block";
-          }
-
-          function safeHideLoading() {
-              try {
-                  var ui = (window.SDH && window.SDH.UI) || null;
-                  if (ui && typeof ui.hideLoading === "function") return ui.hideLoading();
-              } catch (_) {}
-              // Fallback: toggle overlay directly
-              var o = document.getElementById("loading-overlay");
-              if (o) o.style.display = "none";
-          }
-
+            function directShowOverlay() {
+              try { var o = document.getElementById("loading-overlay"); if (o) o.style.display = "flex"; } catch(_) {}
+            }
+            function directHideOverlay() {
+              try { var o = document.getElementById("loading-overlay"); if (o) o.style.display = "none"; } catch(_) {}
+            }
+            function safeShowLoading() {
+                try {
+                    var ui = (window.SDH && window.SDH.UI) || null;
+                    if (ui && typeof ui.showLoading === "function") { ui.showLoading(); return; }
+                } catch (_) {}
+                directShowOverlay();
+            }
+            function safeHideLoading() {
+                try {
+                    var ui = (window.SDH && window.SDH.UI) || null;
+                    if (ui && typeof ui.hideLoading === "function") { ui.hideLoading(); return; }
+                } catch (_) {}
+                directHideOverlay();
+            }
 
         /* ===== jQuery UI tooltips for blue "?" icons ONLY (exclude popover-help) ===== */
         function initTooltips() {
@@ -217,10 +48,12 @@
               my: "left+8 center",
               at: "right center",
               within: $container,
-              collision: "fit flipfit"
+              collision: "flipfit"   // reduce jitter vs "fit flipfit"
             },
             tooltipClass: "custom-tooltip",
-            track: false
+            track: false,
+            show: { delay: 200, duration: 100 },
+            hide: { delay: 200, duration: 100 }
           });
         }
 

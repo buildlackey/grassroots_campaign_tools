@@ -1,0 +1,183 @@
+/* Tight container + no horizontal scroll */
+html, body { overflow-x: hidden; }
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  width: auto;
+  max-width: 420px;
+  box-sizing: border-box;
+  position: relative;
+}
+
+label { display: block; margin: 10px 0 5px; }
+
+input[type="text"], input[type="password"], select {
+  width: 100%;
+  max-width: 320px;
+  padding: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  margin: 8px 0;
+}
+.checkbox-group input[type="checkbox"] { margin-right: 8px; flex-shrink: 0; }
+.checkbox-group label { margin: 0; white-space: nowrap; }
+
+/* ===== Help icon base (tooltip target) ===== */
+.help-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  width: 15px; height: 15px;
+  text-align: center; line-height: 14px;
+  border-radius: 50%;
+  cursor: pointer;
+  user-select: none;
+  vertical-align: top;
+  margin-left: 6px;
+  position: relative;
+}
+
+/* Blue info style (for "?") */
+.help-icon.info {
+  background: #e0f0ff;
+  color: #2a7ddf;
+  border: 1px solid #cfe3ff;
+  font-weight: bold;
+  padding: 2px;
+}
+
+/* Yellow caution style (SVG triangle) — used as a button for popover */
+.help-icon.caution {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  width: 18px; height: 18px; padding: 0;
+}
+.help-icon.caution svg { width: 100%; height: 100%; display: block; }
+
+/* Keyboard focus hint */
+.help-icon:focus { outline: 2px solid #d39e00; outline-offset: 2px; }
+
+/* jQuery UI tooltip container */
+.ui-tooltip {
+  max-width: 300px;
+  white-space: normal;
+  z-index: 2147483647;
+  pointer-events: auto;
+}
+
+/* >>> BLUE info tooltip theme (for ? icons) <<< */
+.ui-tooltip.custom-tooltip {
+  background: #e0f0ff;
+  color: #2a2a2a;
+  border: 1px solid #2a7ddf;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  padding: 6px 10px;
+  border-radius: 4px;
+}
+
+/* ===== Click popover for Maps API help (yellow caution theme) ===== */
+.popover {
+  position: absolute;
+  display: none;
+  max-width: 320px;
+  background: #fff8dc;
+  border: 1px solid #d39e00;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  border-radius: 6px;
+  z-index: 2147483647;
+}
+.popover.show { display: block; }
+.popover .popover-body {
+  position: relative;
+  padding: 10px 12px 12px 12px;
+  font-size: 13px;
+  color: #3b3b3b;
+  background: inherit; /* keep the yellow inside */
+}
+.popover .popover-close {
+  position: absolute;
+  top: 4px; right: 6px;
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  color: #7a5a00;
+}
+.popover .popover-arrow {
+  position: absolute;
+  left: -6px; top: 50%;
+  transform: translateY(-50%);
+  width: 0; height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-right: 6px solid #d39e00;
+}
+.popover a { color: #0b63bd; text-decoration: underline; }
+
+/* Button row */
+.button-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4mm;
+  margin-top: 8mm;
+  width: 100%;
+  max-width: 320px;
+}
+.button-row button {
+  padding: 6px 16px;
+  min-width: 90px;
+  box-sizing: border-box;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #323232;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 4px;
+  z-index: 2147483647;
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; }
+
+/* Loading overlay (spinner + pulsing "Working…") */
+#loading-overlay {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 2000;
+  display: block; /* visible by default until data loads */
+}
+.loader {
+  border: 4px solid #f0f0f0;
+  border-top: 4px solid #2a7ddf;
+  border-radius: 50%;
+  width: 40px; height: 40px;
+  margin: 0 auto 10px;
+  animation: spin 1s linear infinite;
+}
+.loading-text {
+  font-size: 14px; color: #444;
+  animation: pulse 1.6s ease-in-out infinite;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes pulse { 0%, 100% { opacity: 1; letter-spacing: 0.2px; } 50% { opacity: 0.4; letter-spacing: 0.8px; } }
+
