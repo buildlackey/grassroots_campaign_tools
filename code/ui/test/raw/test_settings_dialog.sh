@@ -8,7 +8,7 @@ RAW_DIR="$PROJECT_ROOT/code/ui/src/raw"
 TEMPLATE="$RAW_DIR/SettingsDialog.html"
 BUILT_UI_DIR="$PROJECT_ROOT/dist/ui"
 
-SETTINGS_DIALOG_CODE="$RAW_DIR/SettingsDialogCode.html"
+SETTINGS_DIALOG_CODE="$RAW_DIR/SettingsDialogActionCode.html"
 SETTINGS_DIALOG_CSS="$RAW_DIR/SettingsDialogCSS.html"
 SETTINGS_DIALOG_HELP_UI_CODE="$RAW_DIR/SettingsDialogHelpUICode.html"
 OUT_HTML="$BUILT_UI_DIR/rendered_settings_dialog_test.html"
@@ -73,7 +73,7 @@ function inject_fragment() {
   local name="$1"
   echo "🔧 Injecting fragment: $name"
   case "$name" in
-    SettingsDialogCode)
+    SettingsDialogActionCode)
       cat "$SETTINGS_DIALOG_CODE" >> "$OUT_HTML"
       ;;
     SettingsDialogCSS)
