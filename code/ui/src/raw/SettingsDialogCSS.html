@@ -74,14 +74,15 @@ input[type="text"], input[type="password"], select {
 }
 
 /* >>> BLUE info tooltip theme (for ? icons) <<< */
+
 .ui-tooltip.custom-tooltip {
-  background: #e0f0ff;
-  color: #2a2a2a;
-  border: 1px solid #2a7ddf;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  padding: 6px 10px;
-  border-radius: 4px;
+  max-width: 300px;
+  white-space: normal;
+  z-index: 2147483647;
+  pointer-events: auto;
+  left: max(8px, var(--ui-tooltip-left, 0px)) !important;
 }
+
 
 /* ===== Click popover for Maps API help (yellow caution theme) ===== */
 .popover {
