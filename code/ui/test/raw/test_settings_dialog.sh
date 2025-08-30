@@ -11,98 +11,46 @@ BUILT_UI_DIR="$PROJECT_ROOT/dist/ui"
 SETTINGS_DIALOG_CODE="$RAW_DIR/SettingsDialogActionCode.html"
 SETTINGS_DIALOG_CSS="$RAW_DIR/SettingsDialogCSS.html"
 SETTINGS_DIALOG_HELP_UI_CODE="$RAW_DIR/SettingsDialogUIFrostingCode.html"
+
 OUT_HTML="$BUILT_UI_DIR/rendered_settings_dialog_test.html"
 SETUP_MOCK_JS="$PROJECT_ROOT/code/ui/test/raw/setupMock.js"
 
-
-mkdir -p $BUILT_UI_DIR
-echo "📄 Reading template: $TEMPLATE"
+mkdir -p "$BUILT_UI_DIR"
 rm -f "$OUT_HTML"
 
-# Write static HTML wrapper head
-cat > "$OUT_HTML" <<EOF
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Settings Dialog Test</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 40px;
-    }
-    .help-popup {
-      z-index: 9999;
-    }
-  </style>
-</head>
-<body>
-<h2>🧪 Settings Dialog Local Test</h2>
-<script>
-EOF
+echo "📄 Reading template: $TEMPLATE"
 
-# ---- Inject the JS mock and bootstrap it ----
-if [[ ! -f "$SETUP_MOCK_JS" ]]; then
-  echo "❌ Mock not found: $SETUP_MOCK_JS" >&2
-  exit 1
-fi
-
-# 1) Inline the mock source (it defines a UMD that sets window.setupMock in browsers)
-cat "$SETUP_MOCK_JS" >> "$OUT_HTML"
-
-# 2) Provide a default config and install the mock (skip if running under Jest)
-cat >> "$OUT_HTML" <<'EOF'
-  // Default config for ad-hoc local testing
-  window.__MOCK_CONFIG__ = window.__MOCK_CONFIG__ || {
-    mapsApiKey: "",
-    sheets: { Sheet1: [], Sheet2: ["Name","Address","Phone"], Sheet3: [] }
-  };
-
-  // If your Jest test sets window.__IN_JEST__ = true in beforeParse,
-  // this avoids double-initializing the mock there.
-  if (!window.__IN_JEST__ && typeof setupMock === "function") {
-    setupMock(window); // defines window.google.* so onOpen() will work
-  }
-</script>
-<div id="settings-dialog-container">
-EOF
-# ---- end mock injection ----
-
-# Main inject loop
-function inject_fragment() {
-  local name="$1"
-  echo "🔧 Injecting fragment: $name"
-  case "$name" in
-    SettingsDialogActionCode)
-      cat "$SETTINGS_DIALOG_CODE" >> "$OUT_HTML"
-      ;;
-    SettingsDialogCSS)
+# Process template line by line
+while IFS= read -r line; do
+  case "$line" in
+    *"include('SettingsDialogCSS')"*)
       cat "$SETTINGS_DIALOG_CSS" >> "$OUT_HTML"
       ;;
-    SettingsDialogUIFrostingCode)
+    *"include('SettingsDialogUIFrostingCode')"*)
       cat "$SETTINGS_DIALOG_HELP_UI_CODE" >> "$OUT_HTML"
       ;;
+    *"include('SettingsDialogActionCode')"*)
+      cat "$SETTINGS_DIALOG_CODE" >> "$OUT_HTML"
+      ;;
     *)
-      echo "❌ Unknown include fragment: $name" >&2
-      exit 1
+      echo "$line" >> "$OUT_HTML"
       ;;
   esac
-}
-
-while IFS= read -r line; do
-  if echo "$line" | grep -q "<?!= include("; then
-    fragment=$(echo "$line" | awk -F"'" '{print $2}')
-    inject_fragment "$fragment"
-  else
-    echo "$line" >> "$OUT_HTML"
-  fi
 done < "$TEMPLATE"
 
-# Close HTML structure
-cat >> "$OUT_HTML" <<EOF
-</div>
-</body>
-</html>
+# Inline setupMock.js at the very end for fixture only
+cat >> "$OUT_HTML" <<'EOF'
+<script>
+/* Jest disables this with __IN_JEST__ flag. */
+if (typeof window !== "undefined" && !window.__IN_JEST__) {
+EOF
+cat "$SETUP_MOCK_JS" >> "$OUT_HTML"
+cat >> "$OUT_HTML" <<'EOF'
+  if (typeof window.setupMock === "function") {
+    window.setupMock(window);
+  }
+}
+</script>
 EOF
 
-echo "✅ Rendered HTML saved to: $OUT_HTML   - bring up in browser for ad hoc testing"
+echo "✅ Rendered HTML saved to: $OUT_HTML"
