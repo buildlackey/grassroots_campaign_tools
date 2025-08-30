@@ -18,8 +18,8 @@ function showSettingsDialog() {
         .createTemplateFromFile('SettingsDialog')
         .evaluate()
         .setTitle('⚙️ Settings')
-        .setWidth(440)
-        .setHeight(480);
+        .setWidth(400)
+        .setHeight(430);
     SpreadsheetApp.getUi().showModalDialog(html, 'Settings');
     Logger.log("🪟 [Code.js/showSettingsDialog] EXIT");
 }

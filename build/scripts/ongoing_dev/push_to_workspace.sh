@@ -31,11 +31,8 @@ BUILD_GAS_DIR="$GIT_ROOT/build/gas"
 $LOGIN_SCRIPT_DIR/clasp_login.sh
 "$LOCAL_CLASP" login --status >/dev/null || { echo "❌ clasp status failed "; exit 1; }
 
-#BOOTSTRAP_SH="$COMMON_SCRIPTS_DIR/bootstrap.sh"
-#[[ -x "$BOOTSTRAP_SH" ]] && bash "$BOOTSTRAP_SH" || true
 
 cd "$GIT_ROOT"
-#npm install --silent || true    # keep existing behavior; tolerate no-op
 
 # Helper: build one target if present
 build_ui() {
