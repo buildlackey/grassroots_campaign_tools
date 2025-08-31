@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <base target="_top">
 
     <!-- jQuery & jQuery UI -->
@@ -9,292 +9,270 @@
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 
     <style>
-      <?!= include('SettingsDialogCSS') ?>
+        <?!= include('SettingsDialogCSS') ?>
     </style>
 
     <script>
-      (function () {
-        function directShowOverlay() {
-          try { var o = document.getElementById("loading-overlay"); if (o) o.style.display = "flex"; } catch(_) {}
-        }
-        function directHideOverlay() {
-          try { var o = document.getElementById("loading-overlay"); if (o) o.style.display = "none"; } catch(_) {}
-        }
-        function safeShowLoading() {
-          try {
-            var ui = (window.SDH && window.SDH.UI) || null;
-            if (ui && typeof ui.showLoading === "function") { ui.showLoading(); return; }
-          } catch (_) {}
-          directShowOverlay();
-        }
-        function safeHideLoading() {
-          try {
-            var ui = (window.SDH && window.SDH.UI) || null;
-            if (ui && typeof ui.hideLoading === "function") { ui.hideLoading(); return; }
-          } catch (_) {}
-          directHideOverlay();
-        }
+        (function () {
 
-        /* ===== jQuery UI tooltips for blue "?" icons ONLY (exclude popover-help) ===== */
-          function initTooltips() {
-              // Apply to all blue ? icons (no branching)
-              var $target = $(".help-icon:not(.popover-help)");
-              if ($target.length === 0) return;
+            /* ===== jQuery UI tooltips for blue "?" icons ONLY (exclude popover-help) ===== */
+            function initTooltips() {
+                // Apply to all blue ? icons (no branching)
+                var $target = $(".help-icon:not(.popover-help)");
+                if ($target.length === 0) return;
 
-              $target.tooltip({
-                  appendTo: "body",                         // keep outside scrolling container
-                  items: ".help-icon:not(.popover-help)",
-                  content: function () { return $(this).attr("data-help"); },
-                  position: {
-                      // ⬇️ Bias: place tooltip ABOVE the target so bottom ones don't clip
-                      // 'my' is the tooltip edge; 'at' is the target edge
-                      my: "left+8 bottom-8",
-                      at: "right top",
-                      within: window,
-                      collision: "flipfit"                    // try to keep fully on-screen
-                  },
-                  tooltipClass: "custom-tooltip",
-                  track: false,
-                  show: { delay: 150, duration: 80 },
-                  hide: { delay: 100, duration: 80 }
-              });
-          }
-
-
-          function waitForTooltipReady(maxMs, intervalMs) {
-          var start = Date.now();
-          (function tick() {
-            if (window.jQuery && $.fn && $.fn.tooltip) { initTooltips(); return; }
-            if (Date.now() - start >= maxMs) return;
-            setTimeout(tick, intervalMs);
-          })();
-        }
-
-        /* ===== Click-popover for Maps API help (robust locally & in GAS) ===== */
-        function positionPopover(btn, pop) {
-          var rect = btn.getBoundingClientRect();
-          var bodyScrollY = window.scrollY || document.documentElement.scrollTop || 0;
-          var bodyScrollX = window.scrollX || document.documentElement.scrollLeft || 0;
-
-          // Place to the right of the icon, vertically centered
-          pop.style.top = Math.max(10, rect.top + bodyScrollY + (rect.height / 2) - (pop.offsetHeight / 2)) + "px";
-          pop.style.left = (rect.left + bodyScrollX + rect.width + 10) + "px";
-
-          // Keep within viewport (basic)
-          var vw = document.documentElement.clientWidth;
-          var vh = document.documentElement.clientHeight;
-          var popRect = pop.getBoundingClientRect();
-          if (popRect.right > vw - 8) {
-            pop.style.left = (vw - popRect.width - 8 + bodyScrollX) + "px";
-          }
-          if (popRect.top < 8) {
-            pop.style.top = (8 + bodyScrollY) + "px";
-          } else if (popRect.bottom > vh - 8) {
-            pop.style.top = (vh - popRect.height - 8 + bodyScrollY) + "px";
-          }
-        }
-
-        function initMapsPopover() {
-          var btn = document.getElementById("maps-help-btn");
-          var pop = document.getElementById("maps-help-popover");
-          if (!btn || !pop) return;
-
-          function openPop() {
-            pop.classList.add("show");
-            positionPopover(btn, pop);
-            btn.setAttribute("aria-expanded", "true");
-          }
-          function closePop() {
-            pop.classList.remove("show");
-            btn.setAttribute("aria-expanded", "false");
-          }
-          function togglePop(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            if (pop.classList.contains("show")) closePop(); else openPop();
-          }
-
-          btn.addEventListener("click", togglePop);
-          btn.addEventListener("keydown", function (e) {
-            if (e.key === "Enter" || e.key === " ") { e.preventDefault(); togglePop(e); }
-            if (e.key === "Escape") { closePop(); }
-          });
-
-          // Close with Esc anywhere, outside click, or close button
-          document.addEventListener("click", function (e) {
-            if (!pop.classList.contains("show")) return;
-            if (e.target === btn || pop.contains(e.target)) return;
-            closePop();
-          });
-          document.addEventListener("keydown", function (e) {
-            if (e.key === "Escape") closePop();
-          });
-          var closeBtn = pop.querySelector(".popover-close");
-          if (closeBtn) closeBtn.addEventListener("click", function (e) {
-            e.preventDefault(); e.stopPropagation(); closePop();
-          });
-
-          // Reposition on resize/scroll
-          window.addEventListener("resize", function () { if (pop.classList.contains("show")) positionPopover(btn, pop); });
-          window.addEventListener("scroll", function () { if (pop.classList.contains("show")) positionPopover(btn, pop); }, true);
-        }
-
-        function patchGoogleRunForLoading() {
-          try {
-            if (!window.google || !google.script || !google.script.run) return false;
-            var run = google.script.run;
-            if (run.__loadingPatched) return true;
-
-            var origWithSuccess = run.withSuccessHandler && run.withSuccessHandler.bind(run);
-            if (typeof origWithSuccess === "function") {
-              run.withSuccessHandler = function (success) {
-                var wrappedSuccess = function () {
-                  safeHideLoading();
-                  if (typeof success === "function") return success.apply(this, arguments);
-                };
-                var chain = origWithSuccess(wrappedSuccess);
-
-                if (chain && typeof chain.withFailureHandler === "function") {
-                  var origWithFailure = chain.withFailureHandler;
-                  chain.withFailureHandler = function (failure) {
-                    var wrappedFailure = function () {
-                      safeHideLoading();
-                      if (typeof failure === "function") return failure.apply(this, arguments);
-                    };
-                    return origWithFailure.call(chain, wrappedFailure);
-                  };
-                }
-                return chain;
-              };
+                $target.tooltip({
+                    appendTo: "body",                         // keep outside scrolling container
+                    items: ".help-icon:not(.popover-help)",
+                    content: function () { return $(this).attr("data-help"); },
+                    position: {
+                        // ⬇️ Bias: place tooltip ABOVE the target so bottom ones don't clip
+                        // 'my' is the tooltip edge; 'at' is the target edge
+                        my: "left+8 bottom-8",
+                        at: "right top",
+                        within: window,
+                        collision: "flipfit"                    // try to keep fully on-screen
+                    },
+                    tooltipClass: "custom-tooltip",
+                    track: false,
+                    show: { delay: 150, duration: 80 },
+                    hide: { delay: 100, duration: 80 }
+                });
             }
-            run.__loadingPatched = true;
-            return true;
-          } catch (_) { return false; }
-        }
 
-        // Always hide overlay on unexpected error (harmless when overlay is disabled)
-        window.addEventListener("error", () => { safeHideLoading(); });
-        window.addEventListener("unhandledrejection", () => { safeHideLoading(); });
+            function waitForTooltipReady(maxMs, intervalMs) {
+                var start = Date.now();
+                (function tick() {
+                    if (window.jQuery && $.fn && $.fn.tooltip) { initTooltips(); return; }
+                    if (Date.now() - start >= maxMs) return;
+                    setTimeout(tick, intervalMs);
+                })();
+            }
 
-        window.addEventListener("load", function () {
-          safeShowLoading();  // ⛔ disabled while debugging tooltips
-          waitForTooltipReady(5000, 50);  // prepare hover-tooltips for blue "?" icons
-          initMapsPopover();
+            /* ===== Click-popover for Maps API help (robust locally & in GAS) ===== */
+            function positionPopover(btn, pop) {
+                var rect = btn.getBoundingClientRect();
+                var bodyScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+                var bodyScrollX = window.scrollX || document.documentElement.scrollLeft || 0;
 
-          // Patch google.script.run when available
-          if (!patchGoogleRunForLoading()) {
-            var retries = 20;
-            var iv = setInterval(function () {
-              if (patchGoogleRunForLoading() || --retries <= 0) {
-                clearInterval(iv);
-              }
-            }, 100);
-          }
-        });
-      })();
+                // Place to the right of the icon, vertically centered
+                pop.style.top = Math.max(10, rect.top + bodyScrollY + (rect.height / 2) - (pop.offsetHeight / 2)) + "px";
+                pop.style.left = (rect.left + bodyScrollX + rect.width + 10) + "px";
+
+                // Keep within viewport (basic)
+                var vw = document.documentElement.clientWidth;
+                var vh = document.documentElement.clientHeight;
+                var popRect = pop.getBoundingClientRect();
+                if (popRect.right > vw - 8) {
+                    pop.style.left = (vw - popRect.width - 8 + bodyScrollX) + "px";
+                }
+                if (popRect.top < 8) {
+                    pop.style.top = (8 + bodyScrollY) + "px";
+                } else if (popRect.bottom > vh - 8) {
+                    pop.style.top = (vh - popRect.height - 8 + bodyScrollY) + "px";
+                }
+            }
+
+            function initMapsPopover() {
+                var btn = document.getElementById("maps-help-btn");
+                var pop = document.getElementById("maps-help-popover");
+                if (!btn || !pop) return;
+
+                function openPop() {
+                    pop.classList.add("show");
+                    positionPopover(btn, pop);
+                    btn.setAttribute("aria-expanded", "true");
+                }
+                function closePop() {
+                    pop.classList.remove("show");
+                    btn.setAttribute("aria-expanded", "false");
+                }
+                function togglePop(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (pop.classList.contains("show")) closePop(); else openPop();
+                }
+
+                btn.addEventListener("click", togglePop);
+                btn.addEventListener("keydown", function (e) {
+                    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); togglePop(e); }
+                    if (e.key === "Escape") { closePop(); }
+                });
+
+                // Close with Esc anywhere, outside click, or close button
+                document.addEventListener("click", function (e) {
+                    if (!pop.classList.contains("show")) return;
+                    if (e.target === btn || pop.contains(e.target)) return;
+                    closePop();
+                });
+                document.addEventListener("keydown", function (e) {
+                    if (e.key === "Escape") closePop();
+                });
+                var closeBtn = pop.querySelector(".popover-close");
+                if (closeBtn) closeBtn.addEventListener("click", function (e) {
+                    e.preventDefault(); e.stopPropagation(); closePop();
+                });
+
+                // Reposition on resize/scroll
+                window.addEventListener("resize", function () { if (pop.classList.contains("show")) positionPopover(btn, pop); });
+                window.addEventListener("scroll", function () { if (pop.classList.contains("show")) positionPopover(btn, pop); }, true);
+            }
+
+            function patchGoogleRunForLoading() {
+                try {
+                    if (!window.google || !google.script || !google.script.run) return false;
+                    var run = google.script.run;
+                    if (run.__loadingPatched) return true;
+
+                    var origWithSuccess = run.withSuccessHandler && run.withSuccessHandler.bind(run);
+                    if (typeof origWithSuccess === "function") {
+                        run.withSuccessHandler = function (success) {
+                            var wrappedSuccess = function () {
+                                SDH.UI.safeHideLoading();
+                                if (typeof success === "function") return success.apply(this, arguments);
+                            };
+                            var chain = origWithSuccess(wrappedSuccess);
+
+                            if (chain && typeof chain.withFailureHandler === "function") {
+                                var origWithFailure = chain.withFailureHandler;
+                                chain.withFailureHandler = function (failure) {
+                                    var wrappedFailure = function () {
+                                        SDH.UI.safeHideLoading();
+                                        if (typeof failure === "function") return failure.apply(this, arguments);
+                                    };
+                                    return origWithFailure.call(chain, wrappedFailure);
+                                };
+                            }
+                            return chain;
+                        };
+                    }
+                    run.__loadingPatched = true;
+                    return true;
+                } catch (_) { return false; }
+            }
+
+            // Always hide overlay on unexpected error (harmless when overlay is disabled)
+            window.addEventListener("error", () => { SDH.UI.safeHideLoading(); });
+            window.addEventListener("unhandledrejection", () => { SDH.UI.safeHideLoading(); });
+
+            window.addEventListener("load", function () {
+                SDH.UI.safeShowLoading();  // ⛔ disabled while debugging tooltips
+                waitForTooltipReady(5000, 50);  // prepare hover-tooltips for blue "?" icons
+                initMapsPopover();
+
+                // Patch google.script.run when available
+                if (!patchGoogleRunForLoading()) {
+                    var retries = 20;
+                    var iv = setInterval(function () {
+                        if (patchGoogleRunForLoading() || --retries <= 0) {
+                            clearInterval(iv);
+                        }
+                    }, 100);
+                }
+            });
+        })();
     </script>
-  </head>
+</head>
 
-  <body>
-    <div id="loading-overlay" role="status" aria-live="polite" aria-label="Working">
-      <div class="loader"></div>
-      <div class="loading-text">Fetching Data...</div>
-    </div>
+<body>
+<div id="loading-overlay" role="status" aria-live="polite" aria-label="Working">
+    <div class="loader"></div>
+    <div class="loading-text">Fetching Data...</div>
+</div>
 
-    <label for="mapsApiKey">
-      Maps API Key:
-      <!-- CLICKABLE caution icon -> opens popover -->
-      <button
-        id="maps-help-btn"
-        type="button"
-        class="help-icon caution popover-help"
-        aria-haspopup="dialog"
-        aria-expanded="false"
-        aria-controls="maps-help-popover"
-        title="Click here for important caveats!">
+<label for="mapsApiKey">
+    Maps API Key:
+    <!-- CLICKABLE caution icon -> opens popover -->
+    <button
+            id="maps-help-btn"
+            type="button"
+            class="help-icon caution popover-help"
+            aria-haspopup="dialog"
+            aria-expanded="false"
+            aria-controls="maps-help-popover"
+            title="Click here for important caveats!">
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <polygon points="12,2 22,20 2,20"
-                   fill="#fff3cd"
-                   stroke="#d39e00"
-                   stroke-width="2"
-                   stroke-linejoin="round"/>
-          <rect x="11" y="8" width="2" height="7" fill="#7a5a00"/>
-          <circle cx="12" cy="17.5" r="1.3" fill="#7a5a00"/>
+            <polygon points="12,2 22,20 2,20"
+                     fill="#fff3cd"
+                     stroke="#d39e00"
+                     stroke-width="2"
+                     stroke-linejoin="round"/>
+            <rect x="11" y="8" width="2" height="7" fill="#7a5a00"/>
+            <circle cx="12" cy="17.5" r="1.3" fill="#7a5a00"/>
         </svg>
-      </button>
-      <!-- Popover content -->
-      <div id="maps-help-popover" class="popover" role="dialog" aria-modal="false">
+    </button>
+    <!-- Popover content -->
+    <div id="maps-help-popover" class="popover" role="dialog" aria-modal="false">
         <div class="popover-arrow"></div>
         <div class="popover-body">
-          <button class="popover-close" aria-label="Close">×</button>
-          <div>
-            Enter your Google Maps API <strong>carefully</strong> (we don't auto-validate yet).
-            To verify the Maps JavaScript API is enabled and to view your key, open:
-            <br>
-            <a href="https://console.cloud.google.com/apis/library/maps-backend.googleapis.com"
-               target="_blank" rel="noopener">Google Cloud Console</a>
-            Choose your project in the upper left corner. Click 'Manage', then select 'Keys & Credentials'
-            from the options panel on the left hand side of window..
-          </div>
+            <button class="popover-close" aria-label="Close">×</button>
+            <div>
+                Enter your Google Maps API <strong>carefully</strong> (we don't auto-validate yet).
+                To verify the Maps JavaScript API is enabled and to view your key, open:
+                <br>
+                <a href="https://console.cloud.google.com/apis/library/maps-backend.googleapis.com"
+                   target="_blank" rel="noopener">Google Cloud Console</a>
+                Choose your project in the upper left corner. Click 'Manage', then select 'Keys & Credentials'
+                from the options panel on the left hand side of window..
+            </div>
         </div>
-      </div>
-    </label>
-    <input id="mapsApiKey" type="text" />
-
-    <div class="checkbox-group">
-      <input type="checkbox" id="showApiKey">
-      <label for="showApiKey">Show API Key</label>
     </div>
+</label>
+<input id="mapsApiKey" type="text" />
 
-    <label for="sheetSelect">
-      Sheet Tab:
-      <span class="help-icon info"
-            data-help="Select the sheet tab where your data is stored. (Typically 'Sheet1' for new sheets)">?</span>
-    </label>
-    <select id="sheetSelect"></select>
+<div class="checkbox-group">
+    <input type="checkbox" id="showApiKey">
+    <label for="showApiKey">Show API Key</label>
+</div>
 
-    <label for="addressSelect">
-      Address Column:
-      <span class="help-icon info"
-            data-help="Choose the column that contains addresses for the selected sheet tab.">?</span>
-    </label>
-    <select id="addressSelect"></select>
+<label for="sheetSelect">
+    Sheet Tab:
+    <span class="help-icon info"
+          data-help="Select the sheet tab where your data is stored. (Typically 'Sheet1' for new sheets)">?</span>
+</label>
+<select id="sheetSelect"></select>
 
-    <div class="checkbox-group">
-      <input type="checkbox" id="showLatLng">
-      <label for="showLatLng">
+<label for="addressSelect">
+    Address Column:
+    <span class="help-icon info"
+          data-help="Choose the column that contains addresses for the selected sheet tab.">?</span>
+</label>
+<select id="addressSelect"></select>
+
+<div class="checkbox-group">
+    <input type="checkbox" id="showLatLng">
+    <label for="showLatLng">
         Show Lat/Lng columns
         <span class="help-icon info"
               data-help="If enabled, Latitude and Longitude columns will be shown/filled in your sheet.">?</span>
-      </label>
-    </div>
+    </label>
+</div>
 
-    <div class="checkbox-group">
-      <input type="checkbox" id="debug">
-      <label for="debug">
+<div class="checkbox-group">
+    <input type="checkbox" id="debug">
+    <label for="debug">
         Enable Debug Logging
         <span class="help-icon info"
               data-help="Enable verbose logging to help troubleshoot issues.">?</span>
-      </label>
-    </div>
+    </label>
+</div>
 
-    <div class="button-row">
-      <button id="saveBtn" disabled>Save</button>
-    </div>
+<div class="button-row">
+    <button id="saveBtn" disabled>Save</button>
+</div>
 
-    <!-- Order is important -- this must load before SettingsDialogActionCode -->
-    <script>
-      <?!= include('SettingsDialogUIFrostingCode') ?>
-      //# sourceURL=SettingsDialogUIFrostingCode.js
-    </script>
+<!-- Order is important -- this must load before SettingsDialogActionCode -->
+<script>
+    <?!= include('SettingsDialogUIFrostingCode') ?>
+    //# sourceURL=SettingsDialogUIFrostingCode.js
+</script>
 
-    <script>
-      <?!= include('SettingsDialogActionCode') ?>
-      //# sourceURL=SettingsDialogActionCode.js
-    </script>
+<script>
+    <?!= include('SettingsDialogActionCode') ?>
+    //# sourceURL=SettingsDialogActionCode.js
+</script>
 
-    <!-- Container for tooltip 'within' and general scoping -->
-    <div id="settings-dialog-container"></div>
-  </body>
+<!-- Container for tooltip 'within' and general scoping -->
+<div id="settings-dialog-container"></div>
+</body>
 </html>
-
