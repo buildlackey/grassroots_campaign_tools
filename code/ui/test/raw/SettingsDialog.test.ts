@@ -54,7 +54,6 @@ function setupGoogleMock(win: any) {
     };
 }
 
-
 function dumpState(tag: string, doc: Document) {
     const sel = doc.querySelector("#sheetSelect") as HTMLSelectElement | null;
     const addr = doc.querySelector("#addressSelect") as HTMLSelectElement | null;
@@ -70,36 +69,72 @@ function dumpState(tag: string, doc: Document) {
     });
 }
 
+// 🔹 Helper
+async function assertSaveButtonState(
+    headersBySheet: Record<string, string[]>,
+    mapsKey: string,
+    expectedDisabled: boolean
+) {
+    // Seed state
+    window.SDH = window.SDH || { UI: { state: {} } };
+    window.SDH.UI.state.headersBySheet = headersBySheet;
+
+    // User types a Maps API key
+    const keyInput = document.getElementById("mapsApiKey") as HTMLInputElement;
+    keyInput.value = mapsKey;
+    keyInput.dispatchEvent(new window.Event("input", { bubbles: true }));
+
+    // Trigger change
+    window.SDH.UI.onSheetChange();
+
+    dumpState("after-onSheetChange", document);
+
+    // Assert
+    await waitFor(() => {
+        const saveBtn = document.querySelector("#saveBtn") as HTMLButtonElement;
+        expect(saveBtn.disabled).toBe(expectedDisabled);
+    });
+}
+
 describe("SettingsDialog Save Button / Maps API key (DOM-driven)", () => {
     beforeEach(async () => {
+        // 🔹 Prepare promise first
+        let readyResolve: () => void;
+        const readyPromise = new Promise<void>((resolve, reject) => {
+            readyResolve = resolve;
+            const timer = setTimeout(() => reject(new Error("timeout waiting for sdh-ui-ready")), 2000);
+            // Listener will be bound after DOM created
+            (global as any).__SDH_READY_HANDLER__ = () => {
+                clearTimeout(timer);
+                resolve();
+            };
+        });
+
         dom = new JSDOM(htmlContent, {
             runScripts: "dangerously",
             resources: "usable",
             pretendToBeVisual: true,
             beforeParse(win) {
                 (win as any).__IN_JEST__ = true;
+                // 🔹 Attach listener hook here
+                win.document.addEventListener("sdh-ui-ready", () => {
+                    if ((global as any).__SDH_READY_HANDLER__) {
+                        (global as any).__SDH_READY_HANDLER__();
+                    }
+                });
             },
         });
 
         window = dom.window;
         document = window.document;
 
-        // Provide google.script.run stub
         setupGoogleMock(window);
-
-        await new Promise<void>((resolve, reject) => {
-            const timer = setTimeout(() => reject(new Error("timeout waiting for sdh-ui-ready")), 2000);
-            document.addEventListener("sdh-ui-ready", () => {
-                clearTimeout(timer);
-                resolve();
-            });
-        });
-
 
         // Trigger onOpen just like a browser would
         window.dispatchEvent(new window.Event("load"));
 
         // wait for async init to run
+        await readyPromise;
         await new Promise(r => setTimeout(r, 100));
     });
 
@@ -110,61 +145,19 @@ describe("SettingsDialog Save Button / Maps API key (DOM-driven)", () => {
         }
     });
 
-
     test("Save enabled after switching to a sheet with some Address column header", async () => {
-        // Seed state so renderHeadersFor has something to work with
-        window.SDH = window.SDH || { UI: { state: {} } };
-        window.SDH.UI.state.headersBySheet = {
-            Sheet1: ["someColumnHeader"],
-            Sheet2: ["badbad"],
-        };
-
-        console.log("[TEST] ", name);
-
-        // User types a Maps API key
-        const keyInput = document.getElementById("mapsApiKey") as HTMLInputElement;
-        keyInput.value = "key1";
-        keyInput.dispatchEvent(new window.Event("input", { bubbles: true }));
-
-
-
-        window.SDH.UI.onSheetChange();
-
-        dumpState("after-Sheet2", document);
-
-        // Wait for Save button to become enabled
-        await waitFor(() => {
-            const saveBtn = document.querySelector("#saveBtn") as HTMLButtonElement;
-            expect(saveBtn.disabled).toBe(false);
-        });
+        await assertSaveButtonState(
+            { Sheet1: ["someColumnHeader"], Sheet2: ["badbad"] },
+            "key1",
+            false
+        );
     });
 
     test("Save disabled after switching to a sheet with no Address column", async () => {
-        // Seed state so renderHeadersFor has something to work with
-        window.SDH = window.SDH || { UI: { state: {} } };
-        window.SDH.UI.state.headersBySheet = {
-            Sheet1: [],
-            Sheet2: ["badbad"],
-        };
-
-        console.log("[TEST] ", name);
-
-        // User types a Maps API key
-        const keyInput = document.getElementById("mapsApiKey") as HTMLInputElement;
-        keyInput.value = "key1";
-        keyInput.dispatchEvent(new window.Event("input", { bubbles: true }));
-
-
-
-        window.SDH.UI.onSheetChange();
-
-        dumpState("after-Sheet2", document);
-
-        // Wait for Save button to become enabled
-        await waitFor(() => {
-            const saveBtn = document.querySelector("#saveBtn") as HTMLButtonElement;
-            expect(saveBtn.disabled).toBe(true);
-        });
+        await assertSaveButtonState(
+            { Sheet1: [], Sheet2: ["badbad"] },
+            "key1",
+            true
+        );
     });
-
 });
