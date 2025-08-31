@@ -15,109 +15,6 @@
     <script>
         (function () {
 
-            /* ===== jQuery UI tooltips for blue "?" icons ONLY (exclude popover-help) ===== */
-            function initTooltips() {
-                // Apply to all blue ? icons (no branching)
-                var $target = $(".help-icon:not(.popover-help)");
-                if ($target.length === 0) return;
-
-                $target.tooltip({
-                    appendTo: "body",                         // keep outside scrolling container
-                    items: ".help-icon:not(.popover-help)",
-                    content: function () { return $(this).attr("data-help"); },
-                    position: {
-                        // ⬇️ Bias: place tooltip ABOVE the target so bottom ones don't clip
-                        // 'my' is the tooltip edge; 'at' is the target edge
-                        my: "left+8 bottom-8",
-                        at: "right top",
-                        within: window,
-                        collision: "flipfit"                    // try to keep fully on-screen
-                    },
-                    tooltipClass: "custom-tooltip",
-                    track: false,
-                    show: { delay: 150, duration: 80 },
-                    hide: { delay: 100, duration: 80 }
-                });
-            }
-
-            function waitForTooltipReady(maxMs, intervalMs) {
-                var start = Date.now();
-                (function tick() {
-                    if (window.jQuery && $.fn && $.fn.tooltip) { initTooltips(); return; }
-                    if (Date.now() - start >= maxMs) return;
-                    setTimeout(tick, intervalMs);
-                })();
-            }
-
-            /* ===== Click-popover for Maps API help (robust locally & in GAS) ===== */
-            function positionPopover(btn, pop) {
-                var rect = btn.getBoundingClientRect();
-                var bodyScrollY = window.scrollY || document.documentElement.scrollTop || 0;
-                var bodyScrollX = window.scrollX || document.documentElement.scrollLeft || 0;
-
-                // Place to the right of the icon, vertically centered
-                pop.style.top = Math.max(10, rect.top + bodyScrollY + (rect.height / 2) - (pop.offsetHeight / 2)) + "px";
-                pop.style.left = (rect.left + bodyScrollX + rect.width + 10) + "px";
-
-                // Keep within viewport (basic)
-                var vw = document.documentElement.clientWidth;
-                var vh = document.documentElement.clientHeight;
-                var popRect = pop.getBoundingClientRect();
-                if (popRect.right > vw - 8) {
-                    pop.style.left = (vw - popRect.width - 8 + bodyScrollX) + "px";
-                }
-                if (popRect.top < 8) {
-                    pop.style.top = (8 + bodyScrollY) + "px";
-                } else if (popRect.bottom > vh - 8) {
-                    pop.style.top = (vh - popRect.height - 8 + bodyScrollY) + "px";
-                }
-            }
-
-            function initMapsPopover() {
-                var btn = document.getElementById("maps-help-btn");
-                var pop = document.getElementById("maps-help-popover");
-                if (!btn || !pop) return;
-
-                function openPop() {
-                    pop.classList.add("show");
-                    positionPopover(btn, pop);
-                    btn.setAttribute("aria-expanded", "true");
-                }
-                function closePop() {
-                    pop.classList.remove("show");
-                    btn.setAttribute("aria-expanded", "false");
-                }
-                function togglePop(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (pop.classList.contains("show")) closePop(); else openPop();
-                }
-
-                btn.addEventListener("click", togglePop);
-                btn.addEventListener("keydown", function (e) {
-                    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); togglePop(e); }
-                    if (e.key === "Escape") { closePop(); }
-                });
-
-                // Close with Esc anywhere, outside click, or close button
-                document.addEventListener("click", function (e) {
-                    if (!pop.classList.contains("show")) return;
-                    if (e.target === btn || pop.contains(e.target)) return;
-                    closePop();
-                });
-                document.addEventListener("keydown", function (e) {
-                    if (e.key === "Escape") closePop();
-                });
-                var closeBtn = pop.querySelector(".popover-close");
-                if (closeBtn) closeBtn.addEventListener("click", function (e) {
-                    e.preventDefault(); e.stopPropagation(); closePop();
-                });
-
-                // Reposition on resize/scroll
-                window.addEventListener("resize", function () { if (pop.classList.contains("show")) positionPopover(btn, pop); });
-                window.addEventListener("scroll", function () { if (pop.classList.contains("show")) positionPopover(btn, pop); }, true);
-            }
-
             function patchGoogleRunForLoading() {
                 try {
                     if (!window.google || !google.script || !google.script.run) return false;
@@ -157,8 +54,8 @@
 
             window.addEventListener("load", function () {
                 SDH.UI.safeShowLoading();  // ⛔ disabled while debugging tooltips
-                waitForTooltipReady(5000, 50);  // prepare hover-tooltips for blue "?" icons
-                initMapsPopover();
+                SDH.UI.waitForTooltipReady(5000, 50);  // prepare hover-tooltips for blue "?" icons
+                SDH.UI.initMapsPopover();
 
                 // Patch google.script.run when available
                 if (!patchGoogleRunForLoading()) {
