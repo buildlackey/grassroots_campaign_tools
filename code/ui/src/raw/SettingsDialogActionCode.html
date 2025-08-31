@@ -106,13 +106,13 @@ function onOpen() {
         }
         SDH.UI.updateSaveButtonState();
 
-        SDH.UI.safeHideLoading();
+        SDH.UI.hideSpinner();
         log("onOpen processing DONE");
     }
 
     // Main entry point
     log("ENTER onOpen");
-    SDH.UI.safeShowLoading()
+    SDH.UI.showSpinner()
     const chain =
         google.script.run
             .withSuccessHandler(async (data) => {
@@ -126,7 +126,7 @@ function onOpen() {
             })
             .withFailureHandler((e) => {
                 console.error("❌ Failed to fetch init data:", e);
-                SDH.UI.safeHideLoading();
+                SDH.UI.hideSpinner();
             });
     chain.getInitData();
 }

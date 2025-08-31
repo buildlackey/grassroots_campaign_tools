@@ -137,28 +137,20 @@
         console.log("[toggleApiKeyVisibility] type now:", el.getAttribute("type"));
     };
 
-    /* === Overlay helpers (moved from HTML) === */
-    SDH.UI.directShowOverlay = function () {
-        const overlay = document.getElementById("loading-overlay");
-        if (overlay) overlay.style.display = "flex";
-    };
-
-    SDH.UI.directHideOverlay = function () {
-        const overlay = document.getElementById("loading-overlay");
-        if (overlay) overlay.style.display = "none";
-    };
-
-    SDH.UI.safeShowLoading = function () {
+    /* === Spinner Control === */
+    SDH.UI.showSpinner = function () {
         try {
-            SDH.UI.directShowOverlay();
+            const overlay = document.getElementById("loading-overlay");
+            if (overlay) overlay.style.display = "flex";
         } catch (e) {
             console.warn("[safeShowLoading] failed:", e);
         }
     };
 
-    SDH.UI.safeHideLoading = function () {
+    SDH.UI.hideSpinner = function () {
         try {
-            SDH.UI.directHideOverlay();
+            const overlay = document.getElementById("loading-overlay");
+            if (overlay) overlay.style.display = "none";
         } catch (e) {
             console.warn("[safeHideLoading] failed:", e);
         }

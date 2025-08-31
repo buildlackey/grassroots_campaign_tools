@@ -119,11 +119,11 @@
             }
 
             // Always hide overlay on unexpected error (harmless when overlay is disabled)
-            window.addEventListener("error", () => { SDH.UI.safeHideLoading(); });
-            window.addEventListener("unhandledrejection", () => { SDH.UI.safeHideLoading(); });
+            window.addEventListener("error", () => { SDH.UI.hideSpinner(); });
+            window.addEventListener("unhandledrejection", () => { SDH.UI.hideSpinner(); });
 
             window.addEventListener("load", function () {
-                SDH.UI.safeShowLoading();  // ⛔ disabled while debugging tooltips
+                SDH.UI.showSpinner();  // ⛔ disabled while debugging tooltips
                 waitForTooltipReady(5000, 50);  // prepare hover-tooltips for blue "?" icons
                 initMapsPopover();
             });
