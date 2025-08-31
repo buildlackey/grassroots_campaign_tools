@@ -12,6 +12,7 @@ export class PreferenceSvc {
     SHEET_TAB_NAME: 'prefs.sheetTabName',
     ADDRESS_COL: 'prefs.addressColumn',
     SHOW_LATLNG: 'prefs.showLatLong',
+    DEBUG: 'prefs.debug',
     ADDRESS_COL_OFFSET: 'prefs._addressColumnOffset',
   } as const;
 
@@ -53,7 +54,7 @@ export class PreferenceSvc {
         const current = this.getPreferences();
         Logger.log("🔎 Current prefs: %s", JSON.stringify(current));
 
-        const next: Preferences = {
+        const updatedPrefs: Preferences = {
             sheetTabName: prefs.sheetTabName ?? current.sheetTabName,
             addressColumn: prefs.addressColumn ?? current.addressColumn,
             mapsApiKey: prefs.mapsApiKey ?? current.mapsApiKey,
@@ -61,7 +62,7 @@ export class PreferenceSvc {
             debug: typeof prefs.debug === 'boolean' ? prefs.debug : current.debug,
         };
 
-        Logger.log("➡️  Computed next prefs: %s", JSON.stringify(next));
+        Logger.log("➡️  Computed updatedPrefs prefs: %s", JSON.stringify(updatedPrefs));
 
         const callHasOnlyKey =
             !!prefs.mapsApiKey &&
@@ -92,29 +93,32 @@ export class PreferenceSvc {
         // Persist user fields if present in the call
         if (prefs.mapsApiKey !== undefined) {
             Logger.log("💾 Storing user property: mapsApiKey");
-            this.userProps.setProperty(PreferenceSvc.USER_KEYS.MAPS_KEY, next.mapsApiKey);
+            this.userProps.setProperty(PreferenceSvc.USER_KEYS.MAPS_KEY, updatedPrefs.mapsApiKey);
         }
         if (prefs.debug !== undefined) {
-            Logger.log("💾 Storing user property: debug=%s", next.debug);
+            Logger.log("💾 Storing user property: debug=%s", updatedPrefs.debug);
             this.userProps.setProperty(PreferenceSvc.USER_KEYS.DEBUG, PreferenceSvc.fromBool(!!prefs.debug));
         }
 
         // Full set → persist doc primaries + derived
         if (callHasFullSet) {
-            const idx = columnNames.indexOf(next.addressColumn);
+            const idx = columnNames.indexOf(updatedPrefs.addressColumn);
             if (idx === -1) throw new Error('addressColumn must be one of columnNames.');
 
-            Logger.log("💾 Storing doc properties: sheetTab=%s addrCol=%s showLatLong=%s colOffset=%s",
-                next.sheetTabName, next.addressColumn, next.showLatLong, idx);
+            Logger.log("💾 Storing doc properties: sheetTab=%s addrCol=%s showLatLong=%s colOffset=%s dbg=%s",
+                updatedPrefs.sheetTabName, updatedPrefs.addressColumn, updatedPrefs.showLatLong, updatedPrefs.debug, idx);
 
             if (prefs.sheetTabName !== undefined) {
-                this.docProps.setProperty(PreferenceSvc.DOC_KEYS.SHEET_TAB_NAME, next.sheetTabName);
+                this.docProps.setProperty(PreferenceSvc.DOC_KEYS.SHEET_TAB_NAME, updatedPrefs.sheetTabName);
             }
             if (prefs.addressColumn !== undefined) {
-                this.docProps.setProperty(PreferenceSvc.DOC_KEYS.ADDRESS_COL, next.addressColumn);
+                this.docProps.setProperty(PreferenceSvc.DOC_KEYS.ADDRESS_COL, updatedPrefs.addressColumn);
             }
             if (prefs.showLatLong !== undefined) {
-                this.docProps.setProperty(PreferenceSvc.DOC_KEYS.SHOW_LATLNG, PreferenceSvc.fromBool(!!next.showLatLong));
+                this.docProps.setProperty(PreferenceSvc.DOC_KEYS.SHOW_LATLNG, PreferenceSvc.fromBool(!!updatedPrefs.showLatLong));
+            }
+            if (prefs.debug !== undefined) {
+                this.docProps.setProperty(PreferenceSvc.DOC_KEYS.DEBUG, PreferenceSvc.fromBool(!!updatedPrefs.debug));
             }
 
             this.docProps.setProperty(PreferenceSvc.DOC_KEYS.ADDRESS_COL_OFFSET, String(idx));
