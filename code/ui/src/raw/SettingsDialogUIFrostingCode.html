@@ -18,7 +18,7 @@
         var addr = (addrEl && typeof addrEl.value === "string") ? addrEl.value : "";
 
         btn.disabled = !(key.length > 0 && addr !== "");
-        console.log("[updateSaveButtonState] ->", !btn.disabled);
+        console.log("[updateSaveButtonState is disabled?] ->", btn.disabled);
     };
 
 
@@ -54,6 +54,8 @@
         // choose a default option
         var defaultAddr = clean.find(h => /address/i.test(h)) || clean[0] || "";
         if (defaultAddr) select.value = defaultAddr;
+
+        console.log("[renderHeadersFor] selected value after default logic:", select.value);
 
         // update save button state
         if (SDH.UI && typeof SDH.UI.updateSaveButtonState === "function") {

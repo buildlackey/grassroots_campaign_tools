@@ -87,6 +87,15 @@ describe("SettingsDialog Save Button / Maps API key (DOM-driven)", () => {
         // Provide google.script.run stub
         setupGoogleMock(window);
 
+        await new Promise<void>((resolve, reject) => {
+            const timer = setTimeout(() => reject(new Error("timeout waiting for sdh-ui-ready")), 2000);
+            document.addEventListener("sdh-ui-ready", () => {
+                clearTimeout(timer);
+                resolve();
+            });
+        });
+
+
         // Trigger onOpen just like a browser would
         window.dispatchEvent(new window.Event("load"));
 
@@ -94,56 +103,68 @@ describe("SettingsDialog Save Button / Maps API key (DOM-driven)", () => {
         await new Promise(r => setTimeout(r, 100));
     });
 
-    test("Save disabled when no Address column is selected", async () => {
+
+    afterEach(() => {
+        if (dom) {
+            dom.window.close();   // shuts down timers, resources
+        }
+    });
+
+
+    test("Save enabled after switching to a sheet with some Address column header", async () => {
+        // Seed state so renderHeadersFor has something to work with
+        window.SDH = window.SDH || { UI: { state: {} } };
+        window.SDH.UI.state.headersBySheet = {
+            Sheet1: ["someColumnHeader"],
+            Sheet2: ["badbad"],
+        };
+
+        console.log("[TEST] ", name);
+
         // User types a Maps API key
         const keyInput = document.getElementById("mapsApiKey") as HTMLInputElement;
         keyInput.value = "key1";
         keyInput.dispatchEvent(new window.Event("input", { bubbles: true }));
 
-        // Select Sheet1 (no Address columns)
-        const sheetSelect = document.getElementById("sheetSelect") as HTMLSelectElement;
-        sheetSelect.value = "Sheet1";
-        sheetSelect.dispatchEvent(new window.Event("change", { bubbles: true }));
 
-        // Address dropdown has no valid entries
-        const addrSelect = document.getElementById("addressSelect") as HTMLSelectElement;
-        addrSelect.innerHTML = `<option value="Name">Name</option>`;
-        addrSelect.value = "Name";
-        addrSelect.dispatchEvent(new window.Event("change", { bubbles: true }));
 
-        dumpState("after-Sheet1", document);
+        window.SDH.UI.onSheetChange();
 
+        dumpState("after-Sheet2", document);
+
+        // Wait for Save button to become enabled
+        await waitFor(() => {
+            const saveBtn = document.querySelector("#saveBtn") as HTMLButtonElement;
+            expect(saveBtn.disabled).toBe(false);
+        });
+    });
+
+    test("Save disabled after switching to a sheet with no Address column", async () => {
+        // Seed state so renderHeadersFor has something to work with
+        window.SDH = window.SDH || { UI: { state: {} } };
+        window.SDH.UI.state.headersBySheet = {
+            Sheet1: [],
+            Sheet2: ["badbad"],
+        };
+
+        console.log("[TEST] ", name);
+
+        // User types a Maps API key
+        const keyInput = document.getElementById("mapsApiKey") as HTMLInputElement;
+        keyInput.value = "key1";
+        keyInput.dispatchEvent(new window.Event("input", { bubbles: true }));
+
+
+
+        window.SDH.UI.onSheetChange();
+
+        dumpState("after-Sheet2", document);
+
+        // Wait for Save button to become enabled
         await waitFor(() => {
             const saveBtn = document.querySelector("#saveBtn") as HTMLButtonElement;
             expect(saveBtn.disabled).toBe(true);
         });
     });
 
-    test("Save enabled after switching to Sheet2 with Address column", async () => {
-        // User types a Maps API key
-        const keyInput = document.getElementById("mapsApiKey") as HTMLInputElement;
-        keyInput.value = "key1";
-        keyInput.dispatchEvent(new window.Event("input", { bubbles: true }));
-
-        // Select Sheet2 (has Address)
-        const sheetSelect = document.getElementById("sheetSelect") as HTMLSelectElement;
-        sheetSelect.value = "Sheet2";
-        sheetSelect.dispatchEvent(new window.Event("change", { bubbles: true }));
-
-        // Populate Address column
-        const addrSelect = document.getElementById("addressSelect") as HTMLSelectElement;
-        addrSelect.innerHTML = `
-      <option value="Name">Name</option>
-      <option value="Address">Address</option>
-    `;
-        addrSelect.value = "Address";
-        addrSelect.dispatchEvent(new window.Event("change", { bubbles: true }));
-
-        dumpState("after-Sheet2", document);
-
-        await waitFor(() => {
-            const saveBtn = document.querySelector("#saveBtn") as HTMLButtonElement;
-            expect(saveBtn.disabled).toBe(false);
-        });
-    });
 });
