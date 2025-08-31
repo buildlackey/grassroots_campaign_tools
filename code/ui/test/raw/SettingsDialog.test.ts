@@ -145,7 +145,7 @@ describe("SettingsDialog Save Button / Maps API key (DOM-driven)", () => {
         }
     });
 
-    test("Save enabled after switching to a sheet with some Address column header", async () => {
+    test("Save enabled (key NON EMPTY, and have address columns for sheet)", async () => {
         await assertSaveButtonState(
             { Sheet1: ["someColumnHeader"], Sheet2: ["badbad"] },
             "key1",
@@ -153,7 +153,15 @@ describe("SettingsDialog Save Button / Maps API key (DOM-driven)", () => {
         );
     });
 
-    test("Save disabled after switching to a sheet with no Address column", async () => {
+
+    test("Save disabled (key is EMPTY, and have address columns for sheet)", async () => {
+        await assertSaveButtonState(
+            { Sheet1: ["someColumnHeader"], Sheet2: ["badbad"] },
+            "",
+            true
+        );
+    });
+    test("Save disabled (key NON EMPTY, but have no address columns for sheet)", async () => {
         await assertSaveButtonState(
             { Sheet1: [], Sheet2: ["badbad"] },
             "key1",
