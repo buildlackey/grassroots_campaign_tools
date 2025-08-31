@@ -63,54 +63,63 @@ function onOpen() {
         } catch(_) {}
     }
 
+    function saveDialogState(initData) {
+        sheets = initData.sheetTabNames || [];
+        headersBySheet = initData.sheetTabToColumnNames || {};
+
+        // Keep namespaced state in sync (used by helpers)
+        window.SDH = window.SDH || {};
+        SDH.UI = SDH.UI || {};
+        SDH.UI.state = SDH.UI.state || {};
+        SDH.UI.state.headersBySheet = headersBySheet;
+        return SDH;
+    }
+
+    function populateDialogFields(data) {
+        const prefs = data.prefs || {};
+        const sheetSelect = document.getElementById("sheetSelect");
+
+        // Populate sheet tab select list - have preferred sheetTabName? then select that, select first in list
+        sheetSelect.innerHTML = sheets.map(n => `<option value="${n}">${n}</option>`).join('');
+        if (sheets.length > 0) {
+            sheetSelect.value =
+                (prefs.sheetTabName && sheets.includes(prefs.sheetTabName))
+                    ? prefs.sheetTabName
+                    : sheets[0];
+        }
+
+        // Pre-fill entry fields and controls using PreferenceSvc values
+        if (prefs.mapsApiKey) document.getElementById("mapsApiKey").value = prefs.mapsApiKey;
+        if (prefs.addressColumn) document.getElementById("addressSelect").value = prefs.addressColumn;
+        if (typeof prefs.showLatLong === "boolean") document.getElementById("showLatLng").checked = prefs.showLatLong;
+        if (typeof prefs.debug === "boolean") document.getElementById("debug").checked = prefs.debug;
+        return sheetSelect;
+    }
+
+    function wireUpEventHandlers(SDH) {
+        // Wire events
+        bindRequired("sheetSelect", "change", SDH.UI.onSheetChange);
+        bindRequired("saveBtn", "click", saveSettings);
+
+        bindRequired("showApiKey", "change", function () {
+            SDH.UI.toggleApiKeyVisibility(this);
+        });
+        bindRequired("mapsApiKey", "blur", SDH.UI.hideApiKeyOnBlur);
+        bindRequired("mapsApiKey", "focus", SDH.UI.showApiKeyOnFocus);
+        bindRequired("mapsApiKey", "input", SDH.UI.updateSaveButtonState);
+
+        bindRequired("addressSelect", "change", SDH.UI.updateSaveButtonState);
+    }
+
     const chain =
         google.script.run
             .withSuccessHandler(async (data) => {
                 log("getInitData success", data);
 
-                sheets = data.sheetTabNames || [];
-                headersBySheet = data.sheetTabToColumnNames || {};
-
-                // Keep namespaced state in sync (used by helpers)
-                window.SDH = window.SDH || {};
-                SDH.UI = SDH.UI || {};
-                SDH.UI.state = SDH.UI.state || {};
-                SDH.UI.state.headersBySheet = headersBySheet;
-
-                const prefs = data.prefs || {};
-                const sheetSelect = document.getElementById("sheetSelect");
-
-                // Populate sheet list
-                sheetSelect.innerHTML = sheets.map(n => `<option value="${n}">${n}</option>`).join('');
-
-                if (sheets.length > 0) {
-                    sheetSelect.value =
-                        (prefs.sheetTabName && sheets.includes(prefs.sheetTabName))
-                            ? prefs.sheetTabName
-                            : sheets[0];
-                }
-
-                // Pre-fill prefs
-                if (prefs.mapsApiKey) document.getElementById("mapsApiKey").value = prefs.mapsApiKey;
-                if (prefs.addressColumn) document.getElementById("addressSelect").value = prefs.addressColumn;
-                if (typeof prefs.showLatLong === "boolean") document.getElementById("showLatLng").checked = prefs.showLatLong;
-                if (typeof prefs.debug === "boolean")     document.getElementById("debug").checked     = prefs.debug;
-
-                // ✅ Wait until helper functions are definitely loaded
-                await waitForUIHelpers();
-
-                // Wire events
-                bindRequired("sheetSelect", "change", SDH.UI.onSheetChange);
-                bindRequired("saveBtn", "click", saveSettings);
-
-                bindRequired("showApiKey", "change", function () {
-                    SDH.UI.toggleApiKeyVisibility(this);
-                });
-                bindRequired("mapsApiKey", "blur", SDH.UI.hideApiKeyOnBlur);
-                bindRequired("mapsApiKey", "focus", SDH.UI.showApiKeyOnFocus);
-                bindRequired("mapsApiKey", "input", SDH.UI.updateSaveButtonState);
-
-                bindRequired("addressSelect", "change", SDH.UI.updateSaveButtonState);
+                const SDH =  saveDialogState(data);
+                const sheetSelect = populateDialogFields(data);
+                await waitForUIHelpers(); // Wait until helper functions are definitely loaded
+                wireUpEventHandlers(SDH); // Now have successfully awaited on availability of functions to be wired in
 
                 // Initial render + one-time state compute:
                 //  - render headers for the currently selected sheet
