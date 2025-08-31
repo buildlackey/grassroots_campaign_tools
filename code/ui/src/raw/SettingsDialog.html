@@ -118,39 +118,6 @@
                 window.addEventListener("scroll", function () { if (pop.classList.contains("show")) positionPopover(btn, pop); }, true);
             }
 
-            function patchGoogleRunForLoading() {
-                try {
-                    if (!window.google || !google.script || !google.script.run) return false;
-                    var run = google.script.run;
-                    if (run.__loadingPatched) return true;
-
-                    var origWithSuccess = run.withSuccessHandler && run.withSuccessHandler.bind(run);
-                    if (typeof origWithSuccess === "function") {
-                        run.withSuccessHandler = function (success) {
-                            var wrappedSuccess = function () {
-                                SDH.UI.safeHideLoading();
-                                if (typeof success === "function") return success.apply(this, arguments);
-                            };
-                            var chain = origWithSuccess(wrappedSuccess);
-
-                            if (chain && typeof chain.withFailureHandler === "function") {
-                                var origWithFailure = chain.withFailureHandler;
-                                chain.withFailureHandler = function (failure) {
-                                    var wrappedFailure = function () {
-                                        SDH.UI.safeHideLoading();
-                                        if (typeof failure === "function") return failure.apply(this, arguments);
-                                    };
-                                    return origWithFailure.call(chain, wrappedFailure);
-                                };
-                            }
-                            return chain;
-                        };
-                    }
-                    run.__loadingPatched = true;
-                    return true;
-                } catch (_) { return false; }
-            }
-
             // Always hide overlay on unexpected error (harmless when overlay is disabled)
             window.addEventListener("error", () => { SDH.UI.safeHideLoading(); });
             window.addEventListener("unhandledrejection", () => { SDH.UI.safeHideLoading(); });
@@ -159,16 +126,6 @@
                 SDH.UI.safeShowLoading();  // ⛔ disabled while debugging tooltips
                 waitForTooltipReady(5000, 50);  // prepare hover-tooltips for blue "?" icons
                 initMapsPopover();
-
-                // Patch google.script.run when available
-                if (!patchGoogleRunForLoading()) {
-                    var retries = 20;
-                    var iv = setInterval(function () {
-                        if (patchGoogleRunForLoading() || --retries <= 0) {
-                            clearInterval(iv);
-                        }
-                    }, 100);
-                }
             });
         })();
     </script>
