@@ -49,19 +49,6 @@ function waitForUIHelpers() {
 window.addEventListener("load", onOpen);
 
 function onOpen() {
-    log("ENTER onOpen");
-
-    // 🔄 Show loading overlay
-    const overlay = document.getElementById("loading-overlay");
-    if (overlay) overlay.style.display = "flex";
-
-    // Small helper so we never depend on a UI helper just to hide the overlay
-    function hideOverlay() {
-        try {
-            const o = document.getElementById("loading-overlay");
-            if (o) o.style.display = "none";
-        } catch(_) {}
-    }
 
     function saveDialogState(initData) {
         sheets = initData.sheetTabNames || [];
@@ -111,39 +98,36 @@ function onOpen() {
         bindRequired("addressSelect", "change", SDH.UI.updateSaveButtonState);
     }
 
+    function renderSelectorForAddressColumn(SDH, preferredSheetTabName) {
+        //  - render selector for column headers for the currently selected sheet
+        //  - Also call updateSaveButtonState() ONCE so Save Button enablement reflects current values
+        if (sheets.length > 0) {
+            SDH.UI.renderHeadersFor(preferredSheetTabName.value);
+        }
+        SDH.UI.updateSaveButtonState();
+
+        SDH.UI.safeHideLoading();
+        log("onOpen processing DONE");
+    }
+
+    // Main entry point
+    log("ENTER onOpen");
+    SDH.UI.safeShowLoading()
     const chain =
         google.script.run
             .withSuccessHandler(async (data) => {
                 log("getInitData success", data);
 
                 const SDH =  saveDialogState(data);
-                const sheetSelect = populateDialogFields(data);
+                const preferredSheetTabName = populateDialogFields(data);
                 await waitForUIHelpers(); // Wait until helper functions are definitely loaded
                 wireUpEventHandlers(SDH); // Now have successfully awaited on availability of functions to be wired in
-
-                // Initial render + one-time state compute:
-                //  - render headers for the currently selected sheet
-                //  - call updateSaveButtonState() ONCE so Save reflects current values
-                //
-                // Why we invoke updateSaveButtonState() directly (vs only binding):
-                // The Save button state depends on the *current* inputs (key & address).
-                // After wiring listeners, we still need a first pass to reflect whatever
-                // initial values we set from prefs/data. This single direct call is that
-                // first “compute” — subsequent changes come from the bound events.
-                if (sheets.length > 0) {
-                    SDH.UI.renderHeadersFor(sheetSelect.value);
-                }
-                SDH.UI.updateSaveButtonState();
-
-                hideOverlay();
-                log("EXIT onOpen");
+                renderSelectorForAddressColumn(SDH, preferredSheetTabName);
             })
             .withFailureHandler((e) => {
                 console.error("❌ Failed to fetch init data:", e);
-                hideOverlay();
+                SDH.UI.safeHideLoading();
             });
-
-    // No `.finally(...)` here — jsdom mocks don’t provide it on the run chain
     chain.getInitData();
 }
 
