@@ -63,7 +63,7 @@ function dumpState(tag: string, doc: Document) {
         sheetValue: sel?.value || "",
         sheetOptions: sel?.options.length || 0,
         addrValue: addr?.value || "",
-        addrOptions: addr ? Array.from(addr.options).map(o => o.value) : [],
+        addrOptions: addr ? Array.from(addr.options).map((o) => o.value) : [],
         mapsKeyLen: key?.value.length || 0,
         saveDisabled: !!save?.disabled,
     });
@@ -73,33 +73,47 @@ function dumpState(tag: string, doc: Document) {
 async function assertSaveButtonState(
     headersBySheet: Record<string, string[]>,
     mapsKey: string,
-    expectedDisabled: boolean
+    expectedDisabled: boolean,
+    expectedAddressValue: string
 ) {
-    // Seed state
+    // Seed state with wrapper shape + default global preference
     window.SDH = window.SDH || { UI: { state: {} } };
-    window.SDH.UI.state.headersBySheet = headersBySheet;
+    window.SDH.UI.state = {
+        headersBySheet,
+        preferences: { addressColumn: "" },
+    };
+
+    // Ensure a deterministic selected sheet: pick the first key
+    const sheetNames = Object.keys(headersBySheet);
+    const firstSheet = sheetNames[0] || "";
+    const sheetSel = document.getElementById("sheetSelect") as HTMLSelectElement | null;
+    if (sheetSel && firstSheet) {
+        sheetSel.value = firstSheet;
+    }
 
     // User types a Maps API key
     const keyInput = document.getElementById("mapsApiKey") as HTMLInputElement;
     keyInput.value = mapsKey;
     keyInput.dispatchEvent(new window.Event("input", { bubbles: true }));
 
-    // Trigger change
+    // Trigger change to populate address options + selection
     window.SDH.UI.onSheetChange();
 
     dumpState("after-onSheetChange", document);
 
-    // Assert
+    // Assert both save-button state and addressSelect value
     await waitFor(() => {
         const saveBtn = document.querySelector("#saveBtn") as HTMLButtonElement;
+        const addrSel = document.querySelector("#addressSelect") as HTMLSelectElement;
         expect(saveBtn.disabled).toBe(expectedDisabled);
+        expect(addrSel.value).toBe(expectedAddressValue);
     });
 }
 
 describe("SettingsDialog Save Button / Maps API key (DOM-driven)", () => {
     beforeEach(async () => {
         // 🔹 Prepare promise first
-        let readyResolve: () => void;
+        let readyResolve!: () => void;
         const readyPromise = new Promise<void>((resolve, reject) => {
             readyResolve = resolve;
             const timer = setTimeout(() => reject(new Error("timeout waiting for sdh-ui-ready")), 2000);
@@ -135,37 +149,37 @@ describe("SettingsDialog Save Button / Maps API key (DOM-driven)", () => {
 
         // wait for async init to run
         await readyPromise;
-        await new Promise(r => setTimeout(r, 100));
+        await new Promise((r) => setTimeout(r, 100));
     });
-
 
     afterEach(() => {
         if (dom) {
-            dom.window.close();   // shuts down timers, resources
+            dom.window.close(); // shuts down timers, resources
         }
     });
 
-    test("Save enabled (key NON EMPTY, and have address columns for sheet)", async () => {
+    test("Save enabled (key NON EMPTY, and addressSelect populated via fallback to first header)", async () => {
+        // First sheet is Sheet1 → clean headers: ["someColumnHeader"] → pick first
         await assertSaveButtonState(
             { Sheet1: ["someColumnHeader"], Sheet2: ["badbad"] },
             "key1",
-            false
+            false,
+            "someColumnHeader"
         );
     });
 
-
-    test("Save disabled (key is EMPTY, and have address columns for sheet)", async () => {
+    test("Save disabled (key is EMPTY, though addressSelect is non-empty)", async () => {
+        // First sheet is Sheet1 → clean headers: ["someColumnHeader"] → pick first
         await assertSaveButtonState(
             { Sheet1: ["someColumnHeader"], Sheet2: ["badbad"] },
             "",
-            true
+            true,
+            "someColumnHeader"
         );
     });
-    test("Save disabled (key NON EMPTY, but have no address columns for sheet)", async () => {
-        await assertSaveButtonState(
-            { Sheet1: [], Sheet2: ["badbad"] },
-            "key1",
-            true
-        );
+
+    test("Save disabled (key NON EMPTY, but no headers → addressSelect empty)", async () => {
+        // First sheet is Sheet1 → clean headers: [] → addressSelect = ""
+        await assertSaveButtonState({ Sheet1: [], Sheet2: ["badbad"] }, "key1", true, "");
     });
 });
