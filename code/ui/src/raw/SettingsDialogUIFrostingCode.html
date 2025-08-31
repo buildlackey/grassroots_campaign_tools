@@ -7,22 +7,6 @@
         preferences: { addressColumn: {} }
     };
 
-    /* === merge bootstrap payload into state === */
-    SDH.UI.applyBootstrap = function (payload) {
-        if (!payload || typeof payload !== "object") payload = {};
-        var headersBySheet = payload.headersBySheet || {};
-        var preferences    = payload.preferences || {};
-        if (!preferences.addressColumn) {
-            preferences.addressColumn = {};
-        }
-        SDH.UI.state.headersBySheet = headersBySheet;
-        SDH.UI.state.preferences    = preferences;
-        console.log("[applyBootstrap] state ready", {
-            sheets: Object.keys(SDH.UI.state.headersBySheet).length,
-            hasPrefs: !!SDH.UI.state.preferences
-        });
-    };
-
     /* === updateSaveButtonState === */
     SDH.UI.updateSaveButtonState = function () {
         var btn = document.getElementById("saveBtn");
