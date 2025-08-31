@@ -15,40 +15,6 @@
     <script>
         (function () {
 
-            /* ===== jQuery UI tooltips for blue "?" icons ONLY (exclude popover-help) ===== */
-            function initTooltips() {
-                // Apply to all blue ? icons (no branching)
-                var $target = $(".help-icon:not(.popover-help)");
-                if ($target.length === 0) return;
-
-                $target.tooltip({
-                    appendTo: "body",                         // keep outside scrolling container
-                    items: ".help-icon:not(.popover-help)",
-                    content: function () { return $(this).attr("data-help"); },
-                    position: {
-                        // ⬇️ Bias: place tooltip ABOVE the target so bottom ones don't clip
-                        // 'my' is the tooltip edge; 'at' is the target edge
-                        my: "left+8 bottom-8",
-                        at: "right top",
-                        within: window,
-                        collision: "flipfit"                    // try to keep fully on-screen
-                    },
-                    tooltipClass: "custom-tooltip",
-                    track: false,
-                    show: { delay: 150, duration: 80 },
-                    hide: { delay: 100, duration: 80 }
-                });
-            }
-
-            function waitForTooltipReady(maxMs, intervalMs) {
-                var start = Date.now();
-                (function tick() {
-                    if (window.jQuery && $.fn && $.fn.tooltip) { initTooltips(); return; }
-                    if (Date.now() - start >= maxMs) return;
-                    setTimeout(tick, intervalMs);
-                })();
-            }
-
             /* ===== Click-popover for Maps API help (robust locally & in GAS) ===== */
             function positionPopover(btn, pop) {
                 var rect = btn.getBoundingClientRect();
@@ -124,7 +90,7 @@
 
             window.addEventListener("load", function () {
                 SDH.UI.showSpinner();  // ⛔ disabled while debugging tooltips
-                waitForTooltipReady(5000, 50);  // prepare hover-tooltips for blue "?" icons
+                SDH.UI.waitForTooltipReady(5000, 50);  // prepare hover-tooltips for blue "?" icons
                 initMapsPopover();
             });
         })();
