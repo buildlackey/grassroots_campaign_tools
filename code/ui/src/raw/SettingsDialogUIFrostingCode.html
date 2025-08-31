@@ -1,10 +1,29 @@
 (function (global) {
-    console.log("[SettingsDialogUIFrostingCode] stripped v2 loading");
+    console.log("[SettingsDialogUIFrostingCode] v3a loading");
     var SDH = global.SDH || {};
     SDH.UI = SDH.UI || {};
-    SDH.UI.state = SDH.UI.state || {};
+    SDH.UI.state = SDH.UI.state || {
+        headersBySheet: {},
+        preferences: { addressColumn: {} }
+    };
 
-    /* === updateSaveButtonState (working) === */
+    /* === merge bootstrap payload into state === */
+    SDH.UI.applyBootstrap = function (payload) {
+        if (!payload || typeof payload !== "object") payload = {};
+        var headersBySheet = payload.headersBySheet || {};
+        var preferences    = payload.preferences || {};
+        if (!preferences.addressColumn) {
+            preferences.addressColumn = {};
+        }
+        SDH.UI.state.headersBySheet = headersBySheet;
+        SDH.UI.state.preferences    = preferences;
+        console.log("[applyBootstrap] state ready", {
+            sheets: Object.keys(SDH.UI.state.headersBySheet).length,
+            hasPrefs: !!SDH.UI.state.preferences
+        });
+    };
+
+    /* === updateSaveButtonState === */
     SDH.UI.updateSaveButtonState = function () {
         var btn = document.getElementById("saveBtn");
         if (!btn) {
@@ -21,7 +40,7 @@
         console.log("[updateSaveButtonState is disabled?] ->", btn.disabled);
     };
 
-
+    /* === renderHeadersFor === */
     SDH.UI.renderHeadersFor = function (name) {
         function formatOption(h) {
             return '<option value="%s">%s</option>'.replace(/%s/g, h);
@@ -29,40 +48,58 @@
 
         console.log("[renderHeadersFor] start", name);
 
-// get headers for the sheet, or empty array
-        var headers = [];
-        if (SDH.UI.state && SDH.UI.state.headersBySheet && SDH.UI.state.headersBySheet[name]) {
-            headers = SDH.UI.state.headersBySheet[name];
-        }
-
-// normalize to strings and drop empties
+        // headers for this sheet
+        var headers = (SDH.UI.state.headersBySheet &&
+            SDH.UI.state.headersBySheet[name]) || [];
         var clean = headers
             .filter(h => h != null && String(h).length > 0)
             .map(h => String(h));
 
-// get the <select> element
+        // get select element
         var select = document.getElementById("addressSelect");
         if (!select) {
             console.warn("[renderHeadersFor] addressSelect not found");
             return;
         }
 
-        // build <option> list
-        var html = clean.map(formatOption).join('');
-        select.innerHTML = html;
+        // build options
+        select.innerHTML = clean.map(formatOption).join('');
 
-        // choose a default option
-        var defaultAddr = clean.find(h => /address/i.test(h)) || clean[0] || "";
-        if (defaultAddr) select.value = defaultAddr;
+        // pick default column
+        var defaultAddr = "";
 
-        console.log("[renderHeadersFor] selected value after default logic:", select.value);
+        // a) global preference
+        try {
+            var prefs = SDH.UI.state.preferences || {};
+            var candidate = prefs.addressColumn;
+            if (candidate && clean.includes(candidate)) {
+                defaultAddr = candidate;
+            }
+        } catch (e) {
+            console.warn("[renderHeadersFor] preference lookup error", e);
+        }
 
-        // update save button state
-        if (SDH.UI && typeof SDH.UI.updateSaveButtonState === "function") {
+        // b) regex match if preference unusable
+        if (!defaultAddr) {
+            var match = clean.find(h => /address/i.test(h));
+            if (match) defaultAddr = match;
+        }
+
+        // c) fallback: first header if present
+        if (!defaultAddr && clean.length > 0) {
+            defaultAddr = clean[0];
+        }
+
+        // apply choice
+        select.value = defaultAddr || "";
+
+        console.log("[renderHeadersFor] selected value:", select.value);
+
+        if (typeof SDH.UI.updateSaveButtonState === "function") {
             SDH.UI.updateSaveButtonState();
         }
 
-        console.log("[renderHeadersFor] exit", {count: clean.length, selected: select.value || ""});
+        console.log("[renderHeadersFor] exit", { count: clean.length, selected: select.value });
     };
 
 
@@ -88,8 +125,7 @@
         var ev = document.createEvent("Event");
         ev.initEvent("sdh-ui-ready", true, true);
         document.dispatchEvent(ev);
-    } catch (e) {
-    }
+    } catch (e) {}
     console.log("[SettingsDialogUIFrostingCode] sentinel set");
 
     global.SDH = SDH;
