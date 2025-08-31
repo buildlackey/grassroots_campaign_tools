@@ -140,7 +140,6 @@
         }
     };
 
-
     /* ===== jQuery UI tooltips for blue "?" icons ONLY (exclude popover-help) ===== */
     SDH.UI.initTooltips = function () {
         // Apply to all blue ? icons (no branching)
@@ -175,6 +174,18 @@
         })();
     };
 
+    /* === Maps popover (Phase A: delegate to existing global function) === */
+    if (!SDH.UI.initMapsPopover) {
+        SDH.UI.initMapsPopover = function () {
+            try {
+                if (typeof global.initMapsPopover === "function") {
+                    return global.initMapsPopover();
+                }
+            } catch (e) {
+                console.warn("[initMapsPopover delegate] failed:", e);
+            }
+        };
+    }
 
     // Sentinel ready
     SDH.UI.ready = true;
