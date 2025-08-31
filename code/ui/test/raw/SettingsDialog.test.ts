@@ -252,4 +252,40 @@ describe("SettingsDialog Save Button / Maps API key (DOM-driven)", () => {
             ""
         );
     });
+
+    test("mapsApiKey field should mask value after blur", async () => {         // redundant w/ next one
+        // Arrange
+        const input = document.getElementById("mapsApiKey") as HTMLInputElement;
+        input.type = "text"; // starts as text
+        input.value = "Foo blah bar";
+
+        // Act – simulate blur
+        input.dispatchEvent(new window.Event("blur", { bubbles: true }));
+
+        // Assert – we *expect* type="password", but currently it's still "text"
+        expect(input.type).toBe("password"); // ❌ this will fail with current stub
+    });
+
+    test("mapsApiKey field masks on blur and unmasks on focus", async () => {
+        // Arrange
+        const input = document.getElementById("mapsApiKey") as HTMLInputElement;
+        const saveBtn = document.getElementById("saveBtn") as HTMLButtonElement;
+        input.type = "text"; // initial state
+        input.value = "Foo blah bar";
+
+        // 1. Focus the field
+        input.dispatchEvent(new window.Event("focus", { bubbles: true }));
+        expect(input.type).toBe("text"); // should be unmasked on focus
+
+        // 2. Blur the field (focus another element)
+        saveBtn.focus();
+        input.dispatchEvent(new window.Event("blur", { bubbles: true }));
+        expect(input.type).toBe("password"); // should be masked on blur
+
+        // 3. Focus again
+        input.dispatchEvent(new window.Event("focus", { bubbles: true }));
+        expect(input.type).toBe("text"); // unmasked again on focus
+    });
+
+
 });

@@ -112,9 +112,31 @@
     };
 
     /* === stubs === */
+
     SDH.UI.hideApiKeyOnBlur = function () {
-        console.log("[hideApiKeyOnBlur] stub");
+        const el = document.getElementById("mapsApiKey");
+        if (!el) {
+            console.warn("[hideApiKeyOnBlur] mapsApiKey input not found");
+            return;
+        }
+        // Only mask if there's a value
+        if (el.value && el.value.trim().length > 0) {
+            el.setAttribute("type", "password");
+            console.log("[hideApiKeyOnBlur] masked mapsApiKey field");
+        } else {
+            // keep as text if empty so placeholder still shows
+            el.setAttribute("type", "text");
+        }
     };
+
+    SDH.UI.showApiKeyOnFocus = function () {
+        const el = document.getElementById("mapsApiKey");
+        if (!el) return;
+        el.setAttribute("type", "text");
+        console.log("[showApiKeyOnFocus] unmasked mapsApiKey field");
+    };
+
+
     SDH.UI.toggleApiKeyVisibility = function () {
         console.log("[toggleApiKeyVisibility] stub");
     };

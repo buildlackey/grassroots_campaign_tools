@@ -119,17 +119,19 @@
               // ✅ Wait until helper functions are definitely loaded
               await waitForUIHelpers();
 
-              // Wire events (now that helpers exist)
+              // Wire events
               bindRequired("sheetSelect", "change", SDH.UI.onSheetChange);
               bindRequired("saveBtn", "click", saveSettings);
 
-              // Inputs that should flip the Save button’s enabled state
-              bindRequired("addressSelect", "change", SDH.UI.updateSaveButtonState);
-              bindRequired("mapsApiKey", "input", SDH.UI.updateSaveButtonState);
-              bindRequired("mapsApiKey", "blur", SDH.UI.hideApiKeyOnBlur);
+
               bindRequired("showApiKey", "change", function () {
-                SDH.UI.toggleApiKeyVisibility(this);
-              });
+                    SDH.UI.toggleApiKeyVisibility(this);
+                });
+              bindRequired("mapsApiKey", "blur", SDH.UI.hideApiKeyOnBlur);
+              bindRequired("mapsApiKey", "focus", SDH.UI.showApiKeyOnFocus);
+              bindRequired("mapsApiKey", "input", SDH.UI.updateSaveButtonState);
+
+              bindRequired("addressSelect", "change", SDH.UI.updateSaveButtonState);
 
               // Initial render + one-time state compute:
               //  - render headers for the currently selected sheet
