@@ -1,3 +1,6 @@
+/**
+ * @jest-environment jsdom
+ */
 import { JSDOM } from "jsdom";
 import { waitFor } from "@testing-library/dom";
 import * as fs from "fs";
@@ -29,7 +32,6 @@ function setupGoogleMock(win: any) {
                 withSuccessHandler(success: any) {
                     const chain = {
                         withFailureHandler: function (_failure: any) {
-                            // store failure but ignore for now
                             return chain;
                         },
                         getInitData: function () {
@@ -71,37 +73,41 @@ function dumpState(tag: string, doc: Document) {
 
 // 🔹 Helper
 async function assertSaveButtonState(
-    headersBySheet: Record<string, string[]>,
-    mapsKey: string,
+    initData: {
+        sheetTabNames: string[];
+        sheetTabToColumnNames: Record<string, string[]>;
+        prefs: { addressColumn?: string; mapsApiKey?: string };
+    },
     expectedDisabled: boolean,
     expectedAddressValue: string
 ) {
-    // Seed state with wrapper shape + default global preference
+    // Seed state from payload
     window.SDH = window.SDH || { UI: { state: {} } };
     window.SDH.UI.state = {
-        headersBySheet,
-        preferences: { addressColumn: "" },
+        headersBySheet: initData.sheetTabToColumnNames,
+        preferences: {
+            addressColumn: initData.prefs.addressColumn || "",
+        },
     };
 
-    // Ensure a deterministic selected sheet: pick the first key
-    const sheetNames = Object.keys(headersBySheet);
-    const firstSheet = sheetNames[0] || "";
+    // Set sheetSelect to first sheet deterministically
+    const firstSheet = initData.sheetTabNames[0] || "";
     const sheetSel = document.getElementById("sheetSelect") as HTMLSelectElement | null;
     if (sheetSel && firstSheet) {
         sheetSel.value = firstSheet;
     }
 
-    // User types a Maps API key
+    // User types a Maps API key from prefs
     const keyInput = document.getElementById("mapsApiKey") as HTMLInputElement;
-    keyInput.value = mapsKey;
+    keyInput.value = initData.prefs.mapsApiKey || "";
     keyInput.dispatchEvent(new window.Event("input", { bubbles: true }));
 
-    // Trigger change to populate address options + selection
+    // Trigger change
     window.SDH.UI.onSheetChange();
 
     dumpState("after-onSheetChange", document);
 
-    // Assert both save-button state and addressSelect value
+    // Assert
     await waitFor(() => {
         const saveBtn = document.querySelector("#saveBtn") as HTMLButtonElement;
         const addrSel = document.querySelector("#addressSelect") as HTMLSelectElement;
@@ -112,12 +118,12 @@ async function assertSaveButtonState(
 
 describe("SettingsDialog Save Button / Maps API key (DOM-driven)", () => {
     beforeEach(async () => {
-        // 🔹 Prepare promise first
-        let readyResolve!: () => void;
+        // Prepare promise first
         const readyPromise = new Promise<void>((resolve, reject) => {
-            readyResolve = resolve;
-            const timer = setTimeout(() => reject(new Error("timeout waiting for sdh-ui-ready")), 2000);
-            // Listener will be bound after DOM created
+            const timer = setTimeout(
+                () => reject(new Error("timeout waiting for sdh-ui-ready")),
+                2000
+            );
             (global as any).__SDH_READY_HANDLER__ = () => {
                 clearTimeout(timer);
                 resolve();
@@ -130,7 +136,6 @@ describe("SettingsDialog Save Button / Maps API key (DOM-driven)", () => {
             pretendToBeVisual: true,
             beforeParse(win) {
                 (win as any).__IN_JEST__ = true;
-                // 🔹 Attach listener hook here
                 win.document.addEventListener("sdh-ui-ready", () => {
                     if ((global as any).__SDH_READY_HANDLER__) {
                         (global as any).__SDH_READY_HANDLER__();
@@ -144,42 +149,60 @@ describe("SettingsDialog Save Button / Maps API key (DOM-driven)", () => {
 
         setupGoogleMock(window);
 
-        // Trigger onOpen just like a browser would
         window.dispatchEvent(new window.Event("load"));
 
-        // wait for async init to run
         await readyPromise;
         await new Promise((r) => setTimeout(r, 100));
     });
 
     afterEach(() => {
         if (dom) {
-            dom.window.close(); // shuts down timers, resources
+            dom.window.close();
         }
     });
 
-    test("Save enabled (key NON EMPTY, and addressSelect populated via fallback to first header)", async () => {
-        // First sheet is Sheet1 → clean headers: ["someColumnHeader"] → pick first
+    test("Save enabled (mapsKey NON EMPTY, addressSelect falls back to first header)", async () => {
         await assertSaveButtonState(
-            { Sheet1: ["someColumnHeader"], Sheet2: ["badbad"] },
-            "key1",
+            {
+                sheetTabNames: ["Sheet1", "Sheet2"],
+                sheetTabToColumnNames: {
+                    Sheet1: ["someColumnHeader"],
+                    Sheet2: ["badbad"],
+                },
+                prefs: { mapsApiKey: "key1", addressColumn: "" },
+            },
             false,
             "someColumnHeader"
         );
     });
 
-    test("Save disabled (key is EMPTY, though addressSelect is non-empty)", async () => {
-        // First sheet is Sheet1 → clean headers: ["someColumnHeader"] → pick first
+    test("Save disabled (mapsKey EMPTY, but headers exist)", async () => {
         await assertSaveButtonState(
-            { Sheet1: ["someColumnHeader"], Sheet2: ["badbad"] },
-            "",
+            {
+                sheetTabNames: ["Sheet1", "Sheet2"],
+                sheetTabToColumnNames: {
+                    Sheet1: ["someColumnHeader"],
+                    Sheet2: ["badbad"],
+                },
+                prefs: { mapsApiKey: "", addressColumn: "" },
+            },
             true,
             "someColumnHeader"
         );
     });
 
-    test("Save disabled (key NON EMPTY, but no headers → addressSelect empty)", async () => {
-        // First sheet is Sheet1 → clean headers: [] → addressSelect = ""
-        await assertSaveButtonState({ Sheet1: [], Sheet2: ["badbad"] }, "key1", true, "");
+    test("Save disabled (mapsKey NON EMPTY, but no headers → addressSelect empty)", async () => {
+        await assertSaveButtonState(
+            {
+                sheetTabNames: ["Sheet1", "Sheet2"],
+                sheetTabToColumnNames: {
+                    Sheet1: [],
+                    Sheet2: ["badbad"],
+                },
+                prefs: { mapsApiKey: "key1", addressColumn: "" },
+            },
+            true,
+            ""
+        );
     });
 });
