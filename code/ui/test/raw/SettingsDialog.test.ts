@@ -176,6 +176,21 @@ describe("SettingsDialog Save Button / Maps API key (DOM-driven)", () => {
         );
     });
 
+    test("Save enabled when prefs.addressColumn matches a header", async () => {
+        await assertSaveButtonState(
+            {
+                sheetTabNames: ["Sheet1", "Sheet2"],
+                sheetTabToColumnNames: {
+                    Sheet1: ["x", "foo", "y"],
+                    Sheet2: ["bar", "baz"],
+                },
+                prefs: { mapsApiKey: "key1", addressColumn: "foo" },
+            },
+            false, // expectedDisabled = Save should be enabled
+            "foo"  // expectedAddressValue = selected column is foo
+        );
+    });
+
     test("Save disabled (mapsKey EMPTY, but headers exist)", async () => {
         await assertSaveButtonState(
             {
