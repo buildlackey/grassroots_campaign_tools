@@ -2,7 +2,6 @@
 <html>
 <head>
     <base target="_top">
-
     <!-- jQuery & jQuery UI -->
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -11,36 +10,6 @@
     <style>
         <?!= include('SettingsDialogCSS') ?>
     </style>
-
-
-    <script>
-        (function () {
-            function initAfterUIReady() {
-                console.log("[HEAD] initAfterUIReady()");
-                // register error handlers *after* SDH.UI exists
-                window.addEventListener("error", function () { SDH.UI.hideSpinner(); });
-                window.addEventListener("unhandledrejection", function () { SDH.UI.hideSpinner(); });
-
-                // now safely use frosting helpers
-                SDH.UI.showSpinner();                 // ⛔ disabled while debugging tooltips
-                SDH.UI.waitForTooltipReady(5000, 50); // prepare hover-tooltips for blue "?" icons
-                SDH.UI.initMapsPopover();             // moved into frosting
-            }
-
-            console.log("[HEAD] attaching sdh-ui-ready listener; readyState:", document.readyState);
-
-            document.addEventListener("sdh-ui-ready", function onReadyOnce() {
-                document.removeEventListener("sdh-ui-ready", onReadyOnce);
-                initAfterUIReady();
-            }, { once: true });
-
-            if (window.SDH && window.SDH.UI && window.SDH.UI.ready === true) {
-                initAfterUIReady();
-            }
-
-        })();
-    </script>
-
 </head>
 
 <body>

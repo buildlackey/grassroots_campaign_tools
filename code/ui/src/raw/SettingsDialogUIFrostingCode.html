@@ -172,14 +172,12 @@
         })();
     };
 
-
     /* ===== Maps popover (minimal; DRY; wired after window.load) ===== */
     (function () {
         function clamp(v, min, max) {
             // Using Math avoids '<'/'>' getting HTML-escaped (&lt;/&gt;) in GAS templates.
             return Math.max(min, Math.min(v, max));
         }
-
 
         function positionPopover(btn, pop) {
             console.log("[Popover] positionPopover() start");
@@ -308,17 +306,46 @@
         };
     })();
 
-
-
-
+    // Publish SDH before firing the ready event (prevents ReferenceError in listeners)
     global.SDH = SDH;
-    SDH.UI.ready = true; // Sentinel ready
 
+    // Sentinel ready
+    SDH.UI.ready = true;
     try {
         var ev = document.createEvent("Event");
         ev.initEvent("sdh-ui-ready", true, true);
         document.dispatchEvent(ev);
     } catch (e) { }
     console.log("[SettingsDialogUIFrostingCode] sentinel set");
+
+    // --- Head bootstrap moved here (spinner, tooltips, popover), same timing as before ---
+    (function () {
+        SDH.UI._headBootstrapped = SDH.UI._headBootstrapped || false;
+
+        SDH.UI.bootstrapHead = function () {
+            if (SDH.UI._headBootstrapped) return;
+            SDH.UI._headBootstrapped = true;
+
+            try {
+                window.addEventListener("error", function () { SDH.UI.hideSpinner(); });
+                window.addEventListener("unhandledrejection", function () { SDH.UI.hideSpinner(); });
+            } catch (_){}
+
+            SDH.UI.showSpinner();
+            SDH.UI.waitForTooltipReady(5000, 50);
+            SDH.UI.initMapsPopover();
+        };
+
+        function runBootstrap() { SDH.UI.bootstrapHead(); }
+
+        if (document.readyState === "complete") {
+            runBootstrap();
+        } else {
+            window.addEventListener("load", function once() {
+                window.removeEventListener("load", once);
+                runBootstrap();
+            });
+        }
+    })();
 
 })(window);
