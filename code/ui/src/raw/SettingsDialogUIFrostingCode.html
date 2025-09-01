@@ -172,47 +172,79 @@
         })();
     };
 
-    /* ===== Maps popover (moved verbatim from SettingsDialog.html) ===== */
+    /* ===== Maps popover (minimal; DRY; wired after window.load) ===== */
     (function () {
+        function clamp(v, min, max) { return v < min ? min : (v > max ? max : v); }
+
         function positionPopover(btn, pop) {
             var rect = btn.getBoundingClientRect();
             var bodyScrollY = window.scrollY || document.documentElement.scrollTop || 0;
             var bodyScrollX = window.scrollX || document.documentElement.scrollLeft || 0;
 
-            // Place to the right of the icon, vertically centered
-            pop.style.top = Math.max(10, rect.top + bodyScrollY + (rect.height / 2) - (pop.offsetHeight / 2)) + "px";
-            pop.style.left = (rect.left + bodyScrollX + rect.width + 10) + "px";
+            // Use stable offsets; avoid popRect.top/bottom reads
+            var w = pop.offsetWidth || 0;
+            var h = pop.offsetHeight || 0;
 
+            var vw = document.documentElement.clientWidth;
+            var vh = document.documentElement.clientHeight;
 
+            // Desired: right of icon, vertically centered
+            var left = rect.left + bodyScrollX + rect.width + 10;
+            var top  = rect.top  + bodyScrollY + (rect.height / 2) - (h / 2);
+
+            // Clamp inside viewport with 8px padding
+            left = clamp(left, bodyScrollX + 8, bodyScrollX + vw - w - 8);
+            top  = clamp(top,  bodyScrollY + 8, bodyScrollY + vh - h - 8);
+
+            pop.style.left = left + "px";
+            pop.style.top  = top  + "px";
         }
 
         SDH.UI.initMapsPopover = function () {
-            var btn = document.getElementById("maps-help-btn");
-            var pop = document.getElementById("maps-help-popover");
-            if (!btn || !pop) return;
+            function wire() {
+                var btn = document.getElementById("maps-help-btn");
+                var pop = document.getElementById("maps-help-popover");
+                if (!btn || !pop) return;
 
-            function openPop() {
-                pop.classList.add("show");
-                positionPopover(btn, pop);
-                btn.setAttribute("aria-expanded", "true");
+                function openPop() {
+                    pop.classList.add("show");
+                    positionPopover(btn, pop);
+                    btn.setAttribute("aria-expanded", "true");
+                }
+                function closePop() {
+                    pop.classList.remove("show");
+                    btn.setAttribute("aria-expanded", "false");
+                }
+                function togglePop(e) {
+                    if (e) { e.preventDefault(); e.stopPropagation(); }
+                    if (pop.classList.contains("show")) {
+                        closePop();
+                    } else {
+                        openPop();
+                    }
+                }
+
+                btn.addEventListener("click", togglePop);
+
+                var closeBtn = pop.querySelector(".popover-close");
+                if (closeBtn) {
+                    closeBtn.addEventListener("click", function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        closePop();
+                    });
+                }
             }
-            function closePop() {
-                pop.classList.remove("show");
-                btn.setAttribute("aria-expanded", "false");
+
+            // Match original timing: wire after full window load
+            if (document.readyState === "complete") {
+                wire();
+            } else {
+                window.addEventListener("load", function once() {
+                    window.removeEventListener("load", once);
+                    wire();
+                });
             }
-            function togglePop(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                if (pop.classList.contains("show")) closePop(); else openPop();
-            }
-
-            btn.addEventListener("click", togglePop);
-            btn.addEventListener("keydown", function (e) {
-                if (e.key === "Enter" || e.key === " ") { e.preventDefault(); togglePop(e); }
-                if (e.key === "Escape") { closePop(); }
-            });
-
-
         };
     })();
 
