@@ -13,14 +13,13 @@ label {
   display: block;
   margin: 10px 0 5px;
   font-family: Arial, sans-serif;
-  font-size: 13px;  /* Match Google Sheets grid text size */
+  font-size: 14px;  /* bumped up */
 }
 
 input[type="text"], input[type="password"], select {
   width: 100%;
-  max-width: 44ch;
   padding: 6px;
-  font-size: 13px;  /* Match Google Sheets grid text size */
+  font-size: 14px;  /* bumped up */
   font-family: Arial, sans-serif;
   box-sizing: border-box;
 }
@@ -30,7 +29,7 @@ input[type="text"], input[type="password"], select {
   align-items: center;
   margin: 8px 0;
   font-family: Arial, sans-serif;
-  font-size: 13px;  /* Match Google Sheets grid text size */
+  font-size: 14px;  /* bumped up */
 }
 .checkbox-group input[type="checkbox"] { margin-right: 8px; flex-shrink: 0; }
 .checkbox-group label { margin: 0; white-space: nowrap; }
@@ -39,14 +38,14 @@ input[type="text"], input[type="password"], select {
 .dialog-header {
   display: flex;
   align-items: center;
-  margin: 0 0 24px 0;   /* Increased gap below header (~0.5 inch visual space) */
+  margin: 0 0 30px 0;   /* increased (24px + ~6px) */
 }
 .dialog-title {
   font-size: 20px;     /* bigger font */
   font-weight: bold;
   display: flex;
   align-items: center;
-  gap: 6px;            /* gear, text, and ? icon spacing */
+  gap: 6px;
 }
 .gear-icon {
   font-size: 20px;
@@ -65,7 +64,7 @@ input[type="text"], input[type="password"], select {
   cursor: pointer;
   user-select: none;
   vertical-align: top;
-  margin-left: 6px;  /* spacing from text */
+  margin-left: 6px;
   position: relative;
 }
 
@@ -107,6 +106,14 @@ input[type="text"], input[type="password"], select {
   white-space: normal;
   z-index: 2147483647;
   pointer-events: auto;
+  font-family: Arial, sans-serif;
+  font-size: 14px;  /* bumped up */
+  line-height: 1.4;
+  color: #222;
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 6px 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 .ui-tooltip.custom-tooltip {
   max-width: 300px;
@@ -114,6 +121,8 @@ input[type="text"], input[type="password"], select {
   z-index: 2147483647;
   pointer-events: auto;
   left: max(8px, var(--ui-tooltip-left, 0px)) !important;
+  font-family: Arial, sans-serif;
+  font-size: 14px;  /* bumped up */
 }
 
 /* Popover (yellow caution) */
@@ -126,12 +135,15 @@ input[type="text"], input[type="password"], select {
   box-shadow: 0 6px 20px rgba(0,0,0,0.15);
   border-radius: 6px;
   z-index: 2147483647;
+  font-family: Arial, sans-serif;
+  font-size: 14px; /* bumped up */
 }
 .popover.show { display: block; }
 .popover .popover-body {
   position: relative;
   padding: 10px 12px 12px 12px;
-  font-size: 13px;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
   color: #3b3b3b;
   background: inherit;
 }
@@ -163,13 +175,12 @@ input[type="text"], input[type="password"], select {
   align-items: center;
   gap: 4mm;
   margin-top: 8mm;
-  width: 100%;
-  max-width: 44ch;
+  width: 100%;         /* full width */
 }
 .button-row button {
   padding: 6px 16px;
   min-width: 90px;
-  font-size: 13px; /* Match Sheets font size */
+  font-size: 14px; /* bumped up */
   font-family: Arial, sans-serif;
   box-sizing: border-box;
 }
@@ -185,7 +196,7 @@ input[type="text"], input[type="password"], select {
   padding: 10px 20px;
   border-radius: 4px;
   z-index: 2147483647;
-  font-size: 13px;
+  font-size: 14px;
   font-family: Arial, sans-serif;
   opacity: 0;
   transition: opacity 0.3s ease;
@@ -212,7 +223,7 @@ input[type="text"], input[type="password"], select {
   animation: spin 1s linear infinite;
 }
 .loading-text {
-  font-size: 13px;
+  font-size: 14px;
   font-family: Arial, sans-serif;
   color: #444;
   animation: pulse 1.6s ease-in-out infinite;
