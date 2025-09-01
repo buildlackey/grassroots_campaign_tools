@@ -9,13 +9,19 @@ body {
   position: relative;
 }
 
-label { display: block; margin: 10px 0 5px; }
+label {
+  display: block;
+  margin: 10px 0 5px;
+  font-family: Arial, sans-serif;
+  font-size: 13px;  /* Match Google Sheets grid text size */
+}
 
 input[type="text"], input[type="password"], select {
   width: 100%;
   max-width: 44ch;
   padding: 6px;
-  font-size: 14px;
+  font-size: 13px;  /* Match Google Sheets grid text size */
+  font-family: Arial, sans-serif;
   box-sizing: border-box;
 }
 
@@ -23,6 +29,8 @@ input[type="text"], input[type="password"], select {
   display: flex;
   align-items: center;
   margin: 8px 0;
+  font-family: Arial, sans-serif;
+  font-size: 13px;  /* Match Google Sheets grid text size */
 }
 .checkbox-group input[type="checkbox"] { margin-right: 8px; flex-shrink: 0; }
 .checkbox-group label { margin: 0; white-space: nowrap; }
@@ -31,7 +39,7 @@ input[type="text"], input[type="password"], select {
 .dialog-header {
   display: flex;
   align-items: center;
-  margin: 0 0 16px 0;
+  margin: 0 0 24px 0;   /* Increased gap below header (~0.5 inch visual space) */
 }
 .dialog-title {
   font-size: 20px;     /* bigger font */
@@ -161,6 +169,8 @@ input[type="text"], input[type="password"], select {
 .button-row button {
   padding: 6px 16px;
   min-width: 90px;
+  font-size: 13px; /* Match Sheets font size */
+  font-family: Arial, sans-serif;
   box-sizing: border-box;
 }
 
@@ -175,7 +185,8 @@ input[type="text"], input[type="password"], select {
   padding: 10px 20px;
   border-radius: 4px;
   z-index: 2147483647;
-  font-size: 14px;
+  font-size: 13px;
+  font-family: Arial, sans-serif;
   opacity: 0;
   transition: opacity 0.3s ease;
   pointer-events: none;
@@ -201,9 +212,10 @@ input[type="text"], input[type="password"], select {
   animation: spin 1s linear infinite;
 }
 .loading-text {
-  font-size: 14px; color: #444;
+  font-size: 13px;
+  font-family: Arial, sans-serif;
+  color: #444;
   animation: pulse 1.6s ease-in-out infinite;
 }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 @keyframes pulse { 0%, 100% { opacity: 1; letter-spacing: 0.2px; } 50% { opacity: 0.4; letter-spacing: 0.8px; } }
-
