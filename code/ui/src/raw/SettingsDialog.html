@@ -23,7 +23,18 @@
     <span class="dialog-title">
         <span class="gear-icon">⚙️</span>
         Settings
-        <span class="help-icon info" data-help="abc 123">?</span>
+        <span class="help-icon info"
+              data-help="
+                <div style='max-width:300px; text-align:left;'>
+                  <ul style='padding-left:16px; margin:0;'>
+                    <li>Distance Filtering requires a valid Google Maps API key to geolocate address information, and you can configure that via this dialog.</li>
+                    <li>Our software assumes your spreadsheet contains a tab named <code>Sheet1</code> with a column named <code>Address</code> that holds the to-be-geolocated data. You can override these defaults here.</li>
+                    <li>If some addresses cannot be geolocated, enable the Lat/Lng columns (normally hidden to avoid clutter) so you can zero in on exactly which rows are failing.</li>
+                  </ul>
+                </div>
+              ">
+          ?
+        </span>
     </span>
 </div>
 
@@ -123,5 +134,3 @@
 <div id="settings-dialog-container"></div>
 </body>
 </html>
-
-
