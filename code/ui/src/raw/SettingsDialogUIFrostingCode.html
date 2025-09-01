@@ -147,16 +147,14 @@
         if ($target.length === 0) return;
 
         $target.tooltip({
-            appendTo: "body",                         // keep outside scrolling container
+            appendTo: "body",
             items: ".help-icon:not(.popover-help)",
             content: function () { return $(this).attr("data-help"); },
             position: {
-                // ⬇️ Bias: place tooltip ABOVE the target so bottom ones don't clip
-                // 'my' is the tooltip edge; 'at' is the target edge
                 my: "left+8 bottom-8",
                 at: "right top",
                 within: window,
-                collision: "flipfit"                    // try to keep fully on-screen
+                collision: "flipfit"
             },
             tooltipClass: "custom-tooltip",
             track: false,
@@ -174,18 +172,49 @@
         })();
     };
 
-    /* === Maps popover (Phase A: delegate to existing global function) === */
-    if (!SDH.UI.initMapsPopover) {
+    /* ===== Maps popover (moved verbatim from SettingsDialog.html) ===== */
+    (function () {
+        function positionPopover(btn, pop) {
+            var rect = btn.getBoundingClientRect();
+            var bodyScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+            var bodyScrollX = window.scrollX || document.documentElement.scrollLeft || 0;
+
+            // Place to the right of the icon, vertically centered
+            pop.style.top = Math.max(10, rect.top + bodyScrollY + (rect.height / 2) - (pop.offsetHeight / 2)) + "px";
+            pop.style.left = (rect.left + bodyScrollX + rect.width + 10) + "px";
+
+
+        }
+
         SDH.UI.initMapsPopover = function () {
-            try {
-                if (typeof global.initMapsPopover === "function") {
-                    return global.initMapsPopover();
-                }
-            } catch (e) {
-                console.warn("[initMapsPopover delegate] failed:", e);
+            var btn = document.getElementById("maps-help-btn");
+            var pop = document.getElementById("maps-help-popover");
+            if (!btn || !pop) return;
+
+            function openPop() {
+                pop.classList.add("show");
+                positionPopover(btn, pop);
+                btn.setAttribute("aria-expanded", "true");
             }
+            function closePop() {
+                pop.classList.remove("show");
+                btn.setAttribute("aria-expanded", "false");
+            }
+            function togglePop(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (pop.classList.contains("show")) closePop(); else openPop();
+            }
+
+            btn.addEventListener("click", togglePop);
+            btn.addEventListener("keydown", function (e) {
+                if (e.key === "Enter" || e.key === " ") { e.preventDefault(); togglePop(e); }
+                if (e.key === "Escape") { closePop(); }
+            });
+
+
         };
-    }
+    })();
 
     // Sentinel ready
     SDH.UI.ready = true;
