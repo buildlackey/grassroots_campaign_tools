@@ -27,7 +27,25 @@ input[type="text"], input[type="password"], select {
 .checkbox-group input[type="checkbox"] { margin-right: 8px; flex-shrink: 0; }
 .checkbox-group label { margin: 0; white-space: nowrap; }
 
-/* ===== Help icon base (tooltip target) ===== */
+/* Custom header row */
+.dialog-header {
+  display: flex;
+  align-items: center;
+  margin: 0 0 16px 0;
+}
+.dialog-title {
+  font-size: 20px;     /* bigger font */
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 6px;            /* gear, text, and ? icon spacing */
+}
+.gear-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+/* Help icon base */
 .help-icon {
   display: inline-flex;
   align-items: center;
@@ -39,34 +57,33 @@ input[type="text"], input[type="password"], select {
   cursor: pointer;
   user-select: none;
   vertical-align: top;
-  margin-left: 6px;
+  margin-left: 6px;  /* spacing from text */
   position: relative;
 }
 
-/* Green info style (for "?") — shrunk twice (final ~8px) */
+/* Green info style */
 .help-icon.info {
   background: #e6f9e6;
   color: #2f8f2f;
   border: 1px solid #b6e6b6;
   font-weight: bold;
 
-  font-size: 8px;   /* 12 → 9 → 8 */
-  width: 8px;       /* 15 → 11 → 8 */
-  height: 8px;      /* 15 → 11 → 8 */
+  font-size: 10px;
+  width: 12px;
+  height: 12px;
   line-height: 1;
-
-  vertical-align: top;
-  padding: 2px;
+  border-radius: 50%;
+  text-align: center;
 }
 
-/* Caution style (SVG triangle popover help) — shrunk ~25% */
+/* Caution style (popover help) */
 .help-icon.caution {
   background: transparent;
   border: none;
   border-radius: 0;
 
-  width: 13px;   /* was 18px */
-  height: 13px;  /* was 18px */
+  width: 13px;
+  height: 13px;
   padding: 0;
 
   vertical-align: top;
@@ -83,8 +100,6 @@ input[type="text"], input[type="password"], select {
   z-index: 2147483647;
   pointer-events: auto;
 }
-
-/* >>> GREEN info tooltip theme (for ? icons) <<< */
 .ui-tooltip.custom-tooltip {
   max-width: 300px;
   white-space: normal;
@@ -93,7 +108,7 @@ input[type="text"], input[type="password"], select {
   left: max(8px, var(--ui-tooltip-left, 0px)) !important;
 }
 
-/* ===== Click popover for Maps API help (yellow caution theme) ===== */
+/* Popover (yellow caution) */
 .popover {
   position: absolute;
   display: none;
@@ -110,7 +125,7 @@ input[type="text"], input[type="password"], select {
   padding: 10px 12px 12px 12px;
   font-size: 13px;
   color: #3b3b3b;
-  background: inherit; /* keep the yellow inside */
+  background: inherit;
 }
 .popover .popover-close {
   position: absolute;
@@ -167,7 +182,7 @@ input[type="text"], input[type="password"], select {
 }
 .toast.show { opacity: 1; }
 
-/* Loading overlay (spinner UI kept; HTML is disabled while debugging) */
+/* Loading overlay */
 #loading-overlay {
   position: absolute;
   top: 40%;
@@ -191,3 +206,4 @@ input[type="text"], input[type="password"], select {
 }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 @keyframes pulse { 0%, 100% { opacity: 1; letter-spacing: 0.2px; } 50% { opacity: 0.4; letter-spacing: 0.8px; } }
+
