@@ -43,22 +43,33 @@ input[type="text"], input[type="password"], select {
   position: relative;
 }
 
-/* Blue info style (for "?") — working settings */
+/* Green info style (for "?") — shrunk twice (final ~8px) */
 .help-icon.info {
-  background: #e0f0ff;
-  color: #2a7ddf;
-  border: 1px solid #cfe3ff;
+  background: #e6f9e6;
+  color: #2f8f2f;
+  border: 1px solid #b6e6b6;
   font-weight: bold;
-  padding: 4px;       /* larger hit/hover area */
+
+  font-size: 8px;   /* 12 → 9 → 8 */
+  width: 8px;       /* 15 → 11 → 8 */
+  height: 8px;      /* 15 → 11 → 8 */
   line-height: 1;
+
+  vertical-align: top;
+  padding: 2px;
 }
 
-/* Yellow caution style (SVG triangle) — used as a button for popover */
+/* Caution style (SVG triangle popover help) — shrunk ~25% */
 .help-icon.caution {
   background: transparent;
   border: none;
   border-radius: 0;
-  width: 18px; height: 18px; padding: 0;
+
+  width: 13px;   /* was 18px */
+  height: 13px;  /* was 18px */
+  padding: 0;
+
+  vertical-align: top;
 }
 .help-icon.caution svg { width: 100%; height: 100%; display: block; }
 
@@ -73,8 +84,7 @@ input[type="text"], input[type="password"], select {
   pointer-events: auto;
 }
 
-/* >>> BLUE info tooltip theme (for ? icons) <<< */
-
+/* >>> GREEN info tooltip theme (for ? icons) <<< */
 .ui-tooltip.custom-tooltip {
   max-width: 300px;
   white-space: normal;
@@ -82,7 +92,6 @@ input[type="text"], input[type="password"], select {
   pointer-events: auto;
   left: max(8px, var(--ui-tooltip-left, 0px)) !important;
 }
-
 
 /* ===== Click popover for Maps API help (yellow caution theme) ===== */
 .popover {

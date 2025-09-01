@@ -6,8 +6,8 @@ function include(filename) {
 function onOpen() {
     Logger.log("🚪 [Code.js/onOpen] ENTER");
     SpreadsheetApp.getUi()
-        .createMenu('📍 Campaign Tools')
-        .addItem('Open Settings', 'showSettingsDialog')
+        .createMenu('📣 Campaign')  // bullhorn icon
+        .addItem('⚙️ Settings', 'showSettingsDialog')
         .addToUi();
     Logger.log("🚪 [Code.js/onOpen] EXIT");
 }
@@ -29,7 +29,7 @@ function savePreferences(prefs, columns) {
                JSON.stringify(prefs), JSON.stringify(columns));
 
     if (globalThis.CAMPAIGN_TOOLS && globalThis.CAMPAIGN_TOOLS.PreferenceSvc) {
-        const result = globalThis.CAMPAIGN_TOOLS.PreferenceSvc.forGAS().savePreferences(prefs, columns);
+        const result = globalThis.CAMPAIGN_TOOLS.PreferenceSvc.create().savePreferences(prefs, columns);
         Logger.log("🔔 [Code.js:savePreferences] about to toast");
         SpreadsheetApp.getActiveSpreadsheet().toast("✅ Settings saved", "Campaign Tools", 3);
         Logger.log("✅ [Code.js:savePreferences] completed");
@@ -45,7 +45,7 @@ function smokeTest() {
         throw new Error("Bundle not loaded: PreferenceSvc is missing from CAMPAIGN_TOOLS");
     }
 
-    var svc = globalThis.CAMPAIGN_TOOLS.PreferenceSvc.forGAS();
+    var svc = globalThis.CAMPAIGN_TOOLS.PreferenceSvc.create();
 
     var key = "TEST_KEY_" + Math.random().toString(36).slice(2);
     svc.clearPreferences({ document: false, user: true });
@@ -67,7 +67,7 @@ function smokeTest() {
 
 function verifyMapsApiKeySaved() {
     if (globalThis.CAMPAIGN_TOOLS && globalThis.CAMPAIGN_TOOLS.PreferenceSvc) {
-        var svc = globalThis.CAMPAIGN_TOOLS.PreferenceSvc.forGAS();
+        var svc = globalThis.CAMPAIGN_TOOLS.PreferenceSvc.create();
         var prefs = svc.getPreferences();
         var msg = prefs && prefs.mapsApiKey
             ? "✅ Maps API key stored: " + prefs.mapsApiKey
@@ -84,7 +84,7 @@ function showToastInSheets(msg) {
 
 
 function getInitData() {
-    var svc = globalThis.CAMPAIGN_TOOLS.PreferenceSvc.forGAS();
+    var svc = globalThis.CAMPAIGN_TOOLS.PreferenceSvc.create();
     var prefs = svc.getPreferences();
 
     var tabsAndColumnNames = getSheetTabsAndColumnNames();

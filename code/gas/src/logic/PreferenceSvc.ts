@@ -148,7 +148,7 @@ export class PreferenceSvc {
   }
 
   /** Factory for production GAS runtime */
-  static forGAS(): PreferenceSvc {
+  static create(): PreferenceSvc {
     return new PreferenceSvc(
       PropertiesService.getDocumentProperties(),
       PropertiesService.getUserProperties()
