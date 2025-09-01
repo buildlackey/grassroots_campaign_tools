@@ -1,5 +1,11 @@
-/* Tight container + no horizontal scroll */
-html, body { overflow-x: hidden; }
+/* Tight container + no scrollbars */
+html, body {
+  overflow-x: hidden;
+  overflow-y: hidden;   /* prevent vertical scroll inside dialog */
+  height: 100%;
+  max-height: 100%;
+}
+
 body {
   font-family: Arial, sans-serif;
   margin: 20px;
@@ -9,17 +15,18 @@ body {
   position: relative;
 }
 
+/* === Main UI text: match Sheets (bumped to 14px) === */
 label {
   display: block;
   margin: 10px 0 5px;
   font-family: Arial, sans-serif;
-  font-size: 14px;  /* bumped up */
+  font-size: 14px;
 }
 
 input[type="text"], input[type="password"], select {
   width: 100%;
   padding: 6px;
-  font-size: 14px;  /* bumped up */
+  font-size: 14px;
   font-family: Arial, sans-serif;
   box-sizing: border-box;
 }
@@ -29,19 +36,19 @@ input[type="text"], input[type="password"], select {
   align-items: center;
   margin: 8px 0;
   font-family: Arial, sans-serif;
-  font-size: 14px;  /* bumped up */
+  font-size: 14px;
 }
 .checkbox-group input[type="checkbox"] { margin-right: 8px; flex-shrink: 0; }
 .checkbox-group label { margin: 0; white-space: nowrap; }
 
-/* Custom header row */
+/* === Custom header row === */
 .dialog-header {
   display: flex;
   align-items: center;
-  margin: 0 0 30px 0;   /* increased (24px + ~6px) */
+  margin: 0 0 30px 0;  /* extra space (~+1/4") under title */
 }
 .dialog-title {
-  font-size: 20px;     /* bigger font */
+  font-size: 20px;     /* larger title */
   font-weight: bold;
   display: flex;
   align-items: center;
@@ -52,7 +59,7 @@ input[type="text"], input[type="password"], select {
   line-height: 1;
 }
 
-/* Help icon base */
+/* === Help icons === */
 .help-icon {
   display: inline-flex;
   align-items: center;
@@ -68,7 +75,7 @@ input[type="text"], input[type="password"], select {
   position: relative;
 }
 
-/* Green info style */
+/* Green tooltip “?” style */
 .help-icon.info {
   background: #e6f9e6;
   color: #2f8f2f;
@@ -83,16 +90,14 @@ input[type="text"], input[type="password"], select {
   text-align: center;
 }
 
-/* Caution style (popover help) */
+/* Yellow caution (click popover trigger) */
 .help-icon.caution {
   background: transparent;
   border: none;
   border-radius: 0;
-
   width: 13px;
   height: 13px;
   padding: 0;
-
   vertical-align: top;
 }
 .help-icon.caution svg { width: 100%; height: 100%; display: block; }
@@ -100,14 +105,14 @@ input[type="text"], input[type="password"], select {
 /* Keyboard focus hint */
 .help-icon:focus { outline: 2px solid #d39e00; outline-offset: 2px; }
 
-/* jQuery UI tooltip container */
+/* === Tooltip (all ? icons, including title tooltip) — smaller help text === */
 .ui-tooltip {
   max-width: 300px;
   white-space: normal;
   z-index: 2147483647;
   pointer-events: auto;
   font-family: Arial, sans-serif;
-  font-size: 14px;  /* bumped up */
+  font-size: 12px;      /* help text 2pt smaller than main UI */
   line-height: 1.4;
   color: #222;
   background: #fff;
@@ -122,10 +127,10 @@ input[type="text"], input[type="password"], select {
   pointer-events: auto;
   left: max(8px, var(--ui-tooltip-left, 0px)) !important;
   font-family: Arial, sans-serif;
-  font-size: 14px;  /* bumped up */
+  font-size: 12px;      /* ensure same size for custom class */
 }
 
-/* Popover (yellow caution) */
+/* === Click popover (Maps API help) — match tooltip size === */
 .popover {
   position: absolute;
   display: none;
@@ -136,13 +141,13 @@ input[type="text"], input[type="password"], select {
   border-radius: 6px;
   z-index: 2147483647;
   font-family: Arial, sans-serif;
-  font-size: 14px; /* bumped up */
+  font-size: 12px;      /* same as tooltip */
 }
 .popover.show { display: block; }
 .popover .popover-body {
   position: relative;
   padding: 10px 12px 12px 12px;
-  font-size: 14px;
+  font-size: 12px;      /* same as tooltip */
   font-family: Arial, sans-serif;
   color: #3b3b3b;
   background: inherit;
@@ -168,24 +173,24 @@ input[type="text"], input[type="password"], select {
 }
 .popover a { color: #0b63bd; text-decoration: underline; }
 
-/* Button row */
+/* === Button row: align Save with right edge of inputs === */
 .button-row {
   display: flex;
   justify-content: flex-end;
   align-items: center;
   gap: 4mm;
   margin-top: 8mm;
-  width: 100%;         /* full width */
+  width: 100%;
 }
 .button-row button {
   padding: 6px 16px;
   min-width: 90px;
-  font-size: 14px; /* bumped up */
+  font-size: 14px;
   font-family: Arial, sans-serif;
   box-sizing: border-box;
 }
 
-/* Toast */
+/* === Toast === */
 .toast {
   position: fixed;
   bottom: 20px;
@@ -204,15 +209,15 @@ input[type="text"], input[type="password"], select {
 }
 .toast.show { opacity: 1; }
 
-/* Loading overlay */
+/* === Loading overlay (fixed; hidden by default so it never adds scroll) === */
 #loading-overlay {
-  position: absolute;
-  top: 40%;
+  position: fixed;
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
   z-index: 2000;
-  display: block;
+  display: none;
 }
 .loader {
   border: 4px solid #f0f0f0;
@@ -228,5 +233,6 @@ input[type="text"], input[type="password"], select {
   color: #444;
   animation: pulse 1.6s ease-in-out infinite;
 }
+
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-@keyframes pulse { 0%, 100% { opacity: 1; letter-spacing: 0.2px; } 50% { opacity: 0.4; letter-spacing: 0.8px; } }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
