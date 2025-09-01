@@ -172,84 +172,148 @@
         })();
     };
 
+
     /* ===== Maps popover (minimal; DRY; wired after window.load) ===== */
     (function () {
-        function clamp(v, min, max) { return v < min ? min : (v > max ? max : v); }
+        function clamp(v, min, max) {
+            // Using Math avoids '<'/'>' getting HTML-escaped (&lt;/&gt;) in GAS templates.
+            return Math.max(min, Math.min(v, max));
+        }
+
 
         function positionPopover(btn, pop) {
+            console.log("[Popover] positionPopover() start");
             var rect = btn.getBoundingClientRect();
             var bodyScrollY = window.scrollY || document.documentElement.scrollTop || 0;
             var bodyScrollX = window.scrollX || document.documentElement.scrollLeft || 0;
 
-            // Use stable offsets; avoid popRect.top/bottom reads
             var w = pop.offsetWidth || 0;
             var h = pop.offsetHeight || 0;
 
             var vw = document.documentElement.clientWidth;
             var vh = document.documentElement.clientHeight;
 
-            // Desired: right of icon, vertically centered
             var left = rect.left + bodyScrollX + rect.width + 10;
             var top  = rect.top  + bodyScrollY + (rect.height / 2) - (h / 2);
 
-            // Clamp inside viewport with 8px padding
             left = clamp(left, bodyScrollX + 8, bodyScrollX + vw - w - 8);
             top  = clamp(top,  bodyScrollY + 8, bodyScrollY + vh - h - 8);
 
             pop.style.left = left + "px";
             pop.style.top  = top  + "px";
+
+            console.log("[Popover] positioned", {
+                btnRect: { x: rect.left, y: rect.top, w: rect.width, h: rect.height },
+                popSize: { w: w, h: h },
+                viewport: { vw: vw, vh: vh, sx: bodyScrollX, sy: bodyScrollY },
+                finalPos: { left: left, top: top }
+            });
         }
 
         SDH.UI.initMapsPopover = function () {
+            console.log("[Popover] initMapsPopover called; readyState:", document.readyState);
+
             function wire() {
                 var btn = document.getElementById("maps-help-btn");
                 var pop = document.getElementById("maps-help-popover");
+
+                console.log("[Popover] wire()", { btnFound: !!btn, popFound: !!pop });
+
                 if (!btn || !pop) return;
 
                 function openPop() {
+                    console.log("[Popover] open");
                     pop.classList.add("show");
                     positionPopover(btn, pop);
                     btn.setAttribute("aria-expanded", "true");
                 }
                 function closePop() {
+                    console.log("[Popover] close");
                     pop.classList.remove("show");
                     btn.setAttribute("aria-expanded", "false");
                 }
                 function togglePop(e) {
                     if (e) { e.preventDefault(); e.stopPropagation(); }
-                    if (pop.classList.contains("show")) {
-                        closePop();
-                    } else {
-                        openPop();
-                    }
+                    var showing = pop.classList.contains("show");
+                    console.log("[Popover] toggle (currently showing? ->", showing, ")");
+                    if (showing) closePop(); else openPop();
                 }
 
                 btn.addEventListener("click", togglePop);
+                console.log("[Popover] click handler bound to #maps-help-btn");
 
                 var closeBtn = pop.querySelector(".popover-close");
+                console.log("[Popover] closeBtn found?", !!closeBtn);
                 if (closeBtn) {
                     closeBtn.addEventListener("click", function (e) {
-                        e.preventDefault();
-                        e.stopPropagation();
+                        e.preventDefault(); e.stopPropagation();
+                        console.log("[Popover] closeBtn clicked");
                         closePop();
                     });
                 }
+
+                // Keep position correct while open
+                window.addEventListener("resize", function () {
+                    if (pop.classList.contains("show")) {
+                        console.log("[Popover] resize → re-position");
+                        positionPopover(btn, pop);
+                    }
+                });
+                window.addEventListener("scroll", function () {
+                    if (pop.classList.contains("show")) {
+                        console.log("[Popover] scroll → re-position");
+                        positionPopover(btn, pop);
+                    }
+                }, true);
             }
 
-            // Match original timing: wire after full window load
             if (document.readyState === "complete") {
+                console.log("[Popover] document already complete → wiring now");
                 wire();
             } else {
+                console.log("[Popover] waiting for window.load to wire");
                 window.addEventListener("load", function once() {
                     window.removeEventListener("load", once);
+                    console.log("[Popover] window.load fired → wiring now");
                     wire();
                 });
             }
         };
+
+        // Also add small logs around tooltips so we know if they init
+        var _origInitTooltips = SDH.UI.initTooltips;
+        SDH.UI.initTooltips = function () {
+            var $target = $(".help-icon:not(.popover-help)");
+            console.log("[Tooltip] initTooltips() targets:", $target && $target.length);
+            return _origInitTooltips.apply(this, arguments);
+        };
+
+        var _origWait = SDH.UI.waitForTooltipReady;
+        SDH.UI.waitForTooltipReady = function (maxMs, intervalMs) {
+            console.log("[Tooltip] waitForTooltipReady start", { maxMs: maxMs, intervalMs: intervalMs });
+            var start = Date.now();
+            (function tick() {
+                var has = !!(window.jQuery && $.fn && $.fn.tooltip);
+                if (has) {
+                    console.log("[Tooltip] jQueryUI tooltip AVAILABLE @", (Date.now() - start) + "ms");
+                    SDH.UI.initTooltips();
+                    return;
+                }
+                if (Date.now() - start >= maxMs) {
+                    console.warn("[Tooltip] jQueryUI tooltip NOT available after", maxMs, "ms");
+                    return;
+                }
+                setTimeout(tick, intervalMs);
+            })();
+        };
     })();
 
-    // Sentinel ready
-    SDH.UI.ready = true;
+
+
+
+    global.SDH = SDH;
+    SDH.UI.ready = true; // Sentinel ready
+
     try {
         var ev = document.createEvent("Event");
         ev.initEvent("sdh-ui-ready", true, true);
@@ -257,5 +321,4 @@
     } catch (e) { }
     console.log("[SettingsDialogUIFrostingCode] sentinel set");
 
-    global.SDH = SDH;
 })(window);

@@ -12,9 +12,11 @@
         <?!= include('SettingsDialogCSS') ?>
     </style>
 
+
     <script>
         (function () {
             function initAfterUIReady() {
+                console.log("[HEAD] initAfterUIReady()");
                 // register error handlers *after* SDH.UI exists
                 window.addEventListener("error", function () { SDH.UI.hideSpinner(); });
                 window.addEventListener("unhandledrejection", function () { SDH.UI.hideSpinner(); });
@@ -25,22 +27,20 @@
                 SDH.UI.initMapsPopover();             // moved into frosting
             }
 
-            // Preferred: wait for frosting sentinel
-            document.addEventListener(
-                "sdh-ui-ready",
-                function onReadyOnce() {
-                    document.removeEventListener("sdh-ui-ready", onReadyOnce);
-                    initAfterUIReady();
-                },
-                { once: true }
-            );
+            console.log("[HEAD] attaching sdh-ui-ready listener; readyState:", document.readyState);
 
-            // If the sentinel already fired before this script ran, initialize immediately.
-            if (window.SDH && SDH.UI && SDH.UI.ready === true) {
+            document.addEventListener("sdh-ui-ready", function onReadyOnce() {
+                document.removeEventListener("sdh-ui-ready", onReadyOnce);
+                initAfterUIReady();
+            }, { once: true });
+
+            if (window.SDH && window.SDH.UI && window.SDH.UI.ready === true) {
                 initAfterUIReady();
             }
+
         })();
     </script>
+
 </head>
 
 <body>
