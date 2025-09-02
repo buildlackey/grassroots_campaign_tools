@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "name": "@app/common",
+  "scripts": {
+    "clean": "rm -rf ../../dist/common/gas_safe_staging",
+    "compile": "tsc --project tsconfig.json",
+    "dist": "npm run compile && bash -x ../../build/scripts/ongoing_dev/copy_to_dist.sh -t common"
+  }
+}

@@ -24,3 +24,28 @@ change unit_testable to something more reflective of purpose
 
 webpack.gas.config.js
     change devtool: -> false   (for production).
+
+
+
+>>>>
+{
+  "compilerOptions": {
+    "target": "ES2019",
+    "module": "commonjs",
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "outDir": "../../dist/common/gas_safe_staging",
+    "rootDir": "../../code",        // broadened from ../../code/common/src
+    "declaration": true
+  },
+  "include": [
+    "../../code/common/src/*.ts",
+    "../../code/gas/src/logic/PreferenceSvc.ts"
+  ]
+}
+That makes the compiler happy, but it tangles dependencies (UI/common code now depends on GAS code). You lose the clean separation.
+
+
+

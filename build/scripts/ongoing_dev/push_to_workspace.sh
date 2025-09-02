@@ -11,7 +11,7 @@ while [[ $# -gt 0 ]]; do
       TARGET="${1#*=}"; shift ;;
     *)
       echo "❌ Unknown option: $1"
-      echo "Usage: $0  [-t|--target ui|gas|all(default)]"
+      echo "Usage: $0  [-t|--target ui|gas|common|all(default)]"
       exit 1
       ;;
   esac
@@ -24,6 +24,7 @@ GIT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
 COMMON_SCRIPTS_DIR=$GIT_ROOT/build/scripts/common
 BUILD_UI_DIR="$GIT_ROOT/build/ui"
 BUILD_GAS_DIR="$GIT_ROOT/build/gas"
+BUILD_COMMON_DIR="$GIT_ROOT/build/common"
 
 .  "$COMMON_SCRIPTS_DIR/utils.sh"
 
@@ -47,8 +48,19 @@ build_ui() {
 }
 
 build_gas() {
-    cd "$BUILD_GAS_DIR"
+  cd "$BUILD_GAS_DIR"
+  npm run dist
+}
+
+build_common() {
+  if [[ -d "$BUILD_COMMON_DIR" ]]; then
+    echo "🔧 Building Common from: $BUILD_COMMON_DIR"
+    cd "$BUILD_COMMON_DIR"
+    [[ -d node_modules ]] || npm install
     npm run dist
+  else
+    echo "⚠️ Skipping Common: directory not found at $BUILD_COMMON_DIR"
+  fi
 }
 
 # === Build selected targets ===
@@ -59,12 +71,16 @@ case "$TARGET" in
   gas)
     build_gas
     ;;
+  common)
+    build_common
+    ;;
   all)
     build_ui
     build_gas
+    build_common
     ;;
   *)
-    echo "❌ Unknown target: $TARGET (expected ui|gas|all)"
+    echo "❌ Unknown target: $TARGET (expected ui|gas|common|all)"
     exit 1
     ;;
 esac
@@ -91,11 +107,9 @@ cat > $WORKING_PUSH_FOLDER/appsscript.json <<END
 }
 END
 
-
 # 3) 🔑 Inject real Maps API key into Code.js (placeholder "GOOGLE_MAPS_API_KEY")
 #    Only touch Code.js in the staging folder right before push.
 sed -i "s|\"GOOGLE_MAPS_API_KEY\"|\"${GOOGLE_MAPS_API_KEY}\"|g" "$WORKING_PUSH_FOLDER/Code.js"
-
 
 # 4) Push
 echo "🚀 Pushing project to Apps Script"
@@ -109,4 +123,3 @@ else
   echo "❌ smoke test failed"
   exit 1
 fi
-

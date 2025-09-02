@@ -1,12 +1,14 @@
 {
   "compilerOptions": {
-    "target": "ES5",
-    "module": "ESNext",
-    "outDir": "../../dist/gas/gas_safe_staging",
-    "rootDir": "../../code/gas/src/logic",
+    "target": "ES2019",
+    "module": "commonjs",
     "strict": true,
-    "lib": ["ES2015"],
-    "types": ["google-apps-script"]
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "outDir": "../../dist/gas/gas_safe_staging",
+    "rootDir": "../../code/common/src"
   },
-  "include": ["../../code/gas/src/logic/*.ts"]
+  "include": ["../../code/common/src/*.ts"],
+  "exclude": ["../../dist/gas/gas_safe_staging"]
 }

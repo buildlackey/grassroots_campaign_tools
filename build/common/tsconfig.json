@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES5",
+    "module": "commonjs",
+    "rootDir": "../../code/common/src",
+    "outDir": "../../dist/common/gas_safe_staging",
+    "declaration": true,
+    "declarationDir": "../../dist/common/gas_safe_staging",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "include": ["../../code/common/src/**/*"]
+}
