@@ -1,4 +1,8 @@
 
+when we save settings.. for sheet1 default comes up as 'Address'
+if we override and choose other col (e.g., 'Name').. it does not 'stick'
+when we bring up dialog again it should show Name.. but goes back to 'Address'
+
 fix undo in editor (idea).    'U' not working
 
 look into issue of chrome window not on top when we click
