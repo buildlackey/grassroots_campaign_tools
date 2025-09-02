@@ -28,6 +28,11 @@ BUILD_COMMON_DIR="$GIT_ROOT/build/common"
 
 .  "$COMMON_SCRIPTS_DIR/utils.sh"
 
+
+pushd "$WORKING_PUSH_FOLDER"
+rm -rf *.ts *.js *.html     # clean out old cruft from prior builds
+popd
+
 # Login and verify we are properly logged in
 $LOGIN_SCRIPT_DIR/clasp_login.sh
 "$LOCAL_CLASP" login --status >/dev/null || { echo "❌ clasp status failed "; exit 1; }
