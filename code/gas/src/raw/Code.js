@@ -38,6 +38,35 @@ function savePreferences(prefs, columns) {
     throw new Error("PreferenceSvc unavailable in runtime");
 }
 
+/**
+ * Smoke Test
+ *
+ * Validates that the deployed bundle is wired correctly inside the GAS runtime.
+ *
+ * <p>By the time this function runs, the entire script project has already been
+ * parsed and compiled by Apps Script. This means:</p>
+ * <ul>
+ *   <li>Syntax errors anywhere in the codebase would already have blocked deployment,
+ *       so this test does not serve as a syntax checker.</li>
+ *   <li>Instead, this smoke test focuses on catching issues that only manifest at runtime.</li>
+ * </ul>
+ *
+ * <p>Specifically, it can reveal:</p>
+ * <ul>
+ *   <li><b>Runtime linkage errors</b> — for example, if a namespace or global export
+ *       wasn’t attached correctly (e.g. <code>globalThis.CAMPAIGN_TOOLS.PreferenceSvc</code>
+ *       is undefined).</li>
+ *   <li><b>Transpilation/packaging surprises</b> — if the bundler emitted code that
+ *       Apps Script accepts syntactically but fails to execute at runtime.</li>
+ *   <li><b>Environment mismatches</b> — code that passes in Node/Jest tests but fails
+ *       under the V8 Apps Script runtime due to subtle differences.</li>
+ * </ul>
+ *
+ * <p>In short, this function confirms that the deployed build is callable in
+ * the target environment and that critical globals are accessible.</p>
+ *
+ * @return {string} "SUCCESS" token to indicate the bundle is alive.
+ */
 function smokeTest() {
     Logger.log("🧪 [Code.js/smokeTest] ENTER");
     if (!globalThis.CAMPAIGN_TOOLS || !globalThis.CAMPAIGN_TOOLS.PreferenceSvc) {

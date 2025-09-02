@@ -26,8 +26,7 @@ webpack.gas.config.js
     change devtool: -> false   (for production).
 
 
-
->>>>
+LOOK INTO THIS>
 {
   "compilerOptions": {
     "target": "ES2019",
@@ -49,3 +48,5 @@ That makes the compiler happy, but it tangles dependencies (UI/common code now d
 
 
 
+we will have webpack bundle everything for now.. as we resolve integration test issue
+    : we set up webpack to not treeshake and to bundle everything in code/gas/src/logic -- since there is not much there we can ignore impact for now.. but beware if number of symbols / classes grows.)
