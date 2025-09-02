@@ -70,7 +70,7 @@ function getSheetByName(name, ss) {
 }
 
 
-
+// TODO - can we delete this .. and  normalizeRow_?
 function ensureColumns(sheet, headerIndex, names) {
   var values = sheet.getDataRange().getValues();
   var header = normalizeRow_(values[headerIndex] || []);

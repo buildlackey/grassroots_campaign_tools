@@ -1,3 +1,4 @@
+console.log("[SettingsDialogActionCode] vA1 loading");
 
 /**
  * DialogModel: normalized state we pass between functions (incremental adoption).
@@ -7,12 +8,6 @@
  *   prefs: { mapsApiKey?: string, addressColumn?: string, sheetTabName?: string, showLatLong?: boolean, debug?: boolean }
  * }
  */
-
-let sheets = [];
-let headersBySheet = {};
-
-
-console.log("[SettingsDialogActionCode] vA1 loading");
 
 // --- tiny logger ---
 function log(...args){ try{ console.log("[SettingsDialog]", ...args); }catch(_){ } }
@@ -57,7 +52,7 @@ function waitForUIHelpers() {
 }
 // =======================================================
 
-/** NEW: create a small, explicit model we can pass around (Stage 1) */
+/** Create a small, explicit model we can pass around (already introduced in Stage 1) */
 function createDialogModel(initData) {
     return {
         sheetTabNames: initData.sheetTabNames || [],
@@ -70,24 +65,21 @@ window.addEventListener("load", onOpen);
 
 function onOpen() {
 
-    /** Adjusted: returns model AND keeps existing global + SDH side effects */
+    /** Returns model and persists it under SDH.UI.state (no local globals) */
     function saveDialogState(initData) {
         const model = createDialogModel(initData);
-
-        // Preserve existing locals for now (Stage 1)
-        sheets = model.sheetTabNames;
-        headersBySheet = model.headersBySheet;
 
         // Keep namespaced state in sync (used by helpers like renderHeadersFor)
         window.SDH = window.SDH || {};
         SDH.UI = SDH.UI || {};
         SDH.UI.state = SDH.UI.state || {};
         SDH.UI.state.headersBySheet = model.headersBySheet;
+        SDH.UI.state.model = model; // convenient handle for future stages/tests
 
         return model;
     }
 
-    /** Adjusted: consume model instead of raw data */
+    /** Consume model instead of raw data */
     function populateDialogFields(model) {
         const prefs = model.prefs || {};
         const sheetSelect = document.getElementById("sheetSelect");
@@ -107,6 +99,7 @@ function onOpen() {
         if (typeof prefs.showLatLong === "boolean") document.getElementById("showLatLng").checked = prefs.showLatLong;
         if (typeof prefs.debug === "boolean") document.getElementById("debug").checked = prefs.debug;
 
+        log("populateDialogFields → sheetSelect.value =", sheetSelect.value);
         return sheetSelect; // unchanged return type for minimal diff
     }
 
@@ -125,7 +118,7 @@ function onOpen() {
         bindRequired("addressSelect", "change", SDH.UI.updateSaveButtonState);
     }
 
-    /** Adjusted: pass the model; still calls renderHeadersFor via SDH.UI.state */
+    /** Pass the model; renderHeadersFor still reads SDH.UI.state.headersBySheet */
     function renderSelectorForAddressColumn(SDH, model, preferredSheetSelect) {
         if (model.sheetTabNames.length > 0) {
             SDH.UI.renderHeadersFor(preferredSheetSelect.value);
@@ -144,7 +137,7 @@ function onOpen() {
             .withSuccessHandler(async (data) => {
                 log("getInitData success", data);
 
-                const model = saveDialogState(data);                 // NEW: get model
+                const model = saveDialogState(data);                 // model persisted into SDH.UI.state
                 const sheetSelect = populateDialogFields(model);     // pass model
                 await waitForUIHelpers();
                 wireUpEventHandlers(SDH);
@@ -182,8 +175,11 @@ function saveSettings() {
     const showLL    = !!(document.getElementById("showLatLng") && document.getElementById("showLatLng").checked);
     const debug     = !!(document.getElementById("debug")      && document.getElementById("debug").checked);
 
-    // Still uses existing locals for Stage 1; we’ll migrate this to the model in Stage 2
+    // Read from namespaced state instead of removed locals
+    const headersBySheet =
+        (window.SDH && SDH.UI && SDH.UI.state && SDH.UI.state.headersBySheet) || {};
     const columns = (headersBySheet && headersBySheet[sheetName]) || [];
+
     const payload = {
         sheetTabName: sheetName,
         addressColumn: address,
