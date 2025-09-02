@@ -1,5 +1,5 @@
 // code/common/src/PreferenceSvc.ts
-export interface Preferences {
+interface Preferences {
     sheetTabName: string;
     addressColumn: string;
     mapsApiKey: string;
@@ -7,7 +7,7 @@ export interface Preferences {
     debug: boolean;
 }
 
-export class PreferenceSvc {
+class PreferenceSvc {
     private static DOC_KEYS = {
         SHEET_TAB_NAME: 'prefs.sheetTabName',
         ADDRESS_COL: 'prefs.addressColumn',
@@ -152,6 +152,7 @@ export class PreferenceSvc {
         );
     }
 }
+
 
 // === Namespace exposure only (no global function shims) ===
 (globalThis as any).CAMPAIGN_TOOLS = (globalThis as any).CAMPAIGN_TOOLS || {};

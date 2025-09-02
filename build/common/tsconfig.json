@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES5",
-    "module": "commonjs",
+    "module": "none",
     "rootDir": "../../code/common/src",
     "outDir": "../../dist/common/gas_safe_staging",
     "declaration": true,

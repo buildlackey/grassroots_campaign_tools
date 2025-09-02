@@ -1,12 +1,13 @@
-import type { Preferences } from "./PreferenceSvc";
+/// <reference path="./PreferenceSvc.d.ts" />
 
-export interface CampaignInitData {
+
+interface CampaignInitData {
     sheetTabNames: string[];
     sheetTabToColumnNames: Record<string, string[]>;
     prefs: Preferences;
 }
 
-export class CampaignToolsModel {
+class CampaignToolsModel {
     sheetTabNames: string[];
     headersBySheet: Record<string, string[]>;
     prefs: Preferences;
@@ -42,4 +43,5 @@ export class CampaignToolsModel {
 }
 
 /* ===== UMD-ish export: attach to globalThis for GAS runtime ===== */
-(globalThis as any).CampaignToolsModel = CampaignToolsModel;
+(globalThis as any).CAMPAIGN_TOOLS = (globalThis as any).CAMPAIGN_TOOLS || {};
+(globalThis as any).CAMPAIGN_TOOLS.CampaignToolsModel = CampaignToolsModel;
