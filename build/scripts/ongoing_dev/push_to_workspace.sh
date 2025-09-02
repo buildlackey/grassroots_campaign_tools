@@ -28,15 +28,14 @@ BUILD_COMMON_DIR="$GIT_ROOT/build/common"
 
 .  "$COMMON_SCRIPTS_DIR/utils.sh"
 
-
+# Clean old cruft
 pushd "$WORKING_PUSH_FOLDER"
-rm -rf *.ts *.js *.html     # clean out old cruft from prior builds
+rm -rf *.ts *.js *.html
 popd
 
 # Login and verify we are properly logged in
 $LOGIN_SCRIPT_DIR/clasp_login.sh
 "$LOCAL_CLASP" login --status >/dev/null || { echo "❌ clasp status failed "; exit 1; }
-
 
 cd "$GIT_ROOT"
 
@@ -55,6 +54,8 @@ build_ui() {
 build_gas() {
   cd "$BUILD_GAS_DIR"
   npm run dist
+  echo LISTING
+  ls /home/chris/grassroots_campaign_tools/dist/gas/gas_safe_staging
 }
 
 build_common() {
@@ -70,24 +71,11 @@ build_common() {
 
 # === Build selected targets ===
 case "$TARGET" in
-  ui)
-    build_ui
-    ;;
-  gas)
-    build_gas
-    ;;
-  common)
-    build_common
-    ;;
-  all)
-    build_ui
-    build_gas
-    build_common
-    ;;
-  *)
-    echo "❌ Unknown target: $TARGET (expected ui|gas|common|all)"
-    exit 1
-    ;;
+  ui) build_ui ;;
+  gas) build_gas ;;
+  common) build_common ;;
+  all) build_ui; build_gas; build_common ;;
+  *) echo "❌ Unknown target: $TARGET (expected ui|gas|common|all)"; exit 1 ;;
 esac
 
 # === Stage & Push ===
@@ -95,13 +83,16 @@ echo "🚧 Working in: $WORKING_PUSH_FOLDER"
 cd "$WORKING_PUSH_FOLDER"
 
 # 1) Validate scriptId alignment
+jq --arg pid "$PROJECT_ID" '.projectId=$pid' .clasp.json > .clasp.tmp && mv .clasp.tmp .clasp.json
+
 CLASP_SCRIPT_ID=$(jq -r '.scriptId' .clasp.json)
 if [[ "$CLASP_SCRIPT_ID" != "$SCRIPT_ID" ]]; then
   echo "❌ .clasp.json scriptId ($CLASP_SCRIPT_ID) does not match expected ($SCRIPT_ID)"
   exit 1
 fi
 
-# 2)  Need run time V8 in  appsscript.json to ensure latest java script syntax respected
+
+# 2) Need runtime V8 in appsscript.json
 cat > $WORKING_PUSH_FOLDER/appsscript.json <<END
 {
   "exceptionLogging": "STACKDRIVER",
@@ -112,8 +103,14 @@ cat > $WORKING_PUSH_FOLDER/appsscript.json <<END
 }
 END
 
-# 3) 🔑 Inject real Maps API key into Code.js (placeholder "GOOGLE_MAPS_API_KEY")
-#    Only touch Code.js in the staging folder right before push.
+
+
+# === Stage build artifacts into working push folder ===
+echo "📦 Staging dist artifacts into $WORKING_PUSH_FOLDER"
+cp -a  $GIT_ROOT/dist/*/gas_safe_staging/*    "$WORKING_PUSH_FOLDER/"
+
+
+# 3) 🔑 Inject real Maps API key into Code.js
 sed -i "s|\"GOOGLE_MAPS_API_KEY\"|\"${GOOGLE_MAPS_API_KEY}\"|g" "$WORKING_PUSH_FOLDER/Code.js"
 
 # 4) Push
