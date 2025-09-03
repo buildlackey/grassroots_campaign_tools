@@ -65,11 +65,6 @@ window.addEventListener("load", onOpen);
 
 function onOpen() {
 
-    /** Returns model only (no globals) */
-    function saveDialogState(initData) {
-        return createDialogModel(initData);
-    }
-
     /** Consume model instead of raw data */
     function populateDialogFields(model) {
         const prefs = model.prefs || {};
@@ -131,10 +126,10 @@ function onOpen() {
     SDH.UI.showSpinner()
     const chain =
         google.script.run
-            .withSuccessHandler(async (data) => {
-                log("getInitData success", data);
+            .withSuccessHandler(async (responseFromRemote) => {
+                log("getInitData success", responseFromRemote);
 
-                const model = saveDialogState(data);
+                const model = createDialogModel(responseFromRemote);
                 const sheetSelect = populateDialogFields(model);
                 await waitForUIHelpers();
                 wireUpEventHandlers(model);
