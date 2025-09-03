@@ -50,24 +50,9 @@
 
         select.innerHTML = clean.map(formatOption).join('');
 
-        // Preference → regex → first fallback
         var defaultAddr = "";
-        try {
-            var candidate = prefs.addressColumn;
-            if (candidate && clean.includes(candidate)) {
-                defaultAddr = candidate;
-            }
-        } catch (e) {
-            console.warn("[renderHeadersFor] preference lookup error", e);
-        }
-
-        if (!defaultAddr) {
-            var match = clean.find(h => /address/i.test(h));
-            if (match) defaultAddr = match;
-        }
-
-        if (!defaultAddr && clean.length > 0) {
-            defaultAddr = clean[0];
+        if (ctx && ctx.preferredAddressColumnName) {
+            defaultAddr = ctx.preferredAddressColumnName || "";
         }
 
         select.value = defaultAddr || "";

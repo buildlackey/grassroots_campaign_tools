@@ -53,3 +53,17 @@ we will have webpack bundle everything for now.. as we resolve integration test 
 
 
 copy_to_dist.sh does not do much other than one copy. we should retire it.. - follow model for 'gas'
+
+
+brittle dependency
+    from UI → common in package.json
+    fix: Add an explicit dependency
+            In build/ui/package.json, you could define a prebuild script that shells
+            into the common directory and runs its build first:
+
+            {
+              "scripts": {
+                "prebuild": "cd ../../common && npm run dist",
+                "build": "webpack --config webpack.config.js"
+              }
+            }

@@ -53,13 +53,7 @@ function waitForUIHelpers() {
 // =======================================================
 
 /** Create a small, explicit model we can pass around (already introduced in Stage 1) */
-function createDialogModel(initData) {
-    return {
-        sheetTabNames: initData.sheetTabNames || [],
-        headersBySheet: initData.sheetTabToColumnNames || {},
-        prefs: initData.prefs || {}
-    };
-}
+// ❌ no longer needed: createDialogModel()
 
 window.addEventListener("load", onOpen);
 
@@ -73,10 +67,7 @@ function onOpen() {
         // Populate sheet tab select list
         sheetSelect.innerHTML = model.sheetTabNames.map(n => `<option value="${n}">${n}</option>`).join('');
         if (model.sheetTabNames.length > 0) {
-            sheetSelect.value =
-                (prefs.sheetTabName && model.sheetTabNames.includes(prefs.sheetTabName))
-                    ? prefs.sheetTabName
-                    : model.sheetTabNames[0];
+            sheetSelect.value = model.preferredSheetTabName;
         }
 
         // Pre-fill inputs
@@ -129,7 +120,9 @@ function onOpen() {
             .withSuccessHandler(async (responseFromRemote) => {
                 log("getInitData success", responseFromRemote);
 
-                const model = createDialogModel(responseFromRemote);
+                // 🔹 Construct CampaignToolsModel instead of plain JSON
+                const model = new globalThis.CAMPAIGN_TOOLS.CampaignToolsModel(responseFromRemote);
+
                 const sheetSelect = populateDialogFields(model);
                 await waitForUIHelpers();
                 wireUpEventHandlers(model);
