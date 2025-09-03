@@ -1,4 +1,3 @@
-
 (function (global) {
     console.log("[SettingsDialogUIFrostingCode] loading");
     var SDH = global.SDH || {};
@@ -51,7 +50,7 @@
 
         select.innerHTML = clean.map(formatOption).join('');
 
-        // Preference → exact match → regex → first fallback
+        // Preference → regex → first fallback
         var defaultAddr = "";
         try {
             var candidate = prefs.addressColumn;
@@ -352,4 +351,3 @@
     })();
 
 })(window);
-
