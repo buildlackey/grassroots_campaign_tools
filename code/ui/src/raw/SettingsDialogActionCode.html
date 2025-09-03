@@ -65,18 +65,9 @@ window.addEventListener("load", onOpen);
 
 function onOpen() {
 
-    /** Returns model and persists it under SDH.UI.state (no local globals) */
+    /** Returns model only (no globals) */
     function saveDialogState(initData) {
-        const model = createDialogModel(initData);
-
-        // Keep namespaced state in sync (used by helpers like renderHeadersFor)
-        window.SDH = window.SDH || {};
-        SDH.UI = SDH.UI || {};
-        SDH.UI.state = SDH.UI.state || {};
-        SDH.UI.state.headersBySheet = model.headersBySheet;
-        SDH.UI.state.model = model; // convenient handle for future stages/tests
-
-        return model;
+        return createDialogModel(initData);
     }
 
     /** Consume model instead of raw data */
@@ -109,9 +100,9 @@ function onOpen() {
             SDH.UI.onSheetChange(model);
         });
 
-        // NEW: save handler that closes over model
+        // Save handler that closes over model
         bindRequired("saveBtn", "click", function () {
-            saveSettingsWith(model);
+            saveSettings(model);
         });
 
         bindRequired("showApiKey", "change", function () {
@@ -124,7 +115,7 @@ function onOpen() {
         bindRequired("addressSelect", "change", SDH.UI.updateSaveButtonState);
     }
 
-    /** Pass the model; renderHeadersFor still reads SDH.UI.state.headersBySheet but can use ctx */
+    /** Pass the model into renderers */
     function renderSelectorForAddressColumn(model, preferredSheetSelect) {
         if (model.sheetTabNames.length > 0) {
             SDH.UI.renderHeadersFor(preferredSheetSelect.value, model);
@@ -143,11 +134,11 @@ function onOpen() {
             .withSuccessHandler(async (data) => {
                 log("getInitData success", data);
 
-                const model = saveDialogState(data);                 // model persisted into SDH.UI.state
-                const sheetSelect = populateDialogFields(model);     // pass model
+                const model = saveDialogState(data);
+                const sheetSelect = populateDialogFields(model);
                 await waitForUIHelpers();
-                wireUpEventHandlers(model);                          // closure over model
-                renderSelectorForAddressColumn(model, sheetSelect);  // pass model
+                wireUpEventHandlers(model);
+                renderSelectorForAddressColumn(model, sheetSelect);
             })
             .withFailureHandler((e) => {
                 console.error("❌ Failed to fetch init data:", e);
@@ -170,54 +161,7 @@ function closeDialog() {
 }
 
 // ===== actions =====
-// Legacy keep-alive (still present for compatibility with older tests/calls)
-function saveSettings() {
-    log("ENTER saveSettings");
-    const btn = document.getElementById('saveBtn');
-    if (btn) btn.disabled = true;
-
-    const sheetName = (document.getElementById("sheetSelect") || {}).value || "";
-    const address   = (document.getElementById("addressSelect") || {}).value || "";
-    const mapsKey   = (document.getElementById("mapsApiKey")  || {}).value || "";
-    const showLL    = !!(document.getElementById("showLatLng") && document.getElementById("showLatLng").checked);
-    const debug     = !!(document.getElementById("debug")      && document.getElementById("debug").checked);
-
-    // Read from namespaced state instead of removed locals
-    const headersBySheet =
-        (window.SDH && SDH.UI && SDH.UI.state && SDH.UI.state.headersBySheet) || {};
-    const columns = (headersBySheet && headersBySheet[sheetName]) || [];
-
-    const payload = {
-        sheetTabName: sheetName,
-        addressColumn: address,
-        mapsApiKey: mapsKey,
-        showLatLong: showLL,
-        debug: debug
-    };
-    log("saveSettings payload", payload, { columns });
-
-    if (!mapsKey || !address) {
-        if (btn) btn.disabled = true;
-        console.error("❌ Missing required input(s):", { hasMapsKey: !!mapsKey, hasAddress: !!address });
-        alert("❌ You must provide both a Maps API key and an Address column before saving.");
-        return;
-    }
-
-    google.script.run
-        .withSuccessHandler(function () {
-            log("saveSettings success → closing dialog");
-            closeDialog(); // toast already shown server-side
-        })
-        .withFailureHandler(function (e) {
-            console.error("❌ Failed to save preferences:", e);
-            if (btn) btn.disabled = false;
-            alert("Failed to save preferences.");
-        })
-        .savePreferences(payload, columns);
-}
-
-/* NEW: save handler that closes over model (no global headers read) */
-function saveSettingsWith(model, _evt) {
+function saveSettings(model, _evt) {
     log("ENTER saveSettingsWith(model)");
     const btn = document.getElementById('saveBtn');
     if (btn) btn.disabled = true;
@@ -276,5 +220,3 @@ function cancelDialog() {
     }
     window.addEventListener('keydown', onKeydown, true);
 })();
-
-
