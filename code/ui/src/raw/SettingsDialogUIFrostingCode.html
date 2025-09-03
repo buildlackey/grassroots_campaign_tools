@@ -1,3 +1,4 @@
+
 (function (global) {
     console.log("[SettingsDialogUIFrostingCode] loading");
     var SDH = global.SDH || {};
@@ -24,16 +25,19 @@
         console.log("[updateSaveButtonState] disabled?", btn.disabled);
     };
 
-    /* === renderHeadersFor === */
-    SDH.UI.renderHeadersFor = function (name) {
+    /* === renderHeadersFor (now accepts optional ctx/model) === */
+    SDH.UI.renderHeadersFor = function (name, ctx) {
         function formatOption(h) {
             return '<option value="%s">%s</option>'.replace(/%s/g, h);
         }
 
         console.log("[renderHeadersFor] start", name);
 
-        var headers = (SDH.UI.state.headersBySheet &&
-            SDH.UI.state.headersBySheet[name]) || [];
+        // Prefer explicitly passed model-like ctx, otherwise fall back to namespaced state
+        var headersBySheet = (ctx && ctx.headersBySheet) || (SDH.UI.state.headersBySheet || {});
+        var prefs          = (ctx && ctx.prefs)          || (SDH.UI.state.preferences || {});
+
+        var headers = (headersBySheet && headersBySheet[name]) || [];
 
         var clean = headers
             .filter(h => h != null && String(h).length > 0)
@@ -47,10 +51,9 @@
 
         select.innerHTML = clean.map(formatOption).join('');
 
-        // Preference → regex → first fallback
+        // Preference → exact match → regex → first fallback
         var defaultAddr = "";
         try {
-            var prefs = SDH.UI.state.preferences || {};
             var candidate = prefs.addressColumn;
             if (candidate && clean.includes(candidate)) {
                 defaultAddr = candidate;
@@ -79,12 +82,12 @@
         console.log("[renderHeadersFor] exit", { count: clean.length, selected: select.value });
     };
 
-    /* === onSheetChange === */
-    SDH.UI.onSheetChange = function () {
+    /* === onSheetChange (now forwards optional ctx/model) === */
+    SDH.UI.onSheetChange = function (ctx) {
         var sel = document.getElementById("sheetSelect");
         var name = sel ? sel.value : "";
         console.log("[onSheetChange] ->", name);
-        SDH.UI.renderHeadersFor(name);
+        SDH.UI.renderHeadersFor(name, ctx);
     };
 
     /* === API key visibility === */
@@ -349,3 +352,4 @@
     })();
 
 })(window);
+

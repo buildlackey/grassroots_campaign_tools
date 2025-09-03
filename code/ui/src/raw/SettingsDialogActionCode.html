@@ -1,3 +1,4 @@
+
 console.log("[SettingsDialogActionCode] vA1 loading");
 
 /**
@@ -65,7 +66,7 @@ window.addEventListener("load", onOpen);
 
 function onOpen() {
 
-    /** Returns model and persists it under SDH.UI.state (no local globals) */
+    /** Returns model and persists headers into SDH.UI.state for legacy helpers */
     function saveDialogState(initData) {
         const model = createDialogModel(initData);
 
@@ -74,7 +75,7 @@ function onOpen() {
         SDH.UI = SDH.UI || {};
         SDH.UI.state = SDH.UI.state || {};
         SDH.UI.state.headersBySheet = model.headersBySheet;
-        SDH.UI.state.model = model; // convenient handle for future stages/tests
+        SDH.UI.state.model = model; // kept for compatibility; callers should prefer threaded model
 
         return model;
     }
@@ -103,9 +104,13 @@ function onOpen() {
         return sheetSelect; // unchanged return type for minimal diff
     }
 
-    function wireUpEventHandlers() {
-        // Wire events
-        bindRequired("sheetSelect", "change", SDH.UI.onSheetChange);
+    function wireUpEventHandlers(model) {
+        // Use legacy global handler for backward-compat (tests call it),
+        // but also bind a closure that forwards the model (low-hanging fruit).
+        bindRequired("sheetSelect", "change", function () {
+            SDH.UI.onSheetChange(model);
+        });
+
         bindRequired("saveBtn", "click", saveSettings);
 
         bindRequired("showApiKey", "change", function () {
@@ -118,10 +123,10 @@ function onOpen() {
         bindRequired("addressSelect", "change", SDH.UI.updateSaveButtonState);
     }
 
-    /** Pass the model; renderHeadersFor still reads SDH.UI.state.headersBySheet */
+    /** Pass the model; renderHeadersFor now can consume it directly */
     function renderSelectorForAddressColumn(model, preferredSheetSelect) {
         if (model.sheetTabNames.length > 0) {
-            SDH.UI.renderHeadersFor(preferredSheetSelect.value);
+            SDH.UI.renderHeadersFor(preferredSheetSelect.value, model);
         }
         SDH.UI.updateSaveButtonState();
 
@@ -137,11 +142,11 @@ function onOpen() {
             .withSuccessHandler(async (data) => {
                 log("getInitData success", data);
 
-                const model = saveDialogState(data);                 // model persisted into SDH.UI.state
+                const model = saveDialogState(data);                 // model persisted + returned
                 const sheetSelect = populateDialogFields(model);     // pass model
                 await waitForUIHelpers();
-                wireUpEventHandlers();
-                renderSelectorForAddressColumn(model, sheetSelect); // pass model
+                wireUpEventHandlers(model);                          // closure over model
+                renderSelectorForAddressColumn(model, sheetSelect);  // pass model
             })
             .withFailureHandler((e) => {
                 console.error("❌ Failed to fetch init data:", e);
@@ -226,3 +231,5 @@ function cancelDialog() {
     }
     window.addEventListener('keydown', onKeydown, true);
 })();
+
+
