@@ -4,8 +4,7 @@
 import { JSDOM } from "jsdom";
 import * as fs from "fs";
 import * as path from "path";
-import { bootDialog } from "./testUtils";
-import { installConsoleErrorFail } from "./testUtils";
+import {bootDialog, installConsoleErrorFail} from "./testUtils";
 
 
 
