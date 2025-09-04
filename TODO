@@ -11,15 +11,10 @@ look into issue of chrome window not on top when we click
 settings dialog - not responding to dismiss / (save?)   esc
 
 
-unit_testable -> better name? needed?
-
 run a test where we deliberately save with an error (e.g., maps key is empty)
   also.. how about :  select a sheet tab w/ no col's and then call extra button..
     regular save button should be disabled
 
-
-change built -> dist
-change unit_testable to something more reflective of purpose
 
 
 webpack.gas.config.js
@@ -45,12 +40,6 @@ LOOK INTO THIS>
   ]
 }
 That makes the compiler happy, but it tangles dependencies (UI/common code now depends on GAS code). You lose the clean separation.
-
-
-
-we will have webpack bundle everything for now.. as we resolve integration test issue
-    : we set up webpack to not treeshake and to bundle everything in code/gas/src/logic -- since there is not much there we can ignore impact for now.. but beware if number of symbols / classes grows.)
-
 
 
 

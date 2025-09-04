@@ -5,6 +5,9 @@ import { JSDOM } from "jsdom";
 import * as fs from "fs";
 import * as path from "path";
 import { bootDialog } from "./testUtils";
+import { installConsoleErrorFail } from "./testUtils";
+
+
 
 const repoRoot = path.resolve(__dirname, "../../../../");
 const htmlPath = path.resolve(repoRoot, "dist/ui/rendered_settings_dialog_test.html");
@@ -14,15 +17,11 @@ let dom: JSDOM;
 let document: Document;
 let window: any;
 
+
 beforeAll(() => {
-    const origError = console.error;
-    console.error = (...args: any[]) => {
-        const msg = args.join(" ");
-        if (msg.includes("Could not load")) return;
-        origError(...args);
-        throw new Error(`Console error: ${msg}`);
-    };
+    installConsoleErrorFail();
 });
+
 
 describe("SettingsDialog Maps API key field", () => {
     beforeEach(async () => {

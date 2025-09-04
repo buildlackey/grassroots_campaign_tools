@@ -5,7 +5,7 @@ import { JSDOM } from "jsdom";
 import { waitFor } from "@testing-library/dom";
 import * as fs from "fs";
 import * as path from "path";
-import { bootDialog, dumpState } from "./testUtils";
+import {bootDialog, dumpState, installConsoleErrorFail} from "./testUtils";
 
 const repoRoot = path.resolve(__dirname, "../../../../");
 const htmlPath = path.resolve(repoRoot, "dist/ui/rendered_settings_dialog_test.html");
@@ -15,15 +15,10 @@ let dom: JSDOM;
 let document: Document;
 let window: any;
 
+
+
 beforeAll(() => {
-    // Fail on console.error, but ignore harmless jsdom resource errors
-    const origError = console.error;
-    console.error = (...args: any[]) => {
-        const msg = args.join(" ");
-        if (msg.includes("Could not load")) return; // ignore CSS fetch failures
-        origError(...args);
-        throw new Error(`Console error: ${msg}`);
-    };
+    installConsoleErrorFail();
 });
 
 /**

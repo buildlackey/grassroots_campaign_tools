@@ -80,3 +80,17 @@ export function dumpState(tag: string, doc: Document) {
         saveDisabled: !!save?.disabled,
     });
 }
+
+/**
+ * Fail tests on console.error, but ignore harmless jsdom resource errors.
+ * Call this once in a beforeAll() in each suite.
+ */
+export function installConsoleErrorFail() {
+    const origError = console.error;
+    console.error = (...args: any[]) => {
+        const msg = args.join(" ");
+        if (msg.includes("Could not load")) return; // ignore CSS fetch failures
+        origError(...args);
+        throw new Error(`Console error: ${msg}`);
+    };
+}
