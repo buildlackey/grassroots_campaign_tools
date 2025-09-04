@@ -6,6 +6,8 @@ import { waitFor } from "@testing-library/dom";
 import * as fs from "fs";
 import * as path from "path";
 
+import { setupGoogleMock, dumpState, waitForReady } from "./testUtils";
+
 const repoRoot = path.resolve(__dirname, "../../../../");
 const htmlPath = path.resolve(repoRoot, "dist/ui/rendered_settings_dialog_test.html");
 const htmlContent = fs.readFileSync(htmlPath, "utf-8");
@@ -25,58 +27,6 @@ beforeAll(() => {
     };
 });
 
-
-function setupGoogleMock(win: any, initData?: any) {
-    const defaultInitData = {
-        sheetTabNames: ["Sheet1", "Sheet2"],
-        sheetTabToColumnNames: {
-            Sheet1: [],
-            Sheet2: ["Address", "Phone"],
-        },
-        prefs: {},
-    };
-
-    const data = initData || defaultInitData;
-
-    win.google = {
-        script: {
-            run: {
-                withSuccessHandler(success: any) {
-                    const chain = {
-                        withFailureHandler: function (_failure: any) {
-                            return chain;
-                        },
-                        getInitData: function () {
-                            success(data);
-                        },
-                        savePreferences: function () {
-                            success();
-                        },
-                    };
-                    return chain;
-                },
-            },
-        },
-        host: { close: () => {} },
-    };
-}
-
-
-function dumpState(tag: string, doc: Document) {
-    const sel = doc.querySelector("#sheetSelect") as HTMLSelectElement | null;
-    const addr = doc.querySelector("#addressSelect") as HTMLSelectElement | null;
-    const key = doc.querySelector("#mapsApiKey") as HTMLInputElement | null;
-    const save = doc.querySelector("#saveBtn") as HTMLButtonElement | null;
-    console.log(`[state:${tag}]`, {
-        sheetValue: sel?.value || "",
-        sheetOptions: sel?.options.length || 0,
-        addrValue: addr?.value || "",
-        addrOptions: addr ? Array.from(addr.options).map((o) => o.value) : [],
-        mapsKeyLen: key?.value.length || 0,
-        saveDisabled: !!save?.disabled,
-    });
-}
-
 // 🔹 Helper updated to use CampaignToolsModel from window global
 async function assertSaveButtonState(
     initData: {
@@ -87,7 +37,6 @@ async function assertSaveButtonState(
     expectedDisabled: boolean,
     expectedAddressValue: string
 ) {
-
     // Set sheetSelect to first sheet deterministically
     const firstSheet = initData.sheetTabNames[0] || "";
     const sheetSel = document.getElementById("sheetSelect") as HTMLSelectElement | null;
@@ -136,18 +85,6 @@ async function assertSaveButtonState(
 
 describe("SettingsDialog Save Button / Maps API key (DOM-driven)", () => {
     beforeEach(async () => {
-        // Prepare promise first
-        const readyPromise = new Promise<void>((resolve, reject) => {
-            const timer = setTimeout(
-                () => reject(new Error("timeout waiting for sdh-ui-ready")),
-                2000
-            );
-            (global as any).__SDH_READY_HANDLER__ = () => {
-                clearTimeout(timer);
-                resolve();
-            };
-        });
-
         dom = new JSDOM(htmlContent, {
             runScripts: "dangerously",
             resources: "usable",
@@ -162,11 +99,11 @@ describe("SettingsDialog Save Button / Maps API key (DOM-driven)", () => {
         window = dom.window;
         document = window.document;
 
-        setupGoogleMock(window);
+        setupGoogleMock(window); // uses default initData fixture
 
         window.dispatchEvent(new window.Event("load"));
 
-        await readyPromise;
+        await waitForReady(dom);
         await new Promise((r) => setTimeout(r, 100));
     });
 
