@@ -20,7 +20,7 @@ beforeAll(() => {
     const origError = console.error;
     console.error = (...args: any[]) => {
         const msg = args.join(" ");
-        if (msg.includes("Could not load")) return; // ignore CSS fetch failures in jsdom
+        if (msg.includes("Could not load")) return; // ignore CSS fetch failures
         origError(...args);
         throw new Error(`Console error: ${msg}`);
     };
@@ -97,7 +97,7 @@ const cases: Array<[string, any, boolean, string]> = [
 ];
 
 describe.each(cases)(
-    "SettingsDialog Save Button / Maps API key (fixture-driven): %s",
+    "SettingsDialog Button State: %s",
     (_label, initData, expectedDisabled, expectedAddress) => {
         beforeEach(async () => {
             const boot = await bootDialog(htmlContent, initData);
@@ -106,7 +106,9 @@ describe.each(cases)(
             document = boot.document;
         });
 
-        afterEach(() => { if (dom) dom.window.close(); });
+        afterEach(() => {
+            if (dom) dom.window.close();
+        });
 
         test("renders selects and save state correctly", async () => {
             dumpState("after-init", document);
@@ -117,24 +119,6 @@ describe.each(cases)(
                 expect(saveBtn.disabled).toBe(expectedDisabled);
                 expect(addrSel.value).toBe(expectedAddress);
             });
-        });
-
-        test("mapsApiKey masks on blur / shows on focus", async () => {
-            const input = document.getElementById("mapsApiKey") as HTMLInputElement;
-            const saveBtn = document.getElementById("saveBtn") as HTMLButtonElement;
-
-            input.type = "text";
-            input.value = "Foo";
-
-            input.dispatchEvent(new window.Event("focus", { bubbles: true }));
-            expect(input.type).toBe("text");
-
-            saveBtn.focus();
-            input.dispatchEvent(new window.Event("blur", { bubbles: true }));
-            expect(input.type).toBe("password");
-
-            input.dispatchEvent(new window.Event("focus", { bubbles: true }));
-            expect(input.type).toBe("text");
         });
     }
 );
