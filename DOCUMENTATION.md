@@ -4,7 +4,9 @@
 
 Welcome to the Campaign Tool extension for Google Sheets, from **Mob Rule Laboratories**!
 
-The first release of this extension enables campaign coordinators to quickly identify which of the volunteers in their spreadsheet database reside within a given radius of a specific geographic location. The resulting filtered list can be used to support a variety of campaign goals—such as notifying matching volunteers of an upcoming event near them.
+The first release of this extension enables campaign coordinators to quickly identify which of the volunteers in their spreadsheet database reside within 
+a given radius of a specific geographic location. The resulting filtered list can be used to support a variety of campaign goals—such 
+as notifying matching volunteers of an upcoming event near them.
 
 ---
 

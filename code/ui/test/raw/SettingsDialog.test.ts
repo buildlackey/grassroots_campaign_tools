@@ -25,7 +25,19 @@ beforeAll(() => {
     };
 });
 
-function setupGoogleMock(win: any) {
+
+function setupGoogleMock(win: any, initData?: any) {
+    const defaultInitData = {
+        sheetTabNames: ["Sheet1", "Sheet2"],
+        sheetTabToColumnNames: {
+            Sheet1: [],
+            Sheet2: ["Address", "Phone"],
+        },
+        prefs: {},
+    };
+
+    const data = initData || defaultInitData;
+
     win.google = {
         script: {
             run: {
@@ -35,14 +47,7 @@ function setupGoogleMock(win: any) {
                             return chain;
                         },
                         getInitData: function () {
-                            success({
-                                sheetTabNames: ["Sheet1", "Sheet2"],
-                                sheetTabToColumnNames: {
-                                    Sheet1: [],
-                                    Sheet2: ["Address", "Phone"],
-                                },
-                                prefs: {},
-                            });
+                            success(data);
                         },
                         savePreferences: function () {
                             success();
@@ -55,6 +60,7 @@ function setupGoogleMock(win: any) {
         host: { close: () => {} },
     };
 }
+
 
 function dumpState(tag: string, doc: Document) {
     const sel = doc.querySelector("#sheetSelect") as HTMLSelectElement | null;
@@ -148,9 +154,7 @@ describe("SettingsDialog Save Button / Maps API key (DOM-driven)", () => {
             pretendToBeVisual: true,
             beforeParse(win) {
                 win.document.addEventListener("sdh-ui-ready", () => {
-                    if ((global as any).__SDH_READY_HANDLER__) {
-                        (global as any).__SDH_READY_HANDLER__();
-                    }
+                    (global as any).__SDH_READY_HANDLER__();
                 });
             },
         });
