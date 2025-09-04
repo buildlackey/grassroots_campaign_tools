@@ -2,10 +2,12 @@
   "private": true,
   "name": "@app/ui",
   "scripts": {
+    "preclean": "cd ../common && npm run dist",
     "clean": "rm -rf ../../dist/ui",
-    "setup:fixture": "bash ../../code/ui/test/raw/test_settings_dialog.sh",
-    "build": "npm run setup:fixture",
-    "dist": "npm run build && mkdir -p ../../dist/ui/gas_safe_staging && cp -a ../../code/ui/src/raw/. ../../dist/ui/gas_safe_staging/"
+    "setup:fixture": "npm run clean && bash ../../code/ui/test/raw/test_settings_dialog.sh",
+    "build":    "npm run setup:fixture && jest --config=jest.config.js",
+    "predist":  "mkdir -p ../../dist/ui/gas_safe_staging",
+    "dist":     "npm run build && cp -a ../../code/ui/src/raw/. ../../dist/ui/gas_safe_staging/"
   },
   "devDependencies": {
     "jest": "^29.7.0",

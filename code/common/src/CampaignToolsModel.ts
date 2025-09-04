@@ -45,3 +45,5 @@ class CampaignToolsModel {
 /* ===== UMD-ish export: attach to globalThis for GAS runtime ===== */
 (globalThis as any).CAMPAIGN_TOOLS = (globalThis as any).CAMPAIGN_TOOLS || {};
 (globalThis as any).CAMPAIGN_TOOLS.CampaignToolsModel = CampaignToolsModel;
+
+

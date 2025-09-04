@@ -3,7 +3,8 @@
   "name": "@app/gas",
   "scripts": {
     "clean": "rm -rf ../../dist/gas/gas_safe_staging",
-    "dist": "mkdir -p ../../dist/gas/gas_safe_staging && cp -a ../../code/gas/src/raw/. ../../dist/gas/gas_safe_staging/"
+    "prepare-stage-dir": "npm run clean &&  mkdir -p ../../dist/gas/gas_safe_staging",
+    "dist": "npm run prepare-stage-dir &&  cp -a ../../code/gas/src/raw/. ../../dist/gas/gas_safe_staging/"
   },
   "devDependencies": {
     "@types/google-apps-script": "^1.0.81"

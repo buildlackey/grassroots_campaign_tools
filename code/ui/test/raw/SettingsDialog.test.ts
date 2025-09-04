@@ -71,24 +71,16 @@ function dumpState(tag: string, doc: Document) {
     });
 }
 
-// 🔹 Helper
+// 🔹 Helper updated to use CampaignToolsModel from window global
 async function assertSaveButtonState(
     initData: {
         sheetTabNames: string[];
         sheetTabToColumnNames: Record<string, string[]>;
-        prefs: { addressColumn?: string; mapsApiKey?: string };
+        prefs: { sheetTabName?: string; addressColumn?: string; mapsApiKey?: string };
     },
     expectedDisabled: boolean,
     expectedAddressValue: string
 ) {
-    // Seed state from payload
-    window.SDH = window.SDH || { UI: { state: {} } };
-    window.SDH.UI.state = {
-        headersBySheet: initData.sheetTabToColumnNames,
-        preferences: {
-            addressColumn: initData.prefs.addressColumn || "",
-        },
-    };
 
     // Set sheetSelect to first sheet deterministically
     const firstSheet = initData.sheetTabNames[0] || "";
@@ -102,8 +94,28 @@ async function assertSaveButtonState(
     keyInput.value = initData.prefs.mapsApiKey || "";
     keyInput.dispatchEvent(new window.Event("input", { bubbles: true }));
 
-    // Trigger change
-    window.SDH.UI.onSheetChange();
+    // 🔹 Grab CampaignToolsModel from the bundled global
+    const CampaignToolsModel =
+        (window as any).CAMPAIGN_TOOLS && (window as any).CAMPAIGN_TOOLS.CampaignToolsModel;
+    if (!CampaignToolsModel) {
+        throw new Error("CampaignToolsModel not found on window.CAMPAIGN_TOOLS");
+    }
+
+    // Construct model like production
+    const model = new CampaignToolsModel({
+        sheetTabNames: initData.sheetTabNames,
+        sheetTabToColumnNames: initData.sheetTabToColumnNames,
+        prefs: {
+            sheetTabName: initData.prefs.sheetTabName || firstSheet,
+            addressColumn: initData.prefs.addressColumn || "",
+            mapsApiKey: initData.prefs.mapsApiKey || "",
+            showLatLong: false,
+            debug: false,
+        },
+    });
+
+    // Trigger change with model
+    window.SDH.UI.onSheetChange(model);
 
     dumpState("after-onSheetChange", document);
 
@@ -135,7 +147,6 @@ describe("SettingsDialog Save Button / Maps API key (DOM-driven)", () => {
             resources: "usable",
             pretendToBeVisual: true,
             beforeParse(win) {
-                (win as any).__IN_JEST__ = true;
                 win.document.addEventListener("sdh-ui-ready", () => {
                     if ((global as any).__SDH_READY_HANDLER__) {
                         (global as any).__SDH_READY_HANDLER__();
@@ -186,8 +197,8 @@ describe("SettingsDialog Save Button / Maps API key (DOM-driven)", () => {
                 },
                 prefs: { mapsApiKey: "key1", addressColumn: "foo" },
             },
-            false, // expectedDisabled = Save should be enabled
-            "foo"  // expectedAddressValue = selected column is foo
+            false,
+            "foo"
         );
     });
 
@@ -201,8 +212,8 @@ describe("SettingsDialog Save Button / Maps API key (DOM-driven)", () => {
                 },
                 prefs: { mapsApiKey: "key1", addressColumn: "foo" },
             },
-            false, // expectedDisabled = Save should be enabled
-            "x"  // expectedAddressValue = selected column is foo
+            false,
+            "x"
         );
     });
 
@@ -216,12 +227,10 @@ describe("SettingsDialog Save Button / Maps API key (DOM-driven)", () => {
                 },
                 prefs: { mapsApiKey: "key1", addressColumn: "foo" },
             },
-            true, // expectedDisabled = Save should be enabled
-            ""  // expectedAddressValue = selected column is foo
+            true,
+            ""
         );
     });
-
-
 
     test("Save disabled (mapsKey EMPTY, but headers exist)", async () => {
         await assertSaveButtonState(
@@ -253,39 +262,30 @@ describe("SettingsDialog Save Button / Maps API key (DOM-driven)", () => {
         );
     });
 
-    test("mapsApiKey field should mask value after blur", async () => {         // redundant w/ next one
-        // Arrange
+    test("mapsApiKey field should mask value after blur", async () => {
         const input = document.getElementById("mapsApiKey") as HTMLInputElement;
-        input.type = "text"; // starts as text
+        input.type = "text";
         input.value = "Foo blah bar";
 
-        // Act – simulate blur
         input.dispatchEvent(new window.Event("blur", { bubbles: true }));
 
-        // Assert – we *expect* type="password", but currently it's still "text"
-        expect(input.type).toBe("password"); // ❌ this will fail with current stub
+        expect(input.type).toBe("password");
     });
 
     test("mapsApiKey field masks on blur and unmasks on focus", async () => {
-        // Arrange
         const input = document.getElementById("mapsApiKey") as HTMLInputElement;
         const saveBtn = document.getElementById("saveBtn") as HTMLButtonElement;
-        input.type = "text"; // initial state
+        input.type = "text";
         input.value = "Foo blah bar";
 
-        // 1. Focus the field
         input.dispatchEvent(new window.Event("focus", { bubbles: true }));
-        expect(input.type).toBe("text"); // should be unmasked on focus
+        expect(input.type).toBe("text");
 
-        // 2. Blur the field (focus another element)
         saveBtn.focus();
         input.dispatchEvent(new window.Event("blur", { bubbles: true }));
-        expect(input.type).toBe("password"); // should be masked on blur
+        expect(input.type).toBe("password");
 
-        // 3. Focus again
         input.dispatchEvent(new window.Event("focus", { bubbles: true }));
-        expect(input.type).toBe("text"); // unmasked again on focus
+        expect(input.type).toBe("text");
     });
-
-
 });

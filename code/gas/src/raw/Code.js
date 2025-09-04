@@ -8,9 +8,15 @@ function onOpen() {
     SpreadsheetApp.getUi()
         .createMenu('📣 Campaign')  // bullhorn icon
         .addItem('⚙️ Settings', 'showSettingsDialog')
+        .addItem('🌎 Distance Filter', 'placeholderFilterDistance')
         .addToUi();
     Logger.log("🚪 [Code.js/onOpen] EXIT");
 }
+
+function placeholderFilterDistance() {
+    SpreadsheetApp.getUi().alert("TODO: implement Filter Distance dialog");
+}
+
 
 function showSettingsDialog() {
     Logger.log("🪟 [Code.js/showSettingsDialog] ENTER");
