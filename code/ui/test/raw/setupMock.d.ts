@@ -1,2 +1,2 @@
-// This file enables jest (which wants code in typescript) handle code written in pure Javascript 
+// Type definition for setupMock.js (browser + Jest helper)
 export function setupMock(window: any): void;

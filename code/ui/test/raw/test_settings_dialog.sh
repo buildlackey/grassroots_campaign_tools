@@ -12,7 +12,7 @@ SETTINGS_DIALOG_CODE="$RAW_DIR/SettingsDialogActionCode.html"
 SETTINGS_DIALOG_CSS="$RAW_DIR/SettingsDialogCSS.html"
 SETTINGS_DIALOG_HELP_UI_CODE="$RAW_DIR/SettingsDialogUIFrostingCode.html"
 
-# 🔹 NEW: compiled common model to inject
+# 🔹 compiled common model
 COMMON_MODEL_JS="$PROJECT_ROOT/dist/common/gas_safe_staging/CampaignToolsModel.js"
 
 OUT_HTML="$BUILT_UI_DIR/rendered_settings_dialog_test.html"
@@ -23,7 +23,7 @@ rm -f "$OUT_HTML"
 
 echo "📄 Reading template: $TEMPLATE"
 
-# Guard: ensure the compiled model exists (build/ui/scripts should have run common dist first)
+# Guard: ensure the compiled model exists
 if [[ ! -f "$COMMON_MODEL_JS" ]]; then
   echo "❌ Missing compiled model: $COMMON_MODEL_JS"
   echo "   Make sure common is built (e.g., (cd build/common && npm run dist)) before running this script."
@@ -55,19 +55,18 @@ while IFS= read -r line; do
   esac
 done < "$TEMPLATE"
 
-# Inline setupMock.js at the very end for fixture only
+
+# Inline setupMock.js at the very end for fixture-only manual browser usage
 cat >> "$OUT_HTML" <<'EOF'
 <script>
-/* Jest disables this with __IN_JEST__ flag. */
-if (typeof window !== "undefined" && !window.__IN_JEST__) {
+  // Attach mock only when running this HTML directly in a browser (not in Jest)
+  if (typeof window !== "undefined" && !window.__IN_JEST__) {
 EOF
 cat "$SETUP_MOCK_JS" >> "$OUT_HTML"
 cat >> "$OUT_HTML" <<'EOF'
-  if (typeof window.setupMock === "function") {
-    window.setupMock(window);
+    if (typeof window.setupMock === "function") {
+      window.setupMock(window);
+    }
   }
-}
 </script>
 EOF
-
-echo "✅ Rendered HTML saved to: $OUT_HTML"

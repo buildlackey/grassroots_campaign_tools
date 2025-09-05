@@ -82,8 +82,9 @@ export function dumpState(tag: string, doc: Document) {
 }
 
 /**
- * Fail tests on console.error, but ignore harmless jsdom resource errors.
- * Call this once in a beforeAll() in each suite.
+ * Fail tests on 'console.error', but ignore harmless jsdom resource errors.
+ * Call this once in a beforeAll() in each suite.  This ensures that if any error other than
+ * 'known noise' errors pop up, we will be able to investigate them.
  */
 export function installConsoleErrorFail() {
     const origError = console.error;

@@ -1,4 +1,11 @@
 
+
+in editor-- this shows as has errs.. but it is due to agressive linting.
+/home/chris/grassroots_campaign_tools/code/common/src/CampaignToolsModel.ts
+
+
+
+
 when we save settings.. for sheet1 default comes up as 'Address'
 if we override and choose other col (e.g., 'Name').. it does not 'stick'
 when we bring up dialog again it should show Name.. but goes back to 'Address'
