@@ -20,9 +20,15 @@ class CampaignToolsModel {
 
     get preferredSheetTabName(): string {
         const preferred = this.prefs.sheetTabName;
-        if (preferred && this.sheetTabNames.includes(preferred)) return preferred;
-        return this.sheetTabNames[0] || "";
+        if (preferred && this.sheetTabNames.includes(preferred)) {
+            return preferred;
+        }
+        if (this.sheetTabNames.length > 0) {
+            return this.sheetTabNames[0];
+        }
+        return ""; // explicit fallback when no sheets at all  - don't think this is possible... but paranoia, right?
     }
+
 
     get preferredAddressColumnName(): string {
         const headers = this.headersBySheet[this.preferredSheetTabName] || [];

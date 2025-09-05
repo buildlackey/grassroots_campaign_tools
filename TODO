@@ -1,9 +1,12 @@
 
 
+suppose i have a spreadsheet 'Sheet1'
+ w /  cols:    name, Address, age
 
 
-when we save settings.. for sheet1 default comes up as 'Address'
-if we override and choose other col (e.g., 'Name').. it does not 'stick'
+when i open settings dialog, for sheet1 default address comes up as 'Address'
+(expected)...
+if we override and choose other col (e.g., 'name').. it does not 'stick'
 when we bring up dialog again it should show Name.. but goes back to 'Address'
 
 fix undo in editor (idea).    'U' not working

@@ -61,24 +61,34 @@ function onOpen() {
 
     /** Consume model instead of raw data */
     function populateDialogFields(model) {
+        log("populateDialogFields → model =", model);
+
         const prefs = model.prefs || {};
-        const sheetSelect = document.getElementById("sheetSelect");
+
+        // Grab all required DOM elements up front
+        const sheetSelect   = document.getElementById("sheetSelect");
+        const addressSelect = document.getElementById("addressSelect");
+        const mapsApiKey    = document.getElementById("mapsApiKey");
+        const showLatLng    = document.getElementById("showLatLng");
+        const debugChk      = document.getElementById("debug");
 
         // Populate sheet tab select list
-        sheetSelect.innerHTML = model.sheetTabNames.map(n => `<option value="${n}">${n}</option>`).join('');
-        if (model.sheetTabNames.length > 0) {
-            sheetSelect.value = model.preferredSheetTabName;
-        }
+        sheetSelect.innerHTML = model.sheetTabNames
+            .map(n => `<option value="${n}">${n}</option>`)
+            .join('');
 
-        // Pre-fill inputs
-        if (prefs.mapsApiKey) document.getElementById("mapsApiKey").value = prefs.mapsApiKey;
-        if (prefs.addressColumn) document.getElementById("addressSelect").value = prefs.addressColumn;
-        if (typeof prefs.showLatLong === "boolean") document.getElementById("showLatLng").checked = prefs.showLatLong;
-        if (typeof prefs.debug === "boolean") document.getElementById("debug").checked = prefs.debug;
+        sheetSelect.value = model.preferredSheetTabName;
+        addressSelect.value = model.preferredAddressColumnName;
+        mapsApiKey.value = prefs.mapsApiKey;
+        showLatLng.checked = prefs.showLatLong;
+        debugChk.checked = prefs.debug;
 
         log("populateDialogFields → sheetSelect.value =", sheetSelect.value);
+        log("populateDialogFields → addressSelect.value =", addressSelect.value);
+
         return sheetSelect; // unchanged return type for minimal diff
     }
+
 
     function wireUpEventHandlers(model) {
         // Pass model via closure to reduce global dependency
