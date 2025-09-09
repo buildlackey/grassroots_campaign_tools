@@ -18,6 +18,15 @@ class CampaignToolsModel {
         this.prefs = initData.prefs;
     }
 
+    asJson(): CampaignInitData {
+        return {
+            sheetTabNames: this.sheetTabNames,
+            sheetTabToColumnNames: this.headersBySheet,
+            prefs: this.prefs,
+        };
+    }
+
+
     get preferredSheetTabName(): string {
         const preferred = this.prefs.sheetTabName;
         if (preferred && this.sheetTabNames.includes(preferred)) {
@@ -46,6 +55,7 @@ class CampaignToolsModel {
     get headersForPreferredSheet(): string[] {
         return this.headersBySheet[this.preferredSheetTabName] || [];
     }
+
 }
 
 /* ===== UMD-ish export: attach to globalThis for GAS runtime ===== */

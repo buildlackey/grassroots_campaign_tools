@@ -123,10 +123,12 @@ function getInitData() {
 
     var tabsAndColumnNames = getSheetTabsAndColumnNames();
 
-    return {
+    // 🔹 Construct model and delegate serialization
+    var model = new globalThis.CAMPAIGN_TOOLS.CampaignToolsModel({
         sheetTabNames: tabsAndColumnNames.sheetTabNames,
         sheetTabToColumnNames: tabsAndColumnNames.sheetTabToColumnNames,
         prefs: prefs,
-    };
-}
+    });
 
+    return model.asJson();
+}
