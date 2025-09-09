@@ -1,12 +1,16 @@
 {
-  "private": true,
-  "name": "@app/gas",
   "scripts": {
     "clean": "rm -rf ../../dist/gas/gas_safe_staging",
-    "prepare-stage-dir": "npm run clean &&  mkdir -p ../../dist/gas/gas_safe_staging",
-    "dist": "npm run prepare-stage-dir &&  cp -a ../../code/gas/src/raw/. ../../dist/gas/gas_safe_staging/"
+    "prepare-stage-dir": "npm run clean && mkdir -p ../../dist/gas/gas_safe_staging",
+    "bundle": "npx webpack --config webpack.gas.config.js",
+    "dist": "npm run prepare-stage-dir && cp -a ../../code/gas/src/raw/. ../../dist/gas/gas_safe_staging/ && npm run bundle"
   },
   "devDependencies": {
-    "@types/google-apps-script": "^1.0.81"
+    "@types/google-apps-script": "^1.0.81",
+    "typescript": "^5.4.0",
+    "webpack": "^5.91.0",
+    "webpack-cli": "^5.1.4",
+    "ts-loader": "^9.5.1",
+    "gas-webpack-plugin": "^2.6.0"
   }
 }

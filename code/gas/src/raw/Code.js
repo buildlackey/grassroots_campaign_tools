@@ -132,3 +132,10 @@ function getInitData() {
 
     return model.asJson();
 }
+
+function logicPing() {
+  if (!globalThis.CAMPAIGN_TOOLS || !globalThis.CAMPAIGN_TOOLS.HelloSvc) {
+    throw new Error("HelloSvc not found");
+  }
+  return globalThis.CAMPAIGN_TOOLS.HelloSvc.ping();
+}
