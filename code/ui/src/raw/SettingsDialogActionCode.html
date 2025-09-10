@@ -127,22 +127,22 @@ function onOpen() {
     SDH.UI.showSpinner()
     const chain =
         google.script.run
-            .withSuccessHandler(async (responseFromRemote) => {
+            .withSuccessHandler(async (responseFromRemote) => {  /* TODO consider renaming to getCampaignToolsModel */
                 log("getInitData success", responseFromRemote);
 
-                // 🔹 Construct CampaignToolsModel instead of plain JSON
-                const model = new globalThis.CAMPAIGN_TOOLS.CampaignToolsModel(responseFromRemote);
-
-                const sheetSelect = populateDialogFields(model);
+                const sheetSelect = populateDialogFields(responseFromRemote);
                 await waitForUIHelpers();
-                wireUpEventHandlers(model);
-                renderSelectorForAddressColumn(model, sheetSelect);
+                wireUpEventHandlers(responseFromRemote);
+                renderSelectorForAddressColumn(responseFromRemote, sheetSelect);
+
+
+
             })
             .withFailureHandler((e) => {
                 console.error("❌ Failed to fetch init data:", e);
                 SDH.UI.hideSpinner();
             });
-    chain.getInitData();
+    chain.getInitData();        /* TODO consider renaming to getCampaignToolsModel */
 }
 
 // ===== dialog controls =====

@@ -118,18 +118,10 @@ function showToastInSheets(msg) {
 
 
 function getInitData() {
-    var svc = globalThis.CAMPAIGN_TOOLS.PreferenceSvc.create();
-    var prefs = svc.getPreferences();
+    const svc = globalThis.CAMPAIGN_TOOLS.PreferenceSvc.create();
+    const prefs = svc.getPreferences();
 
-    var tabsAndColumnNames = getSheetTabsAndColumnNames();
-
-    // 🔹 Construct model and delegate serialization
-    var model = new globalThis.CAMPAIGN_TOOLS.CampaignToolsModel({
-        sheetTabNames: tabsAndColumnNames.sheetTabNames,
-        sheetTabToColumnNames: tabsAndColumnNames.sheetTabToColumnNames,
-        prefs: prefs,
-    });
-
+    const model = globalThis.CAMPAIGN_TOOLS.CampaignToolsModel.fromGAS(prefs);
     return model.asJson();
 }
 

@@ -1,11 +1,15 @@
 /// <reference path="./PreferenceSvc.d.ts" />
 
 
+
 interface CampaignInitData {
-    sheetTabNames: string[];
-    sheetTabToColumnNames: Record<string, string[]>;
-    prefs: Preferences;
+  sheetTabNames: string[];
+  sheetTabToColumnNames: Record<string, string[]>;
+  prefs: Preferences;
+  preferredSheetTabName?: string;
+  preferredAddressColumnName?: string;
 }
+
 
 class CampaignToolsModel {
     sheetTabNames: string[];
@@ -18,13 +22,16 @@ class CampaignToolsModel {
         this.prefs = initData.prefs;
     }
 
-    asJson(): CampaignInitData {
-        return {
-            sheetTabNames: this.sheetTabNames,
-            sheetTabToColumnNames: this.headersBySheet,
-            prefs: this.prefs,
-        };
-    }
+
+asJson(): CampaignInitData {
+  return {
+    sheetTabNames: this.sheetTabNames,
+    sheetTabToColumnNames: this.headersBySheet,
+    prefs: this.prefs,
+    preferredSheetTabName: this.preferredSheetTabName,
+    preferredAddressColumnName: this.preferredAddressColumnName,
+  };
+}
 
 
     get preferredSheetTabName(): string {
@@ -56,6 +63,16 @@ class CampaignToolsModel {
         return this.headersBySheet[this.preferredSheetTabName] || [];
     }
 
+
+    /** Factory: build a model from GAS sheet utils + caller-supplied prefs */
+    static fromGAS(prefs: Preferences): CampaignToolsModel {
+        const tabsAndColumnNames = getSheetTabsAndColumnNames();
+        return new CampaignToolsModel({
+            sheetTabNames: tabsAndColumnNames.sheetTabNames,
+            sheetTabToColumnNames: tabsAndColumnNames.sheetTabToColumnNames,
+            prefs,
+        });
+    }
 }
 
 /* ===== UMD-ish export: attach to globalThis for GAS runtime ===== */

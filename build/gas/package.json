@@ -2,8 +2,12 @@
   "scripts": {
     "clean": "rm -rf ../../dist/gas/gas_safe_staging",
     "prepare-stage-dir": "npm run clean && mkdir -p ../../dist/gas/gas_safe_staging",
+
+    "compile-logic": "tsc --project tsconfig.json --outDir ../../dist/gas/gas_safe_staging",
+
     "bundle": "npx webpack --config webpack.gas.config.js",
-    "dist": "npm run prepare-stage-dir && cp -a ../../code/gas/src/raw/. ../../dist/gas/gas_safe_staging/ && npm run bundle"
+
+    "dist": "npm run prepare-stage-dir && cp -a ../../code/gas/src/raw/. ../../dist/gas/gas_safe_staging/ && npm run compile-logic && npm run bundle"
   },
   "devDependencies": {
     "@types/google-apps-script": "^1.0.81",

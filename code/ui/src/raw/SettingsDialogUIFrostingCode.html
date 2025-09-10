@@ -49,13 +49,7 @@
         }
 
         select.innerHTML = clean.map(formatOption).join('');
-
-        var defaultAddr = "";
-        if (ctx && ctx.preferredAddressColumnName) {
-            defaultAddr = ctx.preferredAddressColumnName || "";
-        }
-
-        select.value = defaultAddr || "";
+        select.value = ctx ? ctx.preferredAddressColumnName : "";
 
         console.log("[renderHeadersFor] selected:", select.value);
 

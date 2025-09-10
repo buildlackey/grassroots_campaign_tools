@@ -15,8 +15,6 @@ let dom: JSDOM;
 let document: Document;
 let window: any;
 
-
-
 beforeAll(() => {
     installConsoleErrorFail();
 });
@@ -34,7 +32,10 @@ const cases: Array<[string, any, boolean, string]> = [
         {
             sheetTabNames: ["Sheet1", "Sheet2"],
             sheetTabToColumnNames: { Sheet1: ["someColumnHeader"], Sheet2: ["badbad"] },
+            headersBySheet: { Sheet1: ["someColumnHeader"], Sheet2: ["badbad"] },
             prefs: { mapsApiKey: "key1", addressColumn: "" },
+            preferredSheetTabName: "Sheet1",
+            preferredAddressColumnName: "someColumnHeader",
         },
         false,
         "someColumnHeader",
@@ -44,7 +45,10 @@ const cases: Array<[string, any, boolean, string]> = [
         {
             sheetTabNames: ["Sheet1", "Sheet2"],
             sheetTabToColumnNames: { Sheet1: ["x", "foo", "y"], Sheet2: ["bar", "baz"] },
+            headersBySheet: { Sheet1: ["x", "foo", "y"], Sheet2: ["bar", "baz"] },
             prefs: { mapsApiKey: "key1", addressColumn: "foo" },
+            preferredSheetTabName: "Sheet1",
+            preferredAddressColumnName: "foo",
         },
         false,
         "foo",
@@ -54,7 +58,10 @@ const cases: Array<[string, any, boolean, string]> = [
         {
             sheetTabNames: ["Sheet1", "Sheet2"],
             sheetTabToColumnNames: { Sheet1: ["x", "y"], Sheet2: ["bar", "baz"] },
+            headersBySheet: { Sheet1: ["x", "y"], Sheet2: ["bar", "baz"] },
             prefs: { mapsApiKey: "key1", addressColumn: "zzz" },
+            preferredSheetTabName: "Sheet1",
+            preferredAddressColumnName: "x",
         },
         false,
         "x",
@@ -64,7 +71,10 @@ const cases: Array<[string, any, boolean, string]> = [
         {
             sheetTabNames: ["Sheet1", "Sheet2"],
             sheetTabToColumnNames: { Sheet1: [], Sheet2: ["bar", "baz"] },
+            headersBySheet: { Sheet1: [], Sheet2: ["bar", "baz"] },
             prefs: { mapsApiKey: "key1", addressColumn: "foo" },
+            preferredSheetTabName: "Sheet1",
+            preferredAddressColumnName: "",
         },
         true,
         "",
@@ -74,7 +84,10 @@ const cases: Array<[string, any, boolean, string]> = [
         {
             sheetTabNames: ["Sheet1", "Sheet2"],
             sheetTabToColumnNames: { Sheet1: ["someColumnHeader"], Sheet2: ["badbad"] },
+            headersBySheet: { Sheet1: ["someColumnHeader"], Sheet2: ["badbad"] },
             prefs: { mapsApiKey: "", addressColumn: "" },
+            preferredSheetTabName: "Sheet1",
+            preferredAddressColumnName: "someColumnHeader",
         },
         true,
         "someColumnHeader",
@@ -84,7 +97,10 @@ const cases: Array<[string, any, boolean, string]> = [
         {
             sheetTabNames: ["Sheet1", "Sheet2"],
             sheetTabToColumnNames: { Sheet1: [], Sheet2: ["badbad"] },
+            headersBySheet: { Sheet1: [], Sheet2: ["badbad"] },
             prefs: { mapsApiKey: "key1", addressColumn: "" },
+            preferredSheetTabName: "Sheet1",
+            preferredAddressColumnName: "",
         },
         true,
         "",
