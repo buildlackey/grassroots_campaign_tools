@@ -69,3 +69,68 @@ box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 transition: visibility 0s, opacity 0.4s ease-in-out;
 opacity: 0;
 }
+
+/* === Entries grid === */
+.entries-grid {
+display: flex;
+flex-direction: column;
+margin-top: 14px;
+border: 1px solid #ccc;
+padding: 10px;
+border-radius: 6px;
+background: #f9f9f9;
+}
+
+.entries-label {
+font-weight: bold;
+margin-bottom: 6px;
+font-size: 14px;
+}
+
+.entries-row {
+display: flex;
+align-items: center;
+margin: 4px 0;
+}
+
+.entry-icon {
+width: 20px;
+text-align: center;
+margin-right: 6px;
+font-size: 14px;
+}
+
+.entry- {
+flex: 1;
+font-size: 14px;
+}name
+
+.entries-row input {
+width: 60px;
+text-align: right;
+font-size: 14px;
+padding: 3px;
+}
+
+/* === Dialog header (match SettingsDialog style) === */
+.dialog-header {
+display: flex;
+align-items: center;
+margin: 0 0 30px 0;  /* space under title */
+}
+
+.dialog-title {
+font-size: 20px;
+font-weight: bold;
+display: flex;
+align-items: center;
+gap: 6px;
+}
+
+/* SVG icon scaling inside the header */
+.dialog-title svg {
+width: 40px;
+height: 40px;
+vertical-align: middle;
+flex-shrink: 0;
+}
