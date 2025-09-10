@@ -10,13 +10,13 @@ class CampaignToolsModel {
     headersBySheet: Record<string, string[]>;
     prefs: Preferences;
 
-    constructor(initData: CampaignInitData) {
+    constructor(initData: CampaignToolsModelState) {
         this.sheetTabNames = initData.sheetTabNames || [];
         this.headersBySheet = initData.sheetTabToColumnNames || {};
         this.prefs = initData.prefs;
     }
 
-    asJson(): CampaignInitData {
+    getModelState(): CampaignToolsModelState {
         return {
             sheetTabNames: this.sheetTabNames,
             sheetTabToColumnNames: this.headersBySheet,
@@ -55,13 +55,27 @@ class CampaignToolsModel {
     }
 
     /** Factory: build a model from GAS sheet utils + caller-supplied prefs */
-    static fromGAS(prefs: Preferences): CampaignToolsModel {
-        const tabsAndColumnNames = getSheetTabsAndColumnNames();
+    static fromGAS(prefs?: Preferences): CampaignToolsModel {
+        const effectivePrefs =
+             prefs ||
+             ((globalThis as any).CAMPAIGN_TOOLS &&
+              (globalThis as any).CAMPAIGN_TOOLS.PreferenceSvc &&
+              (globalThis as any).CAMPAIGN_TOOLS.PreferenceSvc.create().getPreferences());
+        if (!effectivePrefs) {
+            throw new Error("Preferences unavailable: must pass prefs or have PreferenceSvc loaded");
+        }
+
+        const ss = SpreadsheetApp.getActiveSpreadsheet();
+        const layout = new (globalThis as any).CAMPAIGN_TOOLS.SheetLayout(ss);
+        const layout = layout.discover();
+
         return new CampaignToolsModel({
-            sheetTabNames: tabsAndColumnNames.sheetTabNames,
-            sheetTabToColumnNames: tabsAndColumnNames.sheetTabToColumnNames,
-            prefs,
+          sheetTabNames: layout.sheetTabNames,
+          sheetTabToColumnNames: layout.sheetTabToColumnNames,
+          prefs: effectivePrefs,
         });
+
+
     }
 }
 

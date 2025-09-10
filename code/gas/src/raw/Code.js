@@ -122,7 +122,7 @@ function getInitData() {
     const prefs = svc.getPreferences();
 
     const model = globalThis.CAMPAIGN_TOOLS.CampaignToolsModel.fromGAS(prefs);
-    return model.asJson();
+    return model.getModelState();
 }
 
 function logicPing() {
