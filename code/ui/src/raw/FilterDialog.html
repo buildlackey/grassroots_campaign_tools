@@ -1,105 +1,63 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <base target="_top">
-    <style>
-      body {
-        font-family: sans-serif;
-        padding: 1em;
-        max-width: 400px;
-        box-sizing: border-box;
-        background-color: lightyellow; /* 🔥 test color */
-      }
+<!-- Custom header -->
+<div class="dialog-header">
+  <span class="dialog-title">
+    <?!= include('EarthFunnelIcon') ?>
+      Filter by Distance
+    <span class="help-icon info"
+          data-help="
+            <div style='max-width:300px; text-align:left;'>
+              <ul style='padding-left:16px; margin:0;'>
+                <li>Enter a starting address and maximum distance.</li>
+                <li>Only rows with geolocated addresses within that distance will be shown.</li>
+                <li>See the 'Entries' panel for a breakdown of results.</li>
+              </ul>
+            </div>
+          ">
+      ?
+    </span>
+  </span>
+</div>
 
-      label {
-        display: block;
-        margin-top: 12px;
-        font-weight: bold;
-      }
+<!-- Address entry -->
+<label for="address">
+    Address:
+    <span class="help-icon info"
+          data-help="This is the starting address for distance filtering. Rows will be compared to this location.">?</span>
+</label>
+<input id="address" type="text" placeholder="Type ahead…" autocomplete="off">
 
-      input[type="text"],
-      input[type="range"] {
-        width: 100%;
-        margin-top: 4px;
-        padding: 6px;
-        box-sizing: border-box;
-      }
+<!-- Distance slider -->
+<label for="distance">
+    Max Distance (miles):
+    <span class="help-icon info"
+          data-help="Adjust this slider to set the maximum distance in miles from the starting address.">?</span>
+</label>
+<input type="range" id="distance" min="1" max="100" value="10" oninput="updateSlider(this.value)">
+<div>Selected: <span id="distanceVal">10</span> miles</div>
 
-      #distanceVal {
-        font-weight: bold;
-      }
-
-      pre#debug {
-        font-size: 12px;
-        color: #333;
-        background: #f0f0f0;
-        padding: 10px;
-        border-radius: 4px;
-        margin-top: 20px;
-        white-space: pre-wrap;
-        display: none;
-      }
-
-      #customAlert {
-        display: none;
-        position: fixed;
-        top: 30%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: white;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        padding: 20px;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
-        z-index: 9999;
-        max-width: 320px;
-        text-align: center;
-      }
-
-      #toast {
-        visibility: hidden;
-        min-width: 220px;
-        background-color: white;
-        color: #333;
-        text-align: center;
-        border-radius: 4px;
-        padding: 12px 16px;
-        position: fixed;
-        z-index: 9999;
-        left: 50%;
-        bottom: 30px;
-        transform: translateX(-50%);
-        font-size: 14px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-        transition: visibility 0s, opacity 0.4s ease-in-out;
-        opacity: 0;
-      }
-    </style>
-  </head>
-  <body>
-
-    <label for="address">Address:</label>
-    <input id="address" type="text" placeholder="Start typing an address..." autocomplete="off">
-
-    <label for="distance">Max Distance (miles):</label>
-    <input type="range" id="distance" min="1" max="100" value="10" oninput="updateSlider(this.value)">
-    <div>Selected: <span id="distanceVal">10</span> miles</div>
-    <button onclick="submitForm()" style="margin-top: 16px;">Submit</button>
-
-
-    <pre id="debug"></pre>
-
-    <div id="customAlert">
-      <div id="customAlertMessage" style="white-space: pre-wrap; font-size: 15px;"></div>
-      <button onclick="hideAlert()" style="margin-top: 16px;">OK</button>
+<!-- Entries grid -->
+<div class="entries-grid">
+    <div class="entries-label">
+        Entries
+        <span class="help-icon info"
+              data-help="This section summarizes how many rows were processed, geolocated successfully, or failed.">?</span>
     </div>
-
-    <div id="toast"></div>
-
-    <script>
-      <!-- INJECT FilterUICode.js -->
-    </script>
-  </body>
-</html>
-
-
+    <div class="entries-row">
+        <span class="entry-icon">◯</span>
+        <span class="entry-name">Total</span>
+        <input id="totalEntries" type="text" readonly
+               title="Total number of rows scanned for addresses" />
+    </div>
+    <div class="entries-row">
+        <span class="entry-icon">✅</span>
+        <span class="entry-name">Geolocated</span>
+        <input id="geoEntries" type="text" readonly
+               title="Number of rows with valid geocoded addresses" />
+    </div>
+    <div class="entries-row">
+        <span class="entry-icon">❌</span>
+        <span class="entry-name">Errored</span>
+        <input id="errorEntries" type="text" readonly
+               title="Number of rows that could not be geolocated" />
+    </div>
+</div>
