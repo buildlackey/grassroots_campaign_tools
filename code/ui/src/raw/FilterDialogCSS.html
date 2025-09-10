@@ -1,79 +1,75 @@
-body {
-font-family: sans-serif;
-padding: 1em;
-max-width: 400px;
-box-sizing: border-box;
-background-color: lightblue; /* 🔥 test color */
+/* Tight container + no scrollbars */
+html, body {
+overflow-x: hidden;
+overflow-y: hidden;
+height: 100%;
+max-height: 100%;
+margin: 0;
+font-family: Arial, sans-serif;
 }
 
+body {
+font-family: Arial, sans-serif;
+margin: 20px;
+width: auto;
+max-width: 420px;
+box-sizing: border-box;
+position: relative;
+}
+
+/* === Header row === */
+.dialog-header {
+display: flex;
+align-items: center;
+margin: 0 0 20px 0;
+}
+
+.dialog-title {
+font-size: 20px;
+font-weight: bold;
+display: flex;
+align-items: center;
+gap: 6px;
+}
+
+.icon-container {
+display: inline-flex;
+align-items: center;
+justify-content: center;
+height: 30px;
+width: 30px;
+}
+
+.icon-container svg {
+width: 100%;
+height: 100%;
+flex-shrink: 0;
+}
+
+/* === Labels + Inputs === */
 label {
 display: block;
-margin-top: 12px;
-font-weight: bold;
+margin: 10px 0 5px;
+font-size: 14px;
 }
 
 input[type="text"],
 input[type="range"] {
 width: 100%;
-margin-top: 4px;
 padding: 6px;
+font-size: 14px;
 box-sizing: border-box;
+margin-top: 2px;
 }
 
 #distanceVal {
 font-weight: bold;
-}
-
-pre#debug {
-font-size: 12px;
-color: #333;
-background: #f0f0f0;
-padding: 10px;
-border-radius: 4px;
-margin-top: 20px;
-white-space: pre-wrap;
-display: none;
-}
-
-#customAlert {
-display: none;
-position: fixed;
-top: 30%;
-left: 50%;
-transform: translate(-50%, -50%);
-background: white;
-border: 1px solid #ccc;
-border-radius: 8px;
-padding: 20px;
-box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
-z-index: 9999;
-max-width: 320px;
-text-align: center;
-}
-
-#toast {
-visibility: hidden;
-min-width: 220px;
-background-color: white;
-color: #333;
-text-align: center;
-border-radius: 4px;
-padding: 12px 16px;
-position: fixed;
-z-index: 9999;
-left: 50%;
-bottom: 30px;
-transform: translateX(-50%);
 font-size: 14px;
-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-transition: visibility 0s, opacity 0.4s ease-in-out;
-opacity: 0;
+margin-left: 4px;
 }
 
 /* === Entries grid === */
 .entries-grid {
-display: flex;
-flex-direction: column;
 margin-top: 14px;
 border: 1px solid #ccc;
 padding: 10px;
@@ -100,10 +96,10 @@ margin-right: 6px;
 font-size: 14px;
 }
 
-.entry- {
+.entry-name {
 flex: 1;
 font-size: 14px;
-}name
+}
 
 .entries-row input {
 width: 60px;
@@ -111,42 +107,3 @@ text-align: right;
 font-size: 14px;
 padding: 3px;
 }
-
-/* === Dialog header (match technique: external SVG icon beside 24px title) === */
-.dialog-header {
-display: flex;
-align-items: center;
-margin: 0 0 30px 0;  /* space under title */
-}
-
-.dialog-title {
-font-size: 24px;          /* 24px title to match example */
-font-weight: bold;
-display: flex;
-align-items: center;
-gap: 15px;                /* spacing between icon and text */
-}
-
-/* Fixed-size icon container: 30x30 = 125% of 24px */
-.icon-container {
-display: inline-flex;
-align-items: center;
-justify-content: center;
-height: 30px;
-width: 30px;
-}
-
-/* External SVG scaling */
-.icon-container img {
-height: 100%;
-width: 100%;
-object-fit: contain;
-}
-
-/* (Legacy) If an inline <svg> is used, keep this harmless rule */
-    .dialog-title svg {
-    width: 40px;
-    height: 40px;
-    vertical-align: middle;
-    flex-shrink: 0;
-    }

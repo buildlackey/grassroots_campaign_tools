@@ -1,164 +1,49 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Filter by Distance</title>
+    <base target="_top">
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            color: #333;
-        }
-
-        .header-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 10px;
-            padding: 15px 20px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
-
-        .icon-container {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            height: 30px; /* 25% larger than 24px (24 * 1.25 = 30) */
-            width: 30px;  /* Square aspect ratio */
-        }
-
-        .icon-container svg {
-            height: 100%;
-            width: 100%;
-            object-fit: contain;
-        }
-
-        h1 {
-            font-size: 24px;
-            margin: 0;
-            color: #2c3e50;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-
-        .content {
-            font-size: 10px;
-            line-height: 1.6;
-            padding: 20px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            color: #555;
-            margin-bottom: 30px;
-        }
-
-        .explanation {
-            padding: 25px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            font-size: 14px;
-            line-height: 1.6;
-        }
-
-        code {
-            background: #f1f3f5;
-            padding: 3px 7px;
-            border-radius: 5px;
-            font-family: 'Consolas', monospace;
-            font-size: 13px;
-            color: #e63946;
-        }
-
-        h2 {
-            color: #2c3e50;
-            margin-top: 0;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
-        }
-
-        .note {
-            background: #fff9e6;
-            padding: 16px;
-            border-left: 4px solid #ffcc00;
-            margin: 20px 0;
-            border-radius: 6px;
-            font-size: 13px;
-        }
-
-        .file-info {
-            background: #e8f4fc;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
-            font-size: 13px;
-        }
-
-        .folder-structure {
-            background: #2c3e50;
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            font-family: monospace;
-            margin: 20px 0;
-            line-height: 1.8;
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 40px;
-            color: #6c757d;
-            font-size: 13px;
-        }
+        <?!= include('FilterDialogCSS') ?>
     </style>
 </head>
 <body>
-<div class="header-container">
-    <div class="icon-container">
+<!-- Header -->
+<div class="dialog-header">
+    <span class="dialog-title">
+      <span class="icon-container">
         <?!= include('filter_icon') ?>
-    </div>
-    <h1>Filter by Distance</h1>
+      </span>
+      Filter by Distance
+    </span>
 </div>
 
-<div class="content">
-    <!-- Address entry -->
-    <label for="address">Address:</label>
-    <input id="address" type="text" placeholder="Type ahead…" autocomplete="off">
+<!-- Address entry -->
+<label for="address">Address:</label>
+<input id="address" type="text" placeholder="Type ahead…" autocomplete="off">
 
-    <!-- Distance slider -->
-    <label for="distance">Max Distance (miles):</label>
-    <input type="range" id="distance" min="1" max="100" value="10" oninput="updateSlider(this.value)">
-    <div>Selected: <span id="distanceVal">10</span> miles</div>
+<!-- Distance slider -->
+<label for="distance">Max Distance (miles):</label>
+<input type="range" id="distance" min="1" max="100" value="10" oninput="updateSlider(this.value)">
+<div>Selected: <span id="distanceVal">10</span> miles</div>
 
-    <!-- Entries grid -->
-    <div class="entries-grid" style="margin-top: 20px; border:1px solid #ccc; padding:10px; border-radius:6px; background:#f9f9f9;">
-        <div class="entries-label"><strong>Entries</strong></div>
-        <div class="entries-row">
-            <span class="entry-icon">◯</span>
-            <span class="entry-name">Total</span>
-            <input id="totalEntries" type="text" readonly>
-        </div>
-        <div class="entries-row">
-            <span class="entry-icon">✅</span>
-            <span class="entry-name">Geolocated</span>
-            <input id="geoEntries" type="text" readonly>
-        </div>
-        <div class="entries-row">
-            <span class="entry-icon">❌</span>
-            <span class="entry-name">Errored</span>
-            <input id="errorEntries" type="text" readonly>
-        </div>
+<!-- Entries grid -->
+<div class="entries-grid">
+    <div class="entries-label">Entries</div>
+    <div class="entries-row">
+        <span class="entry-icon">◯</span>
+        <span class="entry-name">Total</span>
+        <input id="totalEntries" type="text" readonly>
     </div>
-</div>
-
-<div class="footer">
-    <p>Created with HTML, CSS, and SVG | Filter Dialog with Entries</p>
+    <div class="entries-row">
+        <span class="entry-icon">✅</span>
+        <span class="entry-name">Geolocated</span>
+        <input id="geoEntries" type="text" readonly>
+    </div>
+    <div class="entries-row">
+        <span class="entry-icon">❌</span>
+        <span class="entry-name">Errored</span>
+        <input id="errorEntries" type="text" readonly>
+    </div>
 </div>
 </body>
 </html>
