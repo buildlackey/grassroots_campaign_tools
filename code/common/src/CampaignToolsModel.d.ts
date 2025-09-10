@@ -5,7 +5,7 @@ declare function getSheetTabsAndColumnNames(): {
   sheetTabToColumnNames: Record<string, string[]>;
 };
 
-export interface CampaignInitData {
+interface CampaignInitData {
   sheetTabNames: string[];
   sheetTabToColumnNames: Record<string, string[]>;
   prefs: Preferences;

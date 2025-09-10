@@ -5,14 +5,6 @@ declare function getSheetTabsAndColumnNames(): {
   sheetTabToColumnNames: Record<string, string[]>;
 };
 
-interface CampaignInitData {
-  sheetTabNames: string[];
-  sheetTabToColumnNames: Record<string, string[]>;
-  prefs: Preferences;
-  preferredSheetTabName?: string;
-  preferredAddressColumnName?: string;
-}
-
 class CampaignToolsModel {
     sheetTabNames: string[];
     headersBySheet: Record<string, string[]>;
