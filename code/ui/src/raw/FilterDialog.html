@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SVG Icon with Header - External Reference</title>
+    <title>Filter by Distance</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -33,7 +33,7 @@
             width: 30px;  /* Square aspect ratio */
         }
 
-        .icon-container img {
+        .icon-container svg {
             height: 100%;
             width: 100%;
             object-fit: contain;
@@ -121,46 +121,44 @@
 <body>
 <div class="header-container">
     <div class="icon-container">
-        <!-- Reference to external SVG file -->
         <?!= include('filter_icon') ?>
     </div>
     <h1>Filter by Distance</h1>
 </div>
 
 <div class="content">
-    This is the header content in 10 point font. The SVG icon is loaded from an external file and is 25% larger than the header text (30px vs 24px). Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam in dui mauris. Vivamus hendrerit arcu sed erat molestie vehicula.
-</div>
+    <!-- Address entry -->
+    <label for="address">Address:</label>
+    <input id="address" type="text" placeholder="Type ahead…" autocomplete="off">
 
-<div class="explanation">
-    <h2>How This Works</h2>
-    <p>This HTML page references an external SVG file (<code>icon.svg</code>) and displays it inline with header text, with the icon sized to be 25% larger than the 24px font height.</p>
+    <!-- Distance slider -->
+    <label for="distance">Max Distance (miles):</label>
+    <input type="range" id="distance" min="1" max="100" value="10" oninput="updateSlider(this.value)">
+    <div>Selected: <span id="distanceVal">10</span> miles</div>
 
-    <p>The key elements:</p>
-    <ul>
-        <li>The <code>.icon-container</code> div has fixed dimensions of 30x30px (25% larger than 24px)</li>
-        <li>The <code>img</code> element inside references the external SVG file</li>
-        <li>The SVG is scaled with <code>height: 100%; width: 100%; object-fit: contain;</code></li>
-        <li>Flexbox layout aligns the icon and text properly</li>
-        <li>Content text is set to 10px font size as requested</li>
-    </ul>
-
-    <div class="folder-structure">
-        project-folder/<br>
-        ├── index.html<br>
-        └── icon.svg
-    </div>
-
-    <div class="file-info">
-        <strong>File Information:</strong> The HTML file references the SVG file with <code>&lt;img src="icon.svg" alt="Header Icon"&gt;</code>. Both files need to be in the same directory for this to work.
-    </div>
-
-    <div class="note">
-        <strong>Note:</strong> To use your own SVG, simply replace the <code>icon.svg</code> file with your SVG file (using the same filename), or update the <code>src</code> attribute in the img tag to point to your SVG file.
+    <!-- Entries grid -->
+    <div class="entries-grid" style="margin-top: 20px; border:1px solid #ccc; padding:10px; border-radius:6px; background:#f9f9f9;">
+        <div class="entries-label"><strong>Entries</strong></div>
+        <div class="entries-row">
+            <span class="entry-icon">◯</span>
+            <span class="entry-name">Total</span>
+            <input id="totalEntries" type="text" readonly>
+        </div>
+        <div class="entries-row">
+            <span class="entry-icon">✅</span>
+            <span class="entry-name">Geolocated</span>
+            <input id="geoEntries" type="text" readonly>
+        </div>
+        <div class="entries-row">
+            <span class="entry-icon">❌</span>
+            <span class="entry-name">Errored</span>
+            <input id="errorEntries" type="text" readonly>
+        </div>
     </div>
 </div>
 
 <div class="footer">
-    <p>Created with HTML, CSS, and SVG | External Reference with Larger Icon</p>
+    <p>Created with HTML, CSS, and SVG | Filter Dialog with Entries</p>
 </div>
 </body>
 </html>
