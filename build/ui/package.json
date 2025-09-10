@@ -4,7 +4,7 @@
   "scripts": {
     "preclean": "cd ../common && npm run dist",
     "clean": "rm -rf ../../dist/ui",
-    "setup:fixture": "npm run clean && bash ../../code/ui/test/raw/test_settings_dialog.sh",
+    "setup:fixture": "npm run clean && bash ../../code/ui/test/raw/create_dialog_test_fixture.sh SettingsDialog",
     "build":    "npm run setup:fixture && jest --config=jest.config.js",
     "predist":  "mkdir -p ../../dist/ui/gas_safe_staging",
     "dist":     "npm run build && cp -a ../../code/ui/src/raw/. ../../dist/ui/gas_safe_staging/"

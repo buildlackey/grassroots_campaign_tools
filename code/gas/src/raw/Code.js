@@ -8,13 +8,21 @@ function onOpen() {
     SpreadsheetApp.getUi()
         .createMenu('📣 Campaign')  // bullhorn icon
         .addItem('⚙️ Settings', 'showSettingsDialog')
-        .addItem('🌎 Distance Filter', 'placeholderFilterDistance')
+        .addItem('🌎 Distance Filter', 'showFilterDialog')  // was placeholderFilterDistance
         .addToUi();
     Logger.log("🚪 [Code.js/onOpen] EXIT");
 }
 
-function placeholderFilterDistance() {
-    SpreadsheetApp.getUi().alert("TODO: implement Filter Distance dialog");
+
+function showFilterDialog() {
+    Logger.log("🪟 [Code.js/showFilterDialog] ENTER");
+    var html = HtmlService
+        .createTemplateFromFile('FilterDialog')
+        .evaluate()
+        .setWidth(420)
+        .setHeight(410);
+    SpreadsheetApp.getUi().showModalDialog(html, ' ');
+    Logger.log("🪟 [Code.js/showFilterDialog] EXIT");
 }
 
 

@@ -3,14 +3,22 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
-
-RAW_DIR="$PROJECT_ROOT/code/ui/src/raw"
-TEMPLATE="$RAW_DIR/SettingsDialog.html"
 BUILT_UI_DIR="$PROJECT_ROOT/dist/ui"
 
-SETTINGS_DIALOG_CODE="$RAW_DIR/SettingsDialogActionCode.html"
-SETTINGS_DIALOG_CSS="$RAW_DIR/SettingsDialogCSS.html"
-SETTINGS_DIALOG_HELP_UI_CODE="$RAW_DIR/SettingsDialogUIFrostingCode.html"
+
+DIALOG_NAME="$1"   # e.g. SettingsDialog or FilterDialog
+RAW_DIR="$PROJECT_ROOT/code/ui/src/raw"
+TEMPLATE="$RAW_DIR/${DIALOG_NAME}.html"
+CSS="$RAW_DIR/${DIALOG_NAME}CSS.html"
+ACTION="$RAW_DIR/${DIALOG_NAME}ActionCode.html"
+FROSTING="$RAW_DIR/${DIALOG_NAME}UIFrostingCode.html"
+
+
+
+
+
+
+
 
 # 🔹 compiled common contracts (NOT GAS bundle)
 COMMON_DIR="$PROJECT_ROOT/dist/common/gas_safe_staging"
@@ -27,22 +35,20 @@ echo "📄 Reading template: $TEMPLATE"
 # Process template line by line, inlining fragments
 while IFS= read -r line; do
   case "$line" in
-    *"include('SettingsDialogCSS')"*)
-      echo "🔧 Injecting fragment: SettingsDialogCSS"
-      cat "$SETTINGS_DIALOG_CSS" >> "$OUT_HTML"
+    *"include('${DIALOG_NAME}CSS')"*)
+      cat "$CSS" >> "$OUT_HTML"
       ;;
-    *"include('SettingsDialogUIFrostingCode')"*)
-      echo "🔧 Injecting fragment: SettingsDialogUIFrostingCode"
-      cat "$SETTINGS_DIALOG_HELP_UI_CODE" >> "$OUT_HTML"
+    *"include('${DIALOG_NAME}UIFrostingCode')"*)
+      cat "$FROSTING" >> "$OUT_HTML"
       ;;
-    *"include('SettingsDialogActionCode')"*)
-      echo "🔧 Injecting fragment: SettingsDialogActionCode"
-      cat "$SETTINGS_DIALOG_CODE" >> "$OUT_HTML"
+    *"include('${DIALOG_NAME}ActionCode')"*)
+      cat "$ACTION" >> "$OUT_HTML"
       ;;
     *)
       echo "$line" >> "$OUT_HTML"
       ;;
   esac
+
 done < "$TEMPLATE"
 
 
