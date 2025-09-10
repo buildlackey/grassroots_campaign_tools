@@ -5,7 +5,11 @@
     "lib": ["ES5", "ES2015.Promise", "DOM"],
     "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "baseUrl": "../../code",
+    "paths": {
+      "common/*": ["common/src/*"]
+    }
   },
   "include": [
     "../../code/gas/src/logic/**/*.ts",

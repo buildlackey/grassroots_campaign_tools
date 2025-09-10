@@ -8,7 +8,7 @@ interface Preferences {
 }
 
 class PreferenceSvc {
-    private static DOC_KEYS = {
+    static DOC_KEYS = {
         SHEET_TAB_NAME: 'prefs.sheetTabName',
         ADDRESS_COL: 'prefs.addressColumn',
         SHOW_LATLNG: 'prefs.showLatLong',
@@ -16,7 +16,7 @@ class PreferenceSvc {
         ADDRESS_COL_OFFSET: 'prefs._addressColumnOffset',
     } as const;
 
-    private static USER_KEYS = {
+    static USER_KEYS = {
         MAPS_KEY: 'prefs.mapsApiKey',
         DEBUG: 'prefs.debug',
     } as const;
@@ -26,12 +26,13 @@ class PreferenceSvc {
         private userProps: GoogleAppsScript.Properties.Properties
     ) {}
 
-    private static toBool(v: any, fallback: boolean): boolean {
+    static toBool(v: any, fallback: boolean): boolean {
         if (v == null) return !!fallback;
         const s = String(v).trim().toLowerCase();
         return s === 'true';
     }
-    private static fromBool(b: boolean): string {
+
+    static fromBool(b: boolean): string {
         return b ? 'true' : 'false';
     }
 

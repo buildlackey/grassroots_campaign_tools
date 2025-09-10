@@ -1,6 +1,9 @@
-/// <reference path="./PreferenceSvc.d.ts" />
+// No imports here — relies on ambient Preferences from PreferenceSvc.d.ts
 
-
+declare function getSheetTabsAndColumnNames(): {
+  sheetTabNames: string[];
+  sheetTabToColumnNames: Record<string, string[]>;
+};
 
 interface CampaignInitData {
   sheetTabNames: string[];
@@ -9,7 +12,6 @@ interface CampaignInitData {
   preferredSheetTabName?: string;
   preferredAddressColumnName?: string;
 }
-
 
 class CampaignToolsModel {
     sheetTabNames: string[];
@@ -22,17 +24,15 @@ class CampaignToolsModel {
         this.prefs = initData.prefs;
     }
 
-
-asJson(): CampaignInitData {
-  return {
-    sheetTabNames: this.sheetTabNames,
-    sheetTabToColumnNames: this.headersBySheet,
-    prefs: this.prefs,
-    preferredSheetTabName: this.preferredSheetTabName,
-    preferredAddressColumnName: this.preferredAddressColumnName,
-  };
-}
-
+    asJson(): CampaignInitData {
+        return {
+            sheetTabNames: this.sheetTabNames,
+            sheetTabToColumnNames: this.headersBySheet,
+            prefs: this.prefs,
+            preferredSheetTabName: this.preferredSheetTabName,
+            preferredAddressColumnName: this.preferredAddressColumnName,
+        };
+    }
 
     get preferredSheetTabName(): string {
         const preferred = this.prefs.sheetTabName;
@@ -42,9 +42,8 @@ asJson(): CampaignInitData {
         if (this.sheetTabNames.length > 0) {
             return this.sheetTabNames[0];
         }
-        return ""; // explicit fallback when no sheets at all  - don't think this is possible... but paranoia, right?
+        return ""; // paranoia fallback
     }
-
 
     get preferredAddressColumnName(): string {
         const headers = this.headersBySheet[this.preferredSheetTabName] || [];
@@ -63,7 +62,6 @@ asJson(): CampaignInitData {
         return this.headersBySheet[this.preferredSheetTabName] || [];
     }
 
-
     /** Factory: build a model from GAS sheet utils + caller-supplied prefs */
     static fromGAS(prefs: Preferences): CampaignToolsModel {
         const tabsAndColumnNames = getSheetTabsAndColumnNames();
@@ -78,5 +76,3 @@ asJson(): CampaignInitData {
 /* ===== UMD-ish export: attach to globalThis for GAS runtime ===== */
 (globalThis as any).CAMPAIGN_TOOLS = (globalThis as any).CAMPAIGN_TOOLS || {};
 (globalThis as any).CAMPAIGN_TOOLS.CampaignToolsModel = CampaignToolsModel;
-
-
