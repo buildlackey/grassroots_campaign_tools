@@ -1,10 +1,5 @@
 // No imports here — relies on ambient Preferences from PreferenceSvc.d.ts
 
-declare function getSheetTabsAndColumnNames(): {
-  sheetTabNames: string[];
-  sheetTabToColumnNames: Record<string, string[]>;
-};
-
 class CampaignToolsModel {
     sheetTabNames: string[];
     headersBySheet: Record<string, string[]>;
@@ -66,8 +61,8 @@ class CampaignToolsModel {
         }
 
         const ss = SpreadsheetApp.getActiveSpreadsheet();
-        const layout = new (globalThis as any).CAMPAIGN_TOOLS.SheetLayout(ss);
-        const layout = layout.discover();
+        const sheetLayout = new (globalThis as any).CAMPAIGN_TOOLS.SheetLayout(ss);
+        const layout = sheetLayout.discover();
 
         return new CampaignToolsModel({
           sheetTabNames: layout.sheetTabNames,

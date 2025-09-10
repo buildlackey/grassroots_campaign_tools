@@ -1,9 +1,5 @@
 /// <reference path="../../common/src/PreferenceSvc.d.ts" />
 
-declare function getSheetTabsAndColumnNames(): {
-  sheetTabNames: string[];
-  sheetTabToColumnNames: Record<string, string[]>;
-};
 
 interface CampaignToolsModelState {
   sheetTabNames: string[];
