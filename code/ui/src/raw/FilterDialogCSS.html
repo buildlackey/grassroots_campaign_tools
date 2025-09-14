@@ -68,13 +68,24 @@ font-size: 14px;
 margin-left: 4px;
 }
 
-/* === Entries grid === */
-.entries-grid {
+/* === Entries container & sub-boxes === */
+.entries-container {
 margin-top: 14px;
 border: 1px solid #ccc;
 padding: 10px;
 border-radius: 6px;
 background: #f9f9f9;
+display: flex;
+gap: 12px;
+justify-content: space-between;
+}
+
+.entries-subbox {
+flex: 1;
+border: 1px solid #ddd;
+border-radius: 6px;
+padding: 8px;
+background: #fff;
 }
 
 .entries-label {

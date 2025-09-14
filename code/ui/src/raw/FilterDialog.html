@@ -26,23 +26,36 @@
 <input type="range" id="distance" min="1" max="100" value="10" oninput="updateSlider(this.value)">
 <div>Selected: <span id="distanceVal">10</span> miles</div>
 
-<!-- Entries grid -->
-<div class="entries-grid">
-    <div class="entries-label">Entries</div>
-    <div class="entries-row">
-        <span class="entry-icon">◯</span>
-        <span class="entry-name">Total</span>
-        <input id="totalEntries" type="text" readonly>
+<!-- Entries container -->
+<div class="entries-container">
+    <!-- Dataset Overview -->
+    <div class="entries-subbox">
+        <div class="entries-label">Dataset Overview</div>
+        <div class="entries-row">
+            <span class="entry-icon">◯</span>
+            <span class="entry-name">Total Entries</span>
+            <input id="totalEntries" type="text" readonly>
+        </div>
+        <div class="entries-row">
+            <span class="entry-icon">✅</span>
+            <span class="entry-name">Geolocated</span>
+            <input id="geoEntries" type="text" readonly>
+        </div>
+        <div class="entries-row">
+            <span class="entry-icon">❌</span>
+            <span class="entry-name">Errored</span>
+            <input id="errorEntries" type="text" readonly>
+        </div>
     </div>
-    <div class="entries-row">
-        <span class="entry-icon">✅</span>
-        <span class="entry-name">Geolocated</span>
-        <input id="geoEntries" type="text" readonly>
-    </div>
-    <div class="entries-row">
-        <span class="entry-icon">❌</span>
-        <span class="entry-name">Errored</span>
-        <input id="errorEntries" type="text" readonly>
+
+    <!-- Filter Results -->
+    <div class="entries-subbox">
+        <div class="entries-label">Filter Results</div>
+        <div class="entries-row">
+            <span class="entry-icon">🔍</span>
+            <span class="entry-name">Matching Entries</span>
+            <input id="matchingEntries" type="text" readonly>
+        </div>
     </div>
 </div>
 </body>
