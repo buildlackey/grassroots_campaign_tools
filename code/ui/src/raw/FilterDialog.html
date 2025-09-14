@@ -2,69 +2,132 @@
 <html>
 <head>
     <base target="_top">
+    <!-- jQuery & jQuery UI -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+
     <style>
+        <?!= include('GenericTooltipCSS') ?>
         <?!= include('FilterDialogCSS') ?>
     </style>
 </head>
 <body>
-<!-- Header -->
-<div class="dialog-header">
-    <span class="dialog-title">
-      <span class="icon-container">
-        <?!= include('filter_icon') ?>
-      </span>
-      Filter by Distance
-    </span>
-</div>
+<div class="dialog-container">
 
-<!-- Address entry -->
-<label for="address">Address:</label>
-<input id="address" type="text" placeholder="Type ahead…" autocomplete="off">
-
-<!-- Distance slider -->
-<label for="distance">Max Distance (miles):</label>
-<input type="range" id="distance" min="1" max="100" value="10" oninput="updateSlider(this.value)">
-<div>Selected: <span id="distanceVal">10</span> miles</div>
-
-<!-- Outer wrapper -->
-<div class="entries-wrapper">
-    <div class="entries-container">
-
-        <!-- Dataset Overview -->
-        <div class="entries-subbox">
-            <div class="entries-label">Dataset Overview</div>
-            <hr class="entries-separator">
-            <div class="entries-row">
-                <span class="entry-icon">◯</span>
-                <span class="entry-name total-entry-label">Total Entries</span>
-                <input id="totalEntries" type="text" readonly>
-            </div>
-            <div class="entries-row">
-                <span class="entry-icon">✅</span>
-                <span class="entry-name">Geolocated</span>
-                <input id="geoEntries" type="text" readonly>
-            </div>
-            <div class="entries-row">
-                <span class="entry-icon">❌</span>
-                <span class="entry-name">Errored</span>
-                <input id="errorEntries" type="text" readonly>
-            </div>
-        </div>
-
-        <!-- Filter Results -->
-        <div class="entries-subbox">
-            <div class="entries-label">Filter Results</div>
-            <hr class="entries-separator">
-            <div class="entries-row matching-row">
-                <span class="entry-icon">🔍</span>
-                <span class="entry-name matching-entry-label">Total Matches</span>
-            </div>
-            <div class="kpi-row">
-                <input id="matchingEntries" type="text" readonly class="highlighted-metric">
-            </div>
-        </div>
-
+    <div class="dialog-title">
+        <img src="https://img.icons8.com/emoji/24/filter-emoji.png" alt="filter icon"/>
+        Filter by Distance
+        <span class="help-icon info"
+              data-help="
+                <div style='max-width:300px; text-align:left;'>
+                  <ul style='padding-left:16px; margin:0;'>
+                    <li>This tool filters spreadsheet rows by whether their address falls within a chosen distance of a specified location.</li>
+                    <li>Use the type-ahead box to choose a starting address.</li>
+                    <li>Adjust the slider to set the maximum radius in miles.</li>
+                    <li>Review dataset statistics (entries, geocoded, errors) and filtering results below.</li>
+                  </ul>
+                </div>
+              ">
+          ?
+        </span>
     </div>
+
+    <div class="dialog-section">
+        <label for="address">
+            Address:
+            <span class="help-icon info"
+                  data-help="Enter or select a starting address. Autocomplete helps you quickly choose a valid location.">?</span>
+        </label>
+        <input id="address" type="text" placeholder="Type ahead…" autocomplete="off">
+    </div>
+
+    <div class="dialog-section">
+        <label for="distance">
+            Max Distance (miles):
+            <span class="help-icon info"
+                  data-help="Choose how far (in miles) from the starting address rows should be included.">?</span>
+        </label>
+        <input type="range" id="distance" min="1" max="100" value="10" oninput="updateSlider(this.value)">
+        <div>Selected: <span id="distanceVal">10</span> miles</div>
+    </div>
+
+    <div class="group-outer">
+        <div class="group-row">
+            <!-- Dataset Overview -->
+            <div class="group-box">
+                <div class="group-header">
+                    <span>Dataset Overview</span>
+                    <span class="help-icon info"
+                          data-help="Shows how many entries are in your dataset, how many were successfully geocoded, and how many failed.">?</span>
+                </div>
+                <div class="group-item">
+                    <label>Total Entries</label>
+                    <input type="text" id="totalEntries" readonly>
+                </div>
+                <div class="group-item">
+                    <label>✅ Geolocated</label>
+                    <input type="text" id="geolocatedEntries" readonly>
+                </div>
+                <div class="group-item">
+                    <label>❌ Errored</label>
+                    <input type="text" id="erroredEntries" readonly>
+                </div>
+            </div>
+
+            <!-- Filter Results -->
+            <div class="group-box">
+                <div class="group-header">
+                    <span>Filter Results</span>
+                    <span class="help-icon info"
+                          data-help="Shows how many rows matched your filter criteria (address + distance). Updates dynamically.">?</span>
+                </div>
+                <div class="group-item highlight-metric">
+                    <label>🔍 Total Matches</label>
+                    <input type="text" id="matchingEntries" readonly>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
+
+<script>
+    // Minimal frosting: init tooltips like in SettingsDialog
+    (function () {
+        function initTooltips() {
+            var $target = $(".help-icon:not(.popover-help)");
+            if ($target.length === 0) return;
+            $target.tooltip({
+                appendTo: "body",
+                items: ".help-icon:not(.popover-help)",
+                content: function () { return $(this).attr("data-help"); },
+                position: {
+                    my: "left+8 bottom-8",
+                    at: "right top",
+                    within: window,
+                    collision: "flipfit"
+                },
+                tooltipClass: "custom-tooltip",
+                track: false,
+                show: { delay: 150, duration: 80 },
+                hide: { delay: 100, duration: 80 }
+            });
+        }
+
+        function waitForTooltipReady(maxMs, intervalMs) {
+            var start = Date.now();
+            (function tick() {
+                if (window.jQuery && $.fn && $.fn.tooltip) { initTooltips(); return; }
+                if (Date.now() - start >= maxMs) return;
+                setTimeout(tick, intervalMs);
+            })();
+        }
+
+        window.addEventListener("load", function () {
+            waitForTooltipReady(5000, 50);
+        });
+    })();
+</script>
 </body>
 </html>
