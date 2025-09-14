@@ -1,37 +1,95 @@
+/* Match Settings dialog look-and-feel more closely */
 .dialog-container {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: Arial, sans-serif;
     padding: 20px;
     max-width: 500px;
+    font-size: 12px;
+
+    /* Sizing tokens (single source of truth) */
+    --ctl-h: 22px;               /* control height */
+    --ctl-fs: 12px;              /* control font size */
+    --ctl-pad-h: 6px;            /* horizontal padding for inputs */
+    --ctl-border: 1px solid #c6c6c6;
+    --ctl-radius: 4px;
 }
 
+/* Header row: single instance with icon + title */
 .dialog-title {
-    font-size: 1.4em;
-    font-weight: bold;
     display: flex;
     align-items: center;
+    gap: 8px;
     margin-bottom: 15px;
+
+    /* Bump title size by ~1pt on top of previous 1.4em baseline */
+    font-size: calc(1.4em + 1pt);
+}
+.title-text {
+    font-size: 1em;          /* inherit from .dialog-title */
+    font-weight: bold;
+    line-height: 1.2;
+}
+/* Icon ~25% larger than the title text */
+.title-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 1.25em;          /* 25% larger than title text */
+    width: auto;
+}
+/* Ensure included SVG/IMG fits wrapper and never overflows */
+.title-icon svg,
+.title-icon img {
+    display: block;
+    height: 100%;
+    width: auto;
+    max-width: none;
 }
 
-.dialog-title img {
-    margin-right: 8px;
-}
-
+/* Sections */
 .dialog-section {
     margin-bottom: 15px;
 }
 
-input[type="text"], input[type="number"] {
-    padding: 6px;
+/* ========== INPUT NORMALIZATION (Address + all counters) ========== */
+.dialog-container input[type="text"],
+.dialog-container input[type="number"] {
+    -webkit-appearance: none;
+    appearance: none;
+    box-sizing: border-box;
+
+    height: var(--ctl-h) !important;
+    line-height: var(--ctl-h) !important;
+    font-size: var(--ctl-fs) !important;
+    font-weight: 400 !important;
+
+    padding: 0 var(--ctl-pad-h) !important;   /* vertical padding = 0 for exact height */
+    width: 100%;
     margin-top: 4px;
     margin-bottom: 10px;
-    width: 100%;
-    box-sizing: border-box;
+
+    border: var(--ctl-border) !important;
+    border-radius: var(--ctl-radius) !important;
+    background-color: #ffffff !important;
+
+    outline: none !important;
+    box-shadow: none !important;
+}
+.dialog-container input[type="text"]:focus,
+.dialog-container input[type="number"]:focus {
+    border-color: #8a8a8a !important;
+    box-shadow: none !important;
+}
+.dialog-container input[readonly] {
+    background-color: #ffffff !important;
+    color: #111 !important;
+    opacity: 1 !important;
 }
 
 input[type="range"] {
     width: 100%;
 }
 
+/* === Group cards === */
 .group-outer {
     border: 1px solid #ccc;
     border-radius: 8px;
@@ -50,38 +108,109 @@ input[type="range"] {
     border-radius: 6px;
     padding: 10px;
     background-color: #fafafa;
+    font-size: 12px;
 }
 
+/* Section headers */
 .group-header {
     font-weight: bold;
     margin-bottom: 6px;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 6px;
     border-bottom: 1px solid #ddd;
     padding-bottom: 4px;
 }
+.group-header .help-icon {
+    float: none !important;
+    margin-left: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
 
+/* Uniform label/input row layout */
 .group-item {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 6px 0;
+    align-items: center;               /* center vs normalized inputs */
+    justify-content: flex-start;
+    gap: 8px;
+    margin: 5px 0;
+    font-size: 12px;
+    line-height: 1.2;
+}
+
+/* Ensure first data row starts at same vertical offset in both panels */
+.group-box .group-item:first-of-type {
+    margin-top: 8px;
 }
 
 .group-item label {
-    flex: 1;
-    margin-right: 8px;
+    flex: 1 1 auto;
+    margin-right: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+
+    min-height: var(--ctl-h);
+    line-height: var(--ctl-h);
 }
 
+/* Emoji sizing (✅ ❌ 🔍) */
+.group-item label .emoji {
+    font-size: 12px;
+    line-height: 1;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Slight indent for Geolocated and Errored (children of Total) */
+.group-item.indent {
+    padding-left: 16px;
+}
+
+/* Counters in Dataset Overview (non-stacked rows) */
 .group-item input {
-    width: 70px;
+    margin-left: auto;                 /* align all non-stacked inputs right */
+    width: 56px !important;            /* fits up to 99,999 */
+    text-align: right;
+
+    height: var(--ctl-h) !important;
+    line-height: var(--ctl-h) !important;
+    font-size: var(--ctl-fs) !important;
+    font-weight: 400 !important;
+    padding: 0 var(--ctl-pad-h) !important;
+    border: var(--ctl-border) !important;
+    border-radius: var(--ctl-radius) !important;
+    background-color: #ffffff !important;
+    outline: none !important;
+    box-shadow: none !important;
 }
 
-.highlight-metric input {
-    font-size: 1.4em;
-    font-weight: bold;
-    text-align: center;
-    height: 40px;
-    background-color: #eef6ff;
+/* Stacked version: input below label (Filter Results → Total Matches) */
+.group-item.stacked {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    margin-top: 8px;
+}
+.group-item.stacked label {
+    margin-right: 0;
+}
+.group-item.stacked input {
+    margin-left: 0 !important;
+    width: 100% !important;
+    text-align: right;
+
+    height: var(--ctl-h) !important;
+    line-height: var(--ctl-h) !important;
+    font-size: var(--ctl-fs) !important;
+    font-weight: 400 !important;
+    padding: 0 var(--ctl-pad-h) !important;
+    border: var(--ctl-border) !important;
+    border-radius: var(--ctl-radius) !important;
+    background-color: #ffffff !important;
+    outline: none !important;
+    box-shadow: none !important;
 }

@@ -15,9 +15,12 @@
 <body>
 <div class="dialog-container">
 
+    <!-- Single, controlled-size header -->
     <div class="dialog-title">
-        <img src="https://img.icons8.com/emoji/24/filter-emoji.png" alt="filter icon"/>
-        Filter by Distance
+        <span class="title-icon">
+            <?!= include('filter_icon') ?>
+        </span>
+        <span class="title-text">Filter by Distance</span>
         <span class="help-icon info"
               data-help="
                 <div style='max-width:300px; text-align:left;'>
@@ -28,9 +31,7 @@
                     <li>Review dataset statistics (entries, geocoded, errors) and filtering results below.</li>
                   </ul>
                 </div>
-              ">
-          ?
-        </span>
+              ">?</span>
     </div>
 
     <div class="dialog-section">
@@ -39,7 +40,7 @@
             <span class="help-icon info"
                   data-help="Enter or select a starting address. Autocomplete helps you quickly choose a valid location.">?</span>
         </label>
-        <input id="address" type="text" placeholder="Type ahead…" autocomplete="off">
+        <input id="address" type="text" placeholder="Begin typing... matches will be shown" autocomplete="off">
     </div>
 
     <div class="dialog-section">
@@ -57,7 +58,7 @@
             <!-- Dataset Overview -->
             <div class="group-box">
                 <div class="group-header">
-                    <span>Dataset Overview</span>
+                    <span>📊 Dataset Overview</span>
                     <span class="help-icon info"
                           data-help="Shows how many entries are in your dataset, how many were successfully geocoded, and how many failed.">?</span>
                 </div>
@@ -65,12 +66,12 @@
                     <label>Total Entries</label>
                     <input type="text" id="totalEntries" readonly>
                 </div>
-                <div class="group-item">
-                    <label>✅ Geolocated</label>
+                <div class="group-item indent">
+                    <label><span class="emoji">✅</span> Geolocated</label>
                     <input type="text" id="geolocatedEntries" readonly>
                 </div>
-                <div class="group-item">
-                    <label>❌ Errored</label>
+                <div class="group-item indent">
+                    <label><span class="emoji">❌</span> Errored</label>
                     <input type="text" id="erroredEntries" readonly>
                 </div>
             </div>
@@ -78,12 +79,13 @@
             <!-- Filter Results -->
             <div class="group-box">
                 <div class="group-header">
-                    <span>Filter Results</span>
+                    <span>🌎 Filter Results</span>
                     <span class="help-icon info"
                           data-help="Shows how many rows matched your filter criteria (address + distance). Updates dynamically.">?</span>
                 </div>
-                <div class="group-item highlight-metric">
-                    <label>🔍 Total Matches</label>
+                <!-- Stacked: input appears below the label -->
+                <div class="group-item stacked">
+                    <label><span class="emoji">🔍</span> Total Matches</label>
                     <input type="text" id="matchingEntries" readonly>
                 </div>
             </div>

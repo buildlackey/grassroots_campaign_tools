@@ -19,7 +19,7 @@ function showFilterDialog() {
     var html = HtmlService
         .createTemplateFromFile('FilterDialog')
         .evaluate()
-        .setWidth(460)
+        .setWidth(450)
         .setHeight(430);
     SpreadsheetApp.getUi().showModalDialog(html, ' ');
     Logger.log("🪟 [Code.js/showFilterDialog] EXIT");
