@@ -1,0 +1,159 @@
+/* === Help icons === */
+.help-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    width: 15px;
+    height: 15px;
+    text-align: center;
+    line-height: 14px;
+    border-radius: 50%;
+    cursor: pointer;
+    user-select: none;
+    vertical-align: top;
+    margin-left: 6px;
+    position: relative;
+}
+
+/* Green tooltip “?” style */
+.help-icon.info {
+    background: #e6f9e6;
+    color: #2f8f2f;
+    border: 1px solid #b6e6b6;
+    font-weight: bold;
+
+    font-size: 10px;
+    width: 12px;
+    height: 12px;
+    line-height: 1;
+    border-radius: 50%;
+    text-align: center;
+}
+
+/* Yellow caution (click popover trigger) */
+.help-icon.caution {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    width: 13px;
+    height: 13px;
+    padding: 0;
+    vertical-align: top;
+}
+
+.help-icon.caution svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Keyboard focus hint */
+.help-icon:focus {
+    outline: 2px solid #d39e00;
+    outline-offset: 2px;
+}
+
+/* === Tooltip (all ? icons, including title tooltip) — smaller help text === */
+.ui-tooltip {
+    max-width: 300px;
+    white-space: normal;
+    z-index: 2147483647;
+    pointer-events: auto;
+    font-family: Arial, sans-serif;
+    font-size: 12px; /* help text 2pt smaller than main UI */
+    line-height: 1.4;
+    color: #222;
+    background: #fff;
+    border: 1px solid #ccc;
+    padding: 6px 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.ui-tooltip.custom-tooltip {
+    max-width: 300px;
+    white-space: normal;
+    z-index: 2147483647;
+    pointer-events: auto;
+    left: max(8px, var(--ui-tooltip-left, 0px)) !important;
+    font-family: Arial, sans-serif;
+    font-size: 12px; /* ensure same size for custom class */
+}
+
+/* === Click popover (Maps API help) — match tooltip size === */
+.popover {
+    position: absolute;
+    display: none;
+    max-width: 320px;
+    background: #fff8dc;
+    border: 1px solid #d39e00;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    border-radius: 6px;
+    z-index: 2147483647;
+    font-family: Arial, sans-serif;
+    font-size: 12px; /* same as tooltip */
+}
+
+.popover.show {
+    display: block;
+}
+
+.popover .popover-body {
+    position: relative;
+    padding: 10px 12px 12px 12px;
+    font-size: 12px; /* same as tooltip */
+    font-family: Arial, sans-serif;
+    color: #3b3b3b;
+    background: inherit;
+}
+
+.popover .popover-close {
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    background: transparent;
+    border: none;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    color: #7a5a00;
+}
+
+.popover .popover-arrow {
+    position: absolute;
+    left: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
+    border-right: 6px solid #d39e00;
+}
+
+.popover a {
+    color: #0b63bd;
+    text-decoration: underline;
+}
+
+/* === Toast === */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #323232;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 4px;
+    z-index: 2147483647;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.toast.show {
+    opacity: 1;
+}

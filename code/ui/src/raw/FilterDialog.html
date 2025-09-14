@@ -26,36 +26,44 @@
 <input type="range" id="distance" min="1" max="100" value="10" oninput="updateSlider(this.value)">
 <div>Selected: <span id="distanceVal">10</span> miles</div>
 
-<!-- Entries container -->
-<div class="entries-container">
-    <!-- Dataset Overview -->
-    <div class="entries-subbox">
-        <div class="entries-label">Dataset Overview</div>
-        <div class="entries-row">
-            <span class="entry-icon">◯</span>
-            <span class="entry-name">Total Entries</span>
-            <input id="totalEntries" type="text" readonly>
-        </div>
-        <div class="entries-row">
-            <span class="entry-icon">✅</span>
-            <span class="entry-name">Geolocated</span>
-            <input id="geoEntries" type="text" readonly>
-        </div>
-        <div class="entries-row">
-            <span class="entry-icon">❌</span>
-            <span class="entry-name">Errored</span>
-            <input id="errorEntries" type="text" readonly>
-        </div>
-    </div>
+<!-- Outer wrapper -->
+<div class="entries-wrapper">
+    <div class="entries-container">
 
-    <!-- Filter Results -->
-    <div class="entries-subbox">
-        <div class="entries-label">Filter Results</div>
-        <div class="entries-row">
-            <span class="entry-icon">🔍</span>
-            <span class="entry-name">Matching Entries</span>
-            <input id="matchingEntries" type="text" readonly>
+        <!-- Dataset Overview -->
+        <div class="entries-subbox">
+            <div class="entries-label">Dataset Overview</div>
+            <hr class="entries-separator">
+            <div class="entries-row">
+                <span class="entry-icon">◯</span>
+                <span class="entry-name total-entry-label">Total Entries</span>
+                <input id="totalEntries" type="text" readonly>
+            </div>
+            <div class="entries-row">
+                <span class="entry-icon">✅</span>
+                <span class="entry-name">Geolocated</span>
+                <input id="geoEntries" type="text" readonly>
+            </div>
+            <div class="entries-row">
+                <span class="entry-icon">❌</span>
+                <span class="entry-name">Errored</span>
+                <input id="errorEntries" type="text" readonly>
+            </div>
         </div>
+
+        <!-- Filter Results -->
+        <div class="entries-subbox">
+            <div class="entries-label">Filter Results</div>
+            <hr class="entries-separator">
+            <div class="entries-row matching-row">
+                <span class="entry-icon">🔍</span>
+                <span class="entry-name matching-entry-label">Total Matches</span>
+            </div>
+            <div class="kpi-row">
+                <input id="matchingEntries" type="text" readonly class="highlighted-metric">
+            </div>
+        </div>
+
     </div>
 </div>
 </body>
