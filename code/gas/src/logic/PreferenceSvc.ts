@@ -1,11 +1,4 @@
-// code/common/src/PreferenceSvc.ts
-interface Preferences {
-    sheetTabName: string;
-    addressColumn: string;
-    mapsApiKey: string;
-    showLatLong: boolean;
-    debug: boolean;
-}
+import {Preferences} from "../../../common/src/PreferenceSvc";
 
 class PreferenceSvc {
     static DOC_KEYS = {

@@ -1,4 +1,6 @@
-// No imports here — relies on ambient Preferences from PreferenceSvc.d.ts
+import {CampaignToolsModelState} from "../../../common/src/CampaignToolsModel";
+import {Preferences} from "../../../common/src/PreferenceSvc";
+
 
 class CampaignToolsModel {
     sheetTabNames: string[];

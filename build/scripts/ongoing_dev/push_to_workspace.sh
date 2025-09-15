@@ -54,8 +54,16 @@ build_ui() {
 build_gas() {
   cd "$BUILD_GAS_DIR"
   npm run dist
-  echo LISTING
-  ls /home/chris/grassroots_campaign_tools/dist/gas/gas_safe_staging
+  echo "LISTING after GAS build:"
+  ls "$GIT_ROOT/dist/gas/gas_safe_staging"
+
+  # === Apply demodulify post-processing ===
+  echo "🔧 Running demodulify post-processing on GAS output..."
+  cd "$GIT_ROOT/dist/gas"
+  node "$GIT_ROOT/build/scripts/ongoing_dev/demodulify_for_gas.js"
+
+  echo "LISTING after demodulify:"
+  ls "$GIT_ROOT/dist/gas/gas_safe_staging"
 }
 
 build_common() {
@@ -64,6 +72,11 @@ build_common() {
     cd "$BUILD_COMMON_DIR"
     [[ -d node_modules ]] || npm install
     npm run dist
+
+    # === Apply demodulify post-processing to common output ===
+    echo "🔧 Running demodulify post-processing on Common output..."
+    cd "$GIT_ROOT/dist/common"
+    node "$GIT_ROOT/build/scripts/ongoing_dev/demodulify_for_gas.js"
   else
     echo "⚠️ Skipping Common: directory not found at $BUILD_COMMON_DIR"
   fi
@@ -91,7 +104,6 @@ if [[ "$CLASP_SCRIPT_ID" != "$SCRIPT_ID" ]]; then
   exit 1
 fi
 
-
 # 2) Need runtime V8 in appsscript.json
 cat > $WORKING_PUSH_FOLDER/appsscript.json <<END
 {
@@ -102,8 +114,6 @@ cat > $WORKING_PUSH_FOLDER/appsscript.json <<END
   }
 }
 END
-
-
 
 # === Stage build artifacts into working push folder ===
 echo "📦 Staging dist artifacts into $WORKING_PUSH_FOLDER"

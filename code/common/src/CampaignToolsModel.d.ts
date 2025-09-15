@@ -1,7 +1,7 @@
-/// <reference path="../../common/src/PreferenceSvc.d.ts" />
 
+import type { Preferences } from 'PreferenceSvc';
 
-interface CampaignToolsModelState {
+export interface CampaignToolsModelState {
   sheetTabNames: string[];
   sheetTabToColumnNames: Record<string, string[]>;
   prefs: Preferences;
