@@ -8,11 +8,12 @@ BUILT_UI_DIR="$PROJECT_ROOT/dist/ui"
 
 DIALOG_NAME="$1"   # e.g. SettingsDialog or FilterDialog
 RAW_DIR="$PROJECT_ROOT/code/ui/src/raw"
+DIST_DIR="$PROJECT_ROOT/dist/ui"
 TEMPLATE="$RAW_DIR/${DIALOG_NAME}.html"
 CSS="$RAW_DIR/${DIALOG_NAME}CSS.html"
 ACTION="$RAW_DIR/${DIALOG_NAME}ActionCode.html"
 FROSTING="$RAW_DIR/${DIALOG_NAME}UIFrostingCode.html"
-
+FOO="$DIST_DIR/gas_safe_staging/FooCode.html"
 
 
 
@@ -44,6 +45,11 @@ while IFS= read -r line; do
     *"include('${DIALOG_NAME}ActionCode')"*)
       cat "$ACTION" >> "$OUT_HTML"
       ;;
+    *"include('FooCode')"*)
+      echo outputting FooCode:  ${FOO}
+      cat "$FOO" >> "$OUT_HTML"
+      echo "result :  `cat $OUT_HTML`"
+      ;;
     *)
       echo "$line" >> "$OUT_HTML"
       ;;
@@ -66,3 +72,20 @@ cat >> "$OUT_HTML" <<'EOF'
   }
 </script>
 EOF
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
