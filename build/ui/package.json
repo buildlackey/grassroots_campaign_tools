@@ -5,7 +5,7 @@
     "preclean": "cd ../common && npm run dist",
     "clean": "rm -rf ../../dist/ui",
     "tsc:ui": "npm run clean && tsc --project tsconfig.json",
-    "rename:html": "for f in ../../dist/ui/gas_safe_staging/*.js; do base=$(basename \"$f\" .js); camel=$(echo $base | sed -E 's/^([a-z])|([A-Z][a-z]*)/\\u\\1\\2/g'); mv \"$f\" \"../../dist/ui/gas_safe_staging/${camel}.html\"; done",
+    "rename:html": "bash ../../build/scripts/ui/normalize_ui_js_to_html.sh",
     "build:ui": "npm run tsc:ui && npm run rename:html",
     "setup:fixture": "npm run build:ui && bash ../../code/ui/test/raw/create_dialog_test_fixture.sh SettingsDialog",
     "build": "npm run setup:fixture && jest --config=jest.config.js",
