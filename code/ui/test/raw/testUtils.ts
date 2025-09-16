@@ -1,5 +1,6 @@
 // code/ui/test/raw/testUtils.ts
 import { JSDOM } from "jsdom";
+import { CampaignToolsModel } from "../../../gas/src/logic/CampaignToolsModel";
 
 export function setupGoogleMock(win: any, initData: any) {
     // Always return the fixture passed in via initData
@@ -66,7 +67,19 @@ export async function bootDialog(htmlContent: string, initData: any) {
     return { dom, window, document };
 }
 
-export function dumpState(tag: string, doc: Document) {
+function isDebugEnabled(doc: Document, prefs?: any): boolean {
+    // Prefer explicit prefs argument
+    if (prefs && typeof prefs.debug !== "undefined") return !!prefs.debug;
+    // Try to get from window.CAMPAIGN_TOOLS_UI.model.prefs
+    try {
+        const win = (doc.defaultView || window) as any; // Cast to any to avoid TS2339
+        return !!(win.CAMPAIGN_TOOLS_UI && win.CAMPAIGN_TOOLS_UI.model && win.CAMPAIGN_TOOLS_UI.model.prefs && win.CAMPAIGN_TOOLS_UI.model.prefs.debug);
+    } catch (e) {}
+    return false;
+}
+
+export function dumpState(tag: string, doc: Document, prefs?: any) {
+    if (!isDebugEnabled(doc, prefs)) return;
     const sel = doc.querySelector("#sheetSelect") as HTMLSelectElement | null;
     const addr = doc.querySelector("#addressSelect") as HTMLSelectElement | null;
     const key = doc.querySelector("#mapsApiKey") as HTMLInputElement | null;
@@ -94,4 +107,37 @@ export function installConsoleErrorFail() {
         origError(...args);
         throw new Error(`Console error: ${msg}`);
     };
+}
+
+/**
+ * Builds a dialog model fixture using backend logic for preference resolution.
+ * Uses CampaignToolsModel to ensure tests match backend logic.
+ */
+export function buildDialogModelFixture({
+    sheetTabNames,
+    sheetTabToColumnNames,
+    prefs
+}: {
+    sheetTabNames: string[];
+    sheetTabToColumnNames: Record<string, string[]>;
+    prefs: {
+        sheetTabName?: string;
+        addressColumn?: string;
+        mapsApiKey?: string;
+        showLatLong?: boolean;
+        debug?: boolean;
+    };
+}) {
+    const model = new CampaignToolsModel({
+        sheetTabNames,
+        sheetTabToColumnNames,
+        prefs: {
+            sheetTabName: prefs.sheetTabName || "",
+            addressColumn: prefs.addressColumn || "",
+            mapsApiKey: prefs.mapsApiKey || "",
+            showLatLong: !!prefs.showLatLong,
+            debug: !!prefs.debug,
+        }
+    });
+    return model.getModelState();
 }

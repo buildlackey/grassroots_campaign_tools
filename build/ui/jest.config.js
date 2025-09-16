@@ -7,4 +7,9 @@ module.exports = {
   testEnvironment: "jest-environment-jsdom",
   testPathIgnorePatterns: ["<rootDir>/../../dist/"],
   setupFiles: ["<rootDir>/jest.setup.js"],   // ← add this
+  globals: {
+    'ts-jest': {
+      tsconfig: '<rootDir>/tsconfig.test.json'
+    }
+  },
 };

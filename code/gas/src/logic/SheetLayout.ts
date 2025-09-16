@@ -16,7 +16,12 @@ interface ISpreadsheet {
 }
 
 class SheetLayout {
-  constructor(private ss: ISpreadsheet) {}
+  private ss: ISpreadsheet;
+  constructor(ss?: ISpreadsheet) {
+    const spreadsheet = ss || (typeof SpreadsheetApp !== "undefined" ? SpreadsheetApp.getActiveSpreadsheet() : undefined);
+    if (!spreadsheet) throw new Error("SheetLayout: No spreadsheet provided and SpreadsheetApp is not available.");
+    this.ss = spreadsheet;
+  }
 
   discover(): { sheetTabNames: string[]; sheetTabToColumnNames: Record<string, string[]> } {
     const sheetTabNames: string[] = [];

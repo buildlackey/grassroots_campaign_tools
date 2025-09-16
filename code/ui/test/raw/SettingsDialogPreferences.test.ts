@@ -5,7 +5,7 @@ import { JSDOM } from "jsdom";
 import { waitFor } from "@testing-library/dom";
 import * as fs from "fs";
 import * as path from "path";
-import { bootDialog, dumpState, installConsoleErrorFail } from "./testUtils";
+import { bootDialog, dumpState, installConsoleErrorFail, buildDialogModelFixture } from "./testUtils";
 
 const repoRoot = path.resolve(__dirname, "../../../../");
 const htmlPath = path.resolve(repoRoot, "dist/ui/rendered_settings_dialog_test.html");
@@ -43,20 +43,29 @@ async function assertPreferredResolution(
 }
 
 describe("SettingsDialog preference resolution (sheet & address)", () => {
+    test("[0] no preferences, sheet1 columns are ['name', 'address', 'rank'] → picks 'address'", async () => {
+        const sheetTabToColumnNames = {
+            Sheet1: ["name", "address", "rank"]
+        };
+        const initData = buildDialogModelFixture({
+            sheetTabNames: ["Sheet1"],
+            sheetTabToColumnNames,
+            prefs: {},
+        });
+        await assertPreferredResolution(initData, "Sheet1", "address");
+    });
+
     test("[1] pref sheet NOT present; pref address NOT present → fallbacks", async () => {
         const sheetTabToColumnNames = {
             a: ["1", "2", "9"],
             b: ["3", "4"],
             c: [],
         };
-        const initData = {
+        const initData = buildDialogModelFixture({
             sheetTabNames: ["a", "b", "c"],
-            sheetTabToColumnNames,
-            headersBySheet: sheetTabToColumnNames,
+            sheetTabToColumnNames: sheetTabToColumnNames,
             prefs: { mapsApiKey: "key1", sheetTabName: "notThere", addressColumn: "notThere" },
-            preferredSheetTabName: "a",
-            preferredAddressColumnName: "1",
-        };
+        });
         await assertPreferredResolution(initData, "a", "1");
     });
 
@@ -66,14 +75,11 @@ describe("SettingsDialog preference resolution (sheet & address)", () => {
             b: ["3", "4"],
             c: [],
         };
-        const initData = {
+        const initData = buildDialogModelFixture({
             sheetTabNames: ["a", "b", "c"],
-            sheetTabToColumnNames,
-            headersBySheet: sheetTabToColumnNames,
+            sheetTabToColumnNames: sheetTabToColumnNames,
             prefs: { mapsApiKey: "key1", sheetTabName: "notThere", addressColumn: "2" },
-            preferredSheetTabName: "a",
-            preferredAddressColumnName: "2",
-        };
+        });
         await assertPreferredResolution(initData, "a", "2");
     });
 
@@ -83,14 +89,11 @@ describe("SettingsDialog preference resolution (sheet & address)", () => {
             b: ["3", "4"],
             c: [],
         };
-        const initData = {
+        const initData = buildDialogModelFixture({
             sheetTabNames: ["a", "b", "c"],
-            sheetTabToColumnNames,
-            headersBySheet: sheetTabToColumnNames,
+            sheetTabToColumnNames: sheetTabToColumnNames,
             prefs: { mapsApiKey: "key1", sheetTabName: "b", addressColumn: "notThere" },
-            preferredSheetTabName: "b",
-            preferredAddressColumnName: "3",
-        };
+        });
         await assertPreferredResolution(initData, "b", "3");
     });
 
@@ -100,14 +103,11 @@ describe("SettingsDialog preference resolution (sheet & address)", () => {
             b: ["3", "4"],
             c: [],
         };
-        const initData = {
+        const initData = buildDialogModelFixture({
             sheetTabNames: ["a", "b", "c"],
-            sheetTabToColumnNames,
-            headersBySheet: sheetTabToColumnNames,
+            sheetTabToColumnNames: sheetTabToColumnNames,
             prefs: { mapsApiKey: "key1", sheetTabName: "b", addressColumn: "4" },
-            preferredSheetTabName: "b",
-            preferredAddressColumnName: "4",
-        };
+        });
         await assertPreferredResolution(initData, "b", "4");
     });
 
@@ -117,14 +117,11 @@ describe("SettingsDialog preference resolution (sheet & address)", () => {
             b: ["3", "4"],
             c: [],
         };
-        const initData = {
+        const initData = buildDialogModelFixture({
             sheetTabNames: ["a", "b", "c"],
-            sheetTabToColumnNames,
-            headersBySheet: sheetTabToColumnNames,
+            sheetTabToColumnNames: sheetTabToColumnNames,
             prefs: { mapsApiKey: "key1", sheetTabName: "c", addressColumn: "anything" },
-            preferredSheetTabName: "c",
-            preferredAddressColumnName: "",
-        };
+        });
         await assertPreferredResolution(initData, "c", "");
     });
 });

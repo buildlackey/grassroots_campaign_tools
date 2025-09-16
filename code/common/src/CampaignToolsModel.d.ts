@@ -1,4 +1,3 @@
-
 import type { Preferences } from 'PreferenceSvc';
 
 export interface CampaignToolsModelState {
