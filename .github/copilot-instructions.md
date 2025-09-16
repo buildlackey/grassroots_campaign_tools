@@ -43,6 +43,22 @@ No implementation files
   (globalThis as any).CAMPAIGN_TOOLS.MyClass = MyClass;
 
 
+### Naming Conventions for .html files
+
+
+Rather than having a monolithic HTML file we prefer to break out .css, and Javascript and keep that separate from pure HTML mark-up.
+
+The GAS environment supports includes via the `<?!= include('filename') ?>` directive, but you cannot include .css or
+Javascript files if they are given standard extensions ('.css' and '.js' respectively).   So we use the extension 
+'.html' for all included files, even if they contain pure Javascript or CSS.  This is a bit of a hack, but it works.
+To make things a bit clearer, we use the following naming conventions:  *CSS.html means a file that contains pure CSS,
+*Code.html means a file that contains pure Javascript.
+
+Furthermore, any user visible UI dialog with name FooDialog.html should have its associated CSS in FooDialogCSS.html, and
+its associated controller logic Javascript (bindings to specific events on specific UI elements) in 
+a file named FooDialogActionCode.html.  Javascript that implements pure UI functionality (like tooltips) should live
+in a file named FooDialogUIFrostingCode.html.  In general, the naming pattern 
+*Code.html means that the file contains pure Javascript code.
 
 
 

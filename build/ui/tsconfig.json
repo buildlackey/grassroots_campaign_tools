@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES5",
+    "module": "none",
+    "outDir": "../../dist/ui/gas_safe_staging",
+    "rootDir": "../../code/ui/src/raw",
+    "strict": true,
+    "noEmitOnError": true,
+    "types": []
+  },
+  "include": [
+    "../../code/ui/src/raw/*.ts"
+  ],
+  "exclude": [
+    "../../code/ui/test/raw",
+    "../../node_modules",
+    "../../dist/ui/gas_safe_staging"
+  ]
+}
