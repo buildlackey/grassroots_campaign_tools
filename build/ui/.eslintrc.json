@@ -1,0 +1,15 @@
+{
+  "env": {
+    "browser": true,
+    "es6": false
+  },
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
+  "rules": {
+    "no-arrow-functions": "error",
+    "prefer-var": "error",
+    "no-const": "error",
+    "no-let": "error"
+  }
+}
+

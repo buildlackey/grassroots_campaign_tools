@@ -5,21 +5,28 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
 BUILT_UI_DIR="$PROJECT_ROOT/dist/ui"
 
-
 DIALOG_NAME="$1"   # e.g. SettingsDialog or FilterDialog
 RAW_DIR="$PROJECT_ROOT/code/ui/src/raw"
-DIST_DIR="$PROJECT_ROOT/dist/ui"
+DIST_DIR="$PROJECT_ROOT/dist/ui/gas_safe_staging"
 TEMPLATE="$RAW_DIR/${DIALOG_NAME}.html"
 CSS="$RAW_DIR/${DIALOG_NAME}CSS.html"
 ACTION="$RAW_DIR/${DIALOG_NAME}ActionCode.html"
 FROSTING="$RAW_DIR/${DIALOG_NAME}UIFrostingCode.html"
-FOO="$DIST_DIR/gas_safe_staging/FooCode.html"
+FOO="$DIST_DIR/FooCode.html"
 
-
-
-
-
-
+# Helper: cat fragment from raw, else fallback to dist
+cat_fragment() {
+  local raw_path="$1"
+  local dist_path="$2"
+  if [ -f "$raw_path" ]; then
+    cat "$raw_path"
+  elif [ -f "$dist_path" ]; then
+    cat "$dist_path"
+  else
+    echo "❌ ERROR: Fragment not found: $raw_path or $dist_path" >&2
+    exit 1
+  fi
+}
 
 # 🔹 compiled common contracts (NOT GAS bundle)
 COMMON_DIR="$PROJECT_ROOT/dist/common/gas_safe_staging"
@@ -32,22 +39,21 @@ rm -f "$OUT_HTML"
 
 echo "📄 Reading template: $TEMPLATE"
 
-
 # Process template line by line, inlining fragments
 while IFS= read -r line; do
   case "$line" in
     *"include('${DIALOG_NAME}CSS')"*)
-      cat "$CSS" >> "$OUT_HTML"
+      cat_fragment "$CSS" "$DIST_DIR/${DIALOG_NAME}CSS.html" >> "$OUT_HTML"
       ;;
     *"include('${DIALOG_NAME}UIFrostingCode')"*)
-      cat "$FROSTING" >> "$OUT_HTML"
+      cat_fragment "$FROSTING" "$DIST_DIR/${DIALOG_NAME}UIFrostingCode.html" >> "$OUT_HTML"
       ;;
     *"include('${DIALOG_NAME}ActionCode')"*)
-      cat "$ACTION" >> "$OUT_HTML"
+      cat_fragment "$ACTION" "$DIST_DIR/${DIALOG_NAME}ActionCode.html" >> "$OUT_HTML"
       ;;
     *"include('FooCode')"*)
       echo outputting FooCode:  ${FOO}
-      cat "$FOO" >> "$OUT_HTML"
+      cat_fragment "$RAW_DIR/FooCode.html" "$FOO" >> "$OUT_HTML"
       echo "result :  `cat $OUT_HTML`"
       ;;
     *)
@@ -72,20 +78,3 @@ cat >> "$OUT_HTML" <<'EOF'
   }
 </script>
 EOF
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

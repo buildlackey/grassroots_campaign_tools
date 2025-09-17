@@ -1,0 +1,50 @@
+{
+  "env": {
+    "browser": true,
+    "es6": false
+  },
+  "parserOptions": {
+    "ecmaVersion": 5
+  },
+  "rules": {
+    "no-restricted-syntax": ["error",
+      {
+        "selector": "ArrowFunctionExpression",
+        "message": "Arrow functions are not allowed in ES5/GAS."
+      },
+      {
+        "selector": "VariableDeclaration[kind='const']",
+        "message": "const is not allowed in ES5/GAS."
+      },
+      {
+        "selector": "VariableDeclaration[kind='let']",
+        "message": "let is not allowed in ES5/GAS."
+      },
+      {
+        "selector": "ClassDeclaration",
+        "message": "Classes are not allowed in ES5/GAS."
+      },
+      {
+        "selector": "ObjectPattern",
+        "message": "Destructuring is not allowed in ES5/GAS."
+      },
+      {
+        "selector": "ArrayPattern",
+        "message": "Destructuring is not allowed in ES5/GAS."
+      },
+      {
+        "selector": "RestElement",
+        "message": "Rest parameters are not allowed in ES5/GAS."
+      },
+      {
+        "selector": "SpreadElement",
+        "message": "Spread syntax is not allowed in ES5/GAS."
+      },
+      {
+        "selector": "AssignmentPattern",
+        "message": "Default parameters are not allowed in ES5/GAS."
+      }
+    ]
+  }
+}
+

@@ -1,0 +1,30 @@
+{
+  "env": {
+    "browser": true,
+    "es2020": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2020
+  },
+  "rules": {
+    "no-restricted-syntax": [
+      "error",
+      {
+        "selector": "ImportDeclaration",
+        "message": "ES modules (import/export) are not supported in GAS runtime."
+      },
+      {
+        "selector": "ExportNamedDeclaration",
+        "message": "ES modules (import/export) are not supported in GAS runtime."
+      },
+      {
+        "selector": "ExportDefaultDeclaration",
+        "message": "ES modules (import/export) are not supported in GAS runtime."
+      },
+      {
+        "selector": "AwaitExpression",
+        "message": "Top-level await is not supported in GAS runtime."
+      }
+    ]
+  }
+}

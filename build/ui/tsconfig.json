@@ -1,12 +1,13 @@
 {
   "compilerOptions": {
-    "target": "ES5",
+    "target": "ES2019",
     "module": "none",
     "outDir": "../../dist/ui/gas_safe_staging",
     "rootDir": "../../code/ui/src/raw",
     "strict": true,
     "noEmitOnError": true,
-    "types": []
+    "types": [],
+    "lib": ["dom", "es2019"]
   },
   "include": [
     "../../code/ui/src/raw/*.ts"
