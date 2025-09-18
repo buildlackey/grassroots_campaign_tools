@@ -1,5 +1,6 @@
 // code/ui/test/raw/testUtils.ts
 import { JSDOM } from "jsdom";
+import { CampaignToolsModel } from "../../../gas/src/logic/CampaignToolsModel";
 
 export function setupGoogleMock(win: any, initData: any) {
     // Always return the fixture passed in via initData
@@ -110,7 +111,7 @@ export function installConsoleErrorFail() {
 
 /**
  * Builds a dialog model fixture using backend logic for preference resolution.
- * Mirrors CampaignToolsModel.fromGAS and fallback logic.
+ * Uses CampaignToolsModel to ensure tests match backend logic.
  */
 export function buildDialogModelFixture({
     sheetTabNames,
@@ -127,23 +128,7 @@ export function buildDialogModelFixture({
         debug?: boolean;
     };
 }) {
-    // Preferred sheet tab logic
-    let preferredSheetTabName = prefs.sheetTabName && sheetTabNames.includes(prefs.sheetTabName)
-        ? prefs.sheetTabName
-        : (sheetTabNames[0] || "");
-
-    // Preferred address column logic
-    const headers = sheetTabToColumnNames[preferredSheetTabName] || [];
-    const cleanHeaders = headers.filter(h => h != null && String(h).length > 0).map(String);
-    let preferredAddressColumnName = "";
-    if (prefs.addressColumn && cleanHeaders.includes(prefs.addressColumn)) {
-        preferredAddressColumnName = prefs.addressColumn;
-    } else {
-        const match = cleanHeaders.find(h => /address/i.test(h));
-        preferredAddressColumnName = match || cleanHeaders[0] || "";
-    }
-
-    return {
+    const model = new CampaignToolsModel({
         sheetTabNames,
         sheetTabToColumnNames,
         prefs: {
@@ -152,8 +137,7 @@ export function buildDialogModelFixture({
             mapsApiKey: prefs.mapsApiKey || "",
             showLatLong: !!prefs.showLatLong,
             debug: !!prefs.debug,
-        },
-        preferredSheetTabName,
-        preferredAddressColumnName,
-    };
+        }
+    });
+    return model.getModelState();
 }

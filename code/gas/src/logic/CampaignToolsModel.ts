@@ -63,31 +63,11 @@ class CampaignToolsModel {
         return this.sheetTabToColumnNames[this.preferredSheetTabName] || [];
     }
 
-    /** Factory: build a model from GAS sheet utils + caller-supplied prefs */
-    static fromGAS(prefs?: Preferences): CampaignToolsModel {
-        const effectivePrefs =
-             prefs ||
-             ((globalThis as any).CAMPAIGN_TOOLS &&
-              (globalThis as any).CAMPAIGN_TOOLS.PreferenceSvc &&
-              (globalThis as any).CAMPAIGN_TOOLS.PreferenceSvc.create().getPreferences());
-        if (!effectivePrefs) {
-            throw new Error("Preferences unavailable: must pass prefs or have PreferenceSvc loaded");
-        }
-
-        const ss = SpreadsheetApp.getActiveSpreadsheet();
-        const sheetLayout = new (globalThis as any).CAMPAIGN_TOOLS.SheetLayout(ss);
-        const layout = sheetLayout.discover();
-
-        return new CampaignToolsModel({
-          sheetTabNames: layout.sheetTabNames,
-          sheetTabToColumnNames: layout.sheetTabToColumnNames,
-          prefs: effectivePrefs,
-        });
-
-
-    }
+    // Remove static fromGAS for testability
 }
 
 /* ===== UMD-ish export: attach to globalThis for GAS runtime ===== */
 (globalThis as any).CAMPAIGN_TOOLS = (globalThis as any).CAMPAIGN_TOOLS || {};
 (globalThis as any).CAMPAIGN_TOOLS.CampaignToolsModel = CampaignToolsModel;
+
+export { CampaignToolsModel };

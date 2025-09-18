@@ -5,7 +5,7 @@ import { JSDOM } from "jsdom";
 import { waitFor } from "@testing-library/dom";
 import * as fs from "fs";
 import * as path from "path";
-import { bootDialog, dumpState, installConsoleErrorFail } from "./testUtils";
+import { bootDialog, dumpState, installConsoleErrorFail, buildDialogModelFixture } from "./testUtils";
 
 const repoRoot = path.resolve(__dirname, "../../../../");
 const htmlPath = path.resolve(repoRoot, "dist/ui/rendered_settings_dialog_test.html");
@@ -47,11 +47,11 @@ describe("SettingsDialog preference resolution (sheet & address)", () => {
         const sheetTabToColumnNames = {
             Sheet1: ["name", "address", "rank"]
         };
-        const initData = {
+        const initData = buildDialogModelFixture({
             sheetTabNames: ["Sheet1"],
             sheetTabToColumnNames,
             prefs: {},
-        };
+        });
         await assertPreferredResolution(initData, "Sheet1", "address");
     });
 
@@ -61,11 +61,11 @@ describe("SettingsDialog preference resolution (sheet & address)", () => {
             b: ["3", "4"],
             c: [],
         };
-        const initData = {
+        const initData = buildDialogModelFixture({
             sheetTabNames: ["a", "b", "c"],
             sheetTabToColumnNames: sheetTabToColumnNames,
             prefs: { mapsApiKey: "key1", sheetTabName: "notThere", addressColumn: "notThere" },
-        };
+        });
         await assertPreferredResolution(initData, "a", "1");
     });
 
@@ -75,11 +75,11 @@ describe("SettingsDialog preference resolution (sheet & address)", () => {
             b: ["3", "4"],
             c: [],
         };
-        const initData = {
+        const initData = buildDialogModelFixture({
             sheetTabNames: ["a", "b", "c"],
             sheetTabToColumnNames: sheetTabToColumnNames,
             prefs: { mapsApiKey: "key1", sheetTabName: "notThere", addressColumn: "2" },
-        };
+        });
         await assertPreferredResolution(initData, "a", "2");
     });
 
@@ -89,11 +89,11 @@ describe("SettingsDialog preference resolution (sheet & address)", () => {
             b: ["3", "4"],
             c: [],
         };
-        const initData = {
+        const initData = buildDialogModelFixture({
             sheetTabNames: ["a", "b", "c"],
             sheetTabToColumnNames: sheetTabToColumnNames,
             prefs: { mapsApiKey: "key1", sheetTabName: "b", addressColumn: "notThere" },
-        };
+        });
         await assertPreferredResolution(initData, "b", "3");
     });
 
@@ -103,11 +103,11 @@ describe("SettingsDialog preference resolution (sheet & address)", () => {
             b: ["3", "4"],
             c: [],
         };
-        const initData = {
+        const initData = buildDialogModelFixture({
             sheetTabNames: ["a", "b", "c"],
             sheetTabToColumnNames: sheetTabToColumnNames,
             prefs: { mapsApiKey: "key1", sheetTabName: "b", addressColumn: "4" },
-        };
+        });
         await assertPreferredResolution(initData, "b", "4");
     });
 
@@ -117,11 +117,11 @@ describe("SettingsDialog preference resolution (sheet & address)", () => {
             b: ["3", "4"],
             c: [],
         };
-        const initData = {
+        const initData = buildDialogModelFixture({
             sheetTabNames: ["a", "b", "c"],
             sheetTabToColumnNames: sheetTabToColumnNames,
             prefs: { mapsApiKey: "key1", sheetTabName: "c", addressColumn: "anything" },
-        };
+        });
         await assertPreferredResolution(initData, "c", "");
     });
 });
