@@ -5,7 +5,8 @@ import { JSDOM } from "jsdom";
 import { waitFor } from "@testing-library/dom";
 import * as fs from "fs";
 import * as path from "path";
-import {bootDialog, dumpState, installConsoleErrorFail} from "./testUtils";
+import { bootDialog, dumpState, installConsoleErrorFail } from "./testUtils";
+import { CampaignToolsModel } from "../../../gas/src/logic/CampaignToolsModel";
 
 const repoRoot = path.resolve(__dirname, "../../../../");
 const htmlPath = path.resolve(repoRoot, "dist/ui/rendered_settings_dialog_test.html");
@@ -33,8 +34,6 @@ const cases: Array<[string, any, boolean, string]> = [
             sheetTabNames: ["Sheet1", "Sheet2"],
             sheetTabToColumnNames: { Sheet1: ["someColumnHeader"], Sheet2: ["badbad"] },
             prefs: { mapsApiKey: "key1", addressColumn: "" },
-            preferredSheetTabName: "Sheet1",
-            preferredAddressColumnName: "someColumnHeader",
         },
         false,
         "someColumnHeader",
@@ -45,8 +44,6 @@ const cases: Array<[string, any, boolean, string]> = [
             sheetTabNames: ["Sheet1", "Sheet2"],
             sheetTabToColumnNames: { Sheet1: ["x", "foo", "y"], Sheet2: ["bar", "baz"] },
             prefs: { mapsApiKey: "key1", addressColumn: "foo" },
-            preferredSheetTabName: "Sheet1",
-            preferredAddressColumnName: "foo",
         },
         false,
         "foo",
@@ -57,8 +54,6 @@ const cases: Array<[string, any, boolean, string]> = [
             sheetTabNames: ["Sheet1", "Sheet2"],
             sheetTabToColumnNames: { Sheet1: ["x", "y"], Sheet2: ["bar", "baz"] },
             prefs: { mapsApiKey: "key1", addressColumn: "zzz" },
-            preferredSheetTabName: "Sheet1",
-            preferredAddressColumnName: "x",
         },
         false,
         "x",
@@ -69,8 +64,6 @@ const cases: Array<[string, any, boolean, string]> = [
             sheetTabNames: ["Sheet1", "Sheet2"],
             sheetTabToColumnNames: { Sheet1: [], Sheet2: ["bar", "baz"] },
             prefs: { mapsApiKey: "key1", addressColumn: "foo" },
-            preferredSheetTabName: "Sheet1",
-            preferredAddressColumnName: "",
         },
         true,
         "",
@@ -81,8 +74,6 @@ const cases: Array<[string, any, boolean, string]> = [
             sheetTabNames: ["Sheet1", "Sheet2"],
             sheetTabToColumnNames: { Sheet1: ["someColumnHeader"], Sheet2: ["badbad"] },
             prefs: { mapsApiKey: "", addressColumn: "" },
-            preferredSheetTabName: "Sheet1",
-            preferredAddressColumnName: "someColumnHeader",
         },
         true,
         "someColumnHeader",
@@ -93,37 +84,35 @@ const cases: Array<[string, any, boolean, string]> = [
             sheetTabNames: ["Sheet1", "Sheet2"],
             sheetTabToColumnNames: { Sheet1: [], Sheet2: ["badbad"] },
             prefs: { mapsApiKey: "key1", addressColumn: "" },
-            preferredSheetTabName: "Sheet1",
-            preferredAddressColumnName: "",
         },
         true,
         "",
     ],
 ];
 
-describe.each(cases)(
-    "SettingsDialog Button State: %s",
-    (_label, initData, expectedDisabled, expectedAddress) => {
-        beforeEach(async () => {
-            const boot = await bootDialog(htmlContent, initData);
-            dom = boot.dom;
-            window = boot.window;
-            document = boot.document;
+// Update test logic to use model's computed values
+
+describe("SettingsDialog Save button enablement", () => {
+    test.each(cases)("%s", async (_desc, fixture, expectedDisabled, expectedAddress) => {
+        // Compute preferred values using the model
+        const model = new CampaignToolsModel(fixture);
+        const initData = model.getModelState();
+
+        const domWindowAndDoc = await bootDialog(htmlContent, initData);
+        dom = domWindowAndDoc.dom;
+        window = domWindowAndDoc.window;
+        document = domWindowAndDoc.document;
+
+        dumpState("after-init", document);
+
+        const saveBtn = document.getElementById("saveBtn") as HTMLButtonElement;
+        const addrSel = document.getElementById("addressSelect") as HTMLSelectElement;
+
+        await waitFor(() => {
+            expect(saveBtn.disabled).toBe(expectedDisabled);
+            expect(addrSel.value).toBe(expectedAddress);
         });
 
-        afterEach(() => {
-            if (dom) dom.window.close();
-        });
-
-        test("renders selects and save state correctly", async () => {
-            dumpState("after-init", document);
-
-            await waitFor(() => {
-                const saveBtn = document.querySelector("#saveBtn") as HTMLButtonElement;
-                const addrSel = document.querySelector("#addressSelect") as HTMLSelectElement;
-                expect(saveBtn.disabled).toBe(expectedDisabled);
-                expect(addrSel.value).toBe(expectedAddress);
-            });
-        });
-    }
-);
+        dom.window.close();
+    });
+});

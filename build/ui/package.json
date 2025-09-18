@@ -1,6 +1,17 @@
 {
   "private": true,
   "name": "@app/ui",
+  "documentation": {
+    "prebuild:ui": "Prebuild step for the UI package. This navigates to the `common` package and runs its `dist` script to ensure shared contracts are up-to-date.",
+    "clean": "Cleans the UI build output directory by removing the `dist/ui` folder.",
+    "tsc:ui": "Compiles TypeScript files for the UI package using the `tsconfig.json` configuration. This also cleans the build directory before compilation.",
+    "rename:html": "Renames JavaScript files in the GAS-safe staging directory to `.html` files following the project's naming conventions. This ensures compatibility with Google Apps Script.",
+    "build:ui": "Builds the UI package by compiling TypeScript files and renaming the output JavaScript files to `.html` for GAS compatibility.",
+    "setup:fixture": "Sets up a test fixture for the `SettingsDialog` UI component. This builds the UI package and creates a monolithic HTML file for ad hoc testing in a browser.",
+    "build": "Builds the UI package, sets up the test fixture, and runs Jest tests using the specified configuration file.",
+    "predist": "Prepares the GAS-safe staging directory by creating the necessary folder structure.",
+    "dist": "Copies built UI raw assets to the GAS-safe staging directory."
+  },
   "scripts": {
     "prebuild:ui": "cd ../common && npm run dist",
     "clean": "rm -rf ../../dist/ui",
