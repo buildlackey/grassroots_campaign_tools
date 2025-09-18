@@ -2,7 +2,7 @@ import {CampaignToolsModelState} from "../../../common/src/CampaignToolsModel";
 import {Preferences} from "../../../common/src/PreferenceSvc";
 
 
-class CampaignToolsModel {
+export class CampaignToolsModel {
     sheetTabNames: string[];
     sheetTabToColumnNames: Record<string, string[]>;
     prefs: Preferences;
@@ -70,4 +70,24 @@ class CampaignToolsModel {
 (globalThis as any).CAMPAIGN_TOOLS = (globalThis as any).CAMPAIGN_TOOLS || {};
 (globalThis as any).CAMPAIGN_TOOLS.CampaignToolsModel = CampaignToolsModel;
 
-export { CampaignToolsModel };
+// GAS-only static method for runtime
+(globalThis as any).CAMPAIGN_TOOLS.CampaignToolsModel.fromGAS = function(prefs: Preferences) {
+    const effectivePrefs =
+         prefs ||
+         ((globalThis as any).CAMPAIGN_TOOLS &&
+          (globalThis as any).CAMPAIGN_TOOLS.PreferenceSvc &&
+          (globalThis as any).CAMPAIGN_TOOLS.PreferenceSvc.create().getPreferences());
+    if (!effectivePrefs) {
+        throw new Error("Preferences unavailable: must pass prefs or have PreferenceSvc loaded");
+    }
+    const sheetLayout = new (globalThis as any).CAMPAIGN_TOOLS.SheetLayout();
+    const layout = sheetLayout.discover();
+
+    return new CampaignToolsModel({
+      sheetTabNames: layout.sheetTabNames,
+      sheetTabToColumnNames: layout.sheetTabToColumnNames,
+      prefs: effectivePrefs,
+    });
+};
+
+
