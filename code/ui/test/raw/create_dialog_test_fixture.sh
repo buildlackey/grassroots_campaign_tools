@@ -52,9 +52,7 @@ while IFS= read -r line; do
       cat_fragment "$ACTION" "$DIST_DIR/${DIALOG_NAME}ActionCode.html" >> "$OUT_HTML"
       ;;
     *"include('FooCode')"*)
-      echo outputting FooCode:  ${FOO}
       cat_fragment "$RAW_DIR/FooCode.html" "$FOO" >> "$OUT_HTML"
-      echo "result :  `cat $OUT_HTML`"
       ;;
     *)
       echo "$line" >> "$OUT_HTML"

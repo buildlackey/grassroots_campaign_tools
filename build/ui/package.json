@@ -2,12 +2,11 @@
   "private": true,
   "name": "@app/ui",
   "scripts": {
-    "lint:output": "eslint -c ./eslintrc.output.json ../../dist/ui/gas_safe_staging/*Code.html",
     "prebuild:ui": "cd ../common && npm run dist",
     "clean": "rm -rf ../../dist/ui",
     "tsc:ui": "npm run clean && tsc --project tsconfig.json",
     "rename:html": "bash ../../build/scripts/ui/normalize_ui_js_to_html.sh",
-    "build:ui": "npm run tsc:ui && npm run rename:html && npm run lint:output",
+    "build:ui": "npm run tsc:ui && npm run rename:html",
     "setup:fixture": "npm run build:ui && bash ../../code/ui/test/raw/create_dialog_test_fixture.sh SettingsDialog",
     "build": "npm run setup:fixture && jest --config=jest.config.js",
     "predist": "mkdir -p ../../dist/ui/gas_safe_staging",

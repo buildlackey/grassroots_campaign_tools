@@ -1,4 +1,4 @@
-console.log("[SettingsDialogActionCode] vA1 loading");
+log("[SettingsDialogActionCode] vA1 loading");
 
 /**
  * DialogModel: normalized state we pass between functions (incremental adoption).
@@ -13,7 +13,14 @@ console.log("[SettingsDialogActionCode] vA1 loading");
 declare var SDH: any;
 declare var google: any;
 
+function isLoggingEnabled(): boolean {
+    // Only enable logging if prefs.debug is explicitly true
+    const prefs = (window as any).CAMPAIGN_TOOLS_UI && (window as any).CAMPAIGN_TOOLS_UI.model && (window as any).CAMPAIGN_TOOLS_UI.model.prefs;
+    return !!(prefs && prefs.debug);
+}
+
 function log(...args: any[]) {
+    if (!isLoggingEnabled()) return;
     try {
         args.unshift("[SettingsDialog]");
         console.log.apply(console, args);
@@ -133,6 +140,9 @@ function onOpen(): void {
     const chain =
         google.script.run
             .withSuccessHandler(function (responseFromRemote: any) {
+                // Set the model globally for logging and event handlers
+                (window as any).CAMPAIGN_TOOLS_UI = (window as any).CAMPAIGN_TOOLS_UI || {};
+                (window as any).CAMPAIGN_TOOLS_UI.model = responseFromRemote;
                 log("getInitData success", responseFromRemote);
 
                 const sheetSelect = populateDialogFields(responseFromRemote);

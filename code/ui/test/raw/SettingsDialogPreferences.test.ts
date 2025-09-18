@@ -43,6 +43,21 @@ async function assertPreferredResolution(
 }
 
 describe("SettingsDialog preference resolution (sheet & address)", () => {
+    test("[0] no preferences, sheet1 columns are ['name', 'address', 'rank'] → picks 'address'", async () => {
+        const sheetTabToColumnNames = {
+            Sheet1: ["name", "address", "rank"]
+        };
+        const initData = {
+            sheetTabNames: ["Sheet1"],
+            sheetTabToColumnNames,
+            headersBySheet: sheetTabToColumnNames,
+            prefs: {},
+            preferredSheetTabName: "Sheet1",
+            preferredAddressColumnName: "address",
+        };
+        await assertPreferredResolution(initData, "Sheet1", "address");
+    });
+
     test("[1] pref sheet NOT present; pref address NOT present → fallbacks", async () => {
         const sheetTabToColumnNames = {
             a: ["1", "2", "9"],

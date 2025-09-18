@@ -1,5 +1,17 @@
 (function (global) {
-    console.log("[SettingsDialogUIFrostingCode] loading");
+    // Custom logger for UI frosting code
+    function logUIFrosting(msg, ...args) {
+        var debug = false;
+        try {
+            debug = (SDH && SDH.UI && SDH.UI.state && SDH.UI.state.preferences && SDH.UI.state.preferences.debug)
+                || (window.CAMPAIGN_TOOLS_UI && window.CAMPAIGN_TOOLS_UI.model && window.CAMPAIGN_TOOLS_UI.model.prefs && window.CAMPAIGN_TOOLS_UI.model.prefs.debug);
+        } catch (e) {}
+        if (debug) {
+            console.log("[SettingsDialogUIFrostingCode]", msg, ...args);
+        }
+    }
+
+    logUIFrosting("[SettingsDialogUIFrostingCode] loading");
     var SDH = global.SDH || {};
     SDH.UI = SDH.UI || {};
     SDH.UI.state = SDH.UI.state || {
@@ -21,7 +33,7 @@
         var addr = (addrEl && typeof addrEl.value === "string") ? addrEl.value : "";
 
         btn.disabled = !(key.length > 0 && addr !== "");
-        console.log("[updateSaveButtonState] disabled?", btn.disabled);
+        logUIFrosting("[updateSaveButtonState] disabled?", btn.disabled);
     };
 
     /* === renderHeadersFor (now accepts optional ctx/model) === */
@@ -30,7 +42,7 @@
             return '<option value="%s">%s</option>'.replace(/%s/g, h);
         }
 
-        console.log("[renderHeadersFor] start", name);
+        logUIFrosting("[renderHeadersFor] start", name);
 
         // Prefer explicitly passed model-like ctx, otherwise fall back to namespaced state
         var headersBySheet = (ctx && ctx.headersBySheet) || (SDH.UI.state.headersBySheet || {});
@@ -51,20 +63,20 @@
         select.innerHTML = clean.map(formatOption).join('');
         select.value = ctx ? ctx.preferredAddressColumnName : "";
 
-        console.log("[renderHeadersFor] selected:", select.value);
+        logUIFrosting("[renderHeadersFor] selected:", select.value);
 
         if (typeof SDH.UI.updateSaveButtonState === "function") {
             SDH.UI.updateSaveButtonState();
         }
 
-        console.log("[renderHeadersFor] exit", { count: clean.length, selected: select.value });
+        logUIFrosting("[renderHeadersFor] exit", { count: clean.length, selected: select.value });
     };
 
     /* === onSheetChange (now forwards optional ctx/model) === */
     SDH.UI.onSheetChange = function (ctx) {
         var sel = document.getElementById("sheetSelect");
         var name = sel ? sel.value : "";
-        console.log("[onSheetChange] ->", name);
+        logUIFrosting("[onSheetChange] ->", name);
         SDH.UI.renderHeadersFor(name, ctx);
     };
 
@@ -73,7 +85,7 @@
         const el = document.getElementById("mapsApiKey");
         if (!el) return;
         el.setAttribute("type", "text");
-        console.log("[showApiKeyOnFocus] unmasked mapsApiKey field");
+        logUIFrosting("[showApiKeyOnFocus] unmasked mapsApiKey field");
     };
 
     SDH.UI.hideApiKeyOnBlur = function () {
@@ -81,7 +93,7 @@
         if (!el) return;
         if (el.value && el.value.trim().length > 0) {
             el.setAttribute("type", "password");
-            console.log("[hideApiKeyOnBlur] masked mapsApiKey field");
+            logUIFrosting("[hideApiKeyOnBlur] masked mapsApiKey field");
         } else {
             el.setAttribute("type", "text"); // empty → show placeholder
         }
@@ -99,7 +111,7 @@
                 el.setAttribute("type", "text");
             }
         }
-        console.log("[toggleApiKeyVisibility] type now:", el.getAttribute("type"));
+        logUIFrosting("[toggleApiKeyVisibility] type now:", el.getAttribute("type"));
     };
 
     /* === Spinner Control === */
@@ -161,7 +173,7 @@
         }
 
         function positionPopover(btn, pop) {
-            console.log("[Popover] positionPopover() start");
+            logUIFrosting("[Popover] positionPopover() start");
             var rect = btn.getBoundingClientRect();
             var bodyScrollY = window.scrollY || document.documentElement.scrollTop || 0;
             var bodyScrollX = window.scrollX || document.documentElement.scrollLeft || 0;
@@ -181,7 +193,7 @@
             pop.style.left = left + "px";
             pop.style.top  = top  + "px";
 
-            console.log("[Popover] positioned", {
+            logUIFrosting("[Popover] positioned", {
                 btnRect: { x: rect.left, y: rect.top, w: rect.width, h: rect.height },
                 popSize: { w: w, h: h },
                 viewport: { vw: vw, vh: vh, sx: bodyScrollX, sy: bodyScrollY },
@@ -190,13 +202,13 @@
         }
 
         SDH.UI.initMapsPopover = function () {
-            console.log("[Popover] initMapsPopover called; readyState:", document.readyState);
+            logUIFrosting("[Popover] initMapsPopover called; readyState:", document.readyState);
 
             function wire() {
                 var btn = document.getElementById("maps-help-btn");
                 var pop = document.getElementById("maps-help-popover");
 
-                console.log("[Popover] wire()", { btnFound: !!btn, popFound: !!pop });
+                logUIFrosting("[Popover] wire()", { btnFound: !!btn, popFound: !!pop });
 
                 if (!btn || !pop) return;
 
@@ -214,19 +226,19 @@
                 function togglePop(e) {
                     if (e) { e.preventDefault(); e.stopPropagation(); }
                     var showing = pop.classList.contains("show");
-                    console.log("[Popover] toggle (currently showing? ->", showing, ")");
+                    logUIFrosting("[Popover] toggle (currently showing? ->", showing, ")");
                     if (showing) closePop(); else openPop();
                 }
 
                 btn.addEventListener("click", togglePop);
-                console.log("[Popover] click handler bound to #maps-help-btn");
+                logUIFrosting("[Popover] click handler bound to #maps-help-btn");
 
                 var closeBtn = pop.querySelector(".popover-close");
-                console.log("[Popover] closeBtn found?", !!closeBtn);
+                logUIFrosting("[Popover] closeBtn found?", !!closeBtn);
                 if (closeBtn) {
                     closeBtn.addEventListener("click", function (e) {
                         e.preventDefault(); e.stopPropagation();
-                        console.log("[Popover] closeBtn clicked");
+                        logUIFrosting("[Popover] closeBtn clicked");
                         closePop();
                     });
                 }
@@ -234,26 +246,26 @@
                 // Keep position correct while open
                 window.addEventListener("resize", function () {
                     if (pop.classList.contains("show")) {
-                        console.log("[Popover] resize → re-position");
+                        logUIFrosting("[Popover] resize → re-position");
                         positionPopover(btn, pop);
                     }
                 });
                 window.addEventListener("scroll", function () {
                     if (pop.classList.contains("show")) {
-                        console.log("[Popover] scroll → re-position");
+                        logUIFrosting("[Popover] scroll → re-position");
                         positionPopover(btn, pop);
                     }
                 }, true);
             }
 
             if (document.readyState === "complete") {
-                console.log("[Popover] document already complete → wiring now");
+                logUIFrosting("[Popover] document already complete → wiring now");
                 wire();
             } else {
-                console.log("[Popover] waiting for window.load to wire");
+                logUIFrosting("[Popover] waiting for window.load to wire");
                 window.addEventListener("load", function once() {
                     window.removeEventListener("load", once);
-                    console.log("[Popover] window.load fired → wiring now");
+                    logUIFrosting("[Popover] window.load fired → wiring now");
                     wire();
                 });
             }
@@ -263,18 +275,18 @@
         var _origInitTooltips = SDH.UI.initTooltips;
         SDH.UI.initTooltips = function () {
             var $target = $(".help-icon:not(.popover-help)");
-            console.log("[Tooltip] initTooltips() targets:", $target && $target.length);
+            logUIFrosting("[Tooltip] initTooltips() targets:", $target && $target.length);
             return _origInitTooltips.apply(this, arguments);
         };
 
         var _origWait = SDH.UI.waitForTooltipReady;
         SDH.UI.waitForTooltipReady = function (maxMs, intervalMs) {
-            console.log("[Tooltip] waitForTooltipReady start", { maxMs: maxMs, intervalMs: intervalMs });
+            logUIFrosting("[Tooltip] waitForTooltipReady start", { maxMs: maxMs, intervalMs: intervalMs });
             var start = Date.now();
             (function tick() {
                 var has = !!(window.jQuery && $.fn && $.fn.tooltip);
                 if (has) {
-                    console.log("[Tooltip] jQueryUI tooltip AVAILABLE @", (Date.now() - start) + "ms");
+                    logUIFrosting("[Tooltip] jQueryUI tooltip AVAILABLE @", (Date.now() - start) + "ms");
                     SDH.UI.initTooltips();
                     return;
                 }
@@ -297,7 +309,7 @@
         ev.initEvent("sdh-ui-ready", true, true);
         document.dispatchEvent(ev);
     } catch (e) { }
-    console.log("[SettingsDialogUIFrostingCode] sentinel set");
+    logUIFrosting("[SettingsDialogUIFrostingCode] sentinel set");
 
     // --- Head bootstrap moved here (spinner, tooltips, popover), same timing as before ---
     (function () {

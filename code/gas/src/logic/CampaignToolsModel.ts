@@ -14,13 +14,17 @@ class CampaignToolsModel {
     }
 
     getModelState(): CampaignToolsModelState {
-        return {
+        const state = {
             sheetTabNames: this.sheetTabNames,
             sheetTabToColumnNames: this.headersBySheet,
             prefs: this.prefs,
             preferredSheetTabName: this.preferredSheetTabName,
             preferredAddressColumnName: this.preferredAddressColumnName,
         };
+        try {
+            console.log('[CampaignToolsModel] getModelState: return value =', state);
+        } catch (e) {}
+        return state;
     }
 
     get preferredSheetTabName(): string {
@@ -38,12 +42,24 @@ class CampaignToolsModel {
         const headers = this.headersBySheet[this.preferredSheetTabName] || [];
         const clean = headers.filter(h => h != null && String(h).length > 0).map(String);
 
+        // Logging: show headers and clean list
+        try {
+            console.log('[CampaignToolsModel] preferredAddressColumnName: headers =', headers);
+            console.log('[CampaignToolsModel] preferredAddressColumnName: clean =', clean);
+            console.log('[CampaignToolsModel] preferredAddressColumnName: prefs.addressColumn =', this.prefs.addressColumn);
+        } catch (e) {}
+
         if (this.prefs.addressColumn && clean.includes(this.prefs.addressColumn)) {
+            try { console.log('[CampaignToolsModel] preferredAddressColumnName: returning prefs.addressColumn'); } catch (e) {}
             return this.prefs.addressColumn;
         }
         const match = clean.find(h => /address/i.test(h));
-        if (match) return match;
+        if (match) {
+            try { console.log('[CampaignToolsModel] preferredAddressColumnName: returning match =', match); } catch (e) {}
+            return match;
+        }
 
+        try { console.log('[CampaignToolsModel] preferredAddressColumnName: returning clean[0] =', clean[0] || ''); } catch (e) {}
         return clean[0] || "";
     }
 
