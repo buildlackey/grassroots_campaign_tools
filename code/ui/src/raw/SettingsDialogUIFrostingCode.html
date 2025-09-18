@@ -15,7 +15,7 @@
     var SDH = global.SDH || {};
     SDH.UI = SDH.UI || {};
     SDH.UI.state = SDH.UI.state || {
-        headersBySheet: {},
+        sheetTabToColumnNames: {},
         preferences: { addressColumn: {} }
     };
 
@@ -45,10 +45,10 @@
         logUIFrosting("[renderHeadersFor] start", name);
 
         // Prefer explicitly passed model-like ctx, otherwise fall back to namespaced state
-        var headersBySheet = (ctx && ctx.headersBySheet) || (SDH.UI.state.headersBySheet || {});
+        var sheetTabToColumnNames = (ctx && ctx.sheetTabToColumnNames) || (SDH.UI.state.sheetTabToColumnNames || {});
         var prefs          = (ctx && ctx.prefs)          || (SDH.UI.state.preferences || {});
 
-        var headers = (headersBySheet && headersBySheet[name]) || [];
+        var headers = (sheetTabToColumnNames && sheetTabToColumnNames[name]) || [];
 
         var clean = headers
             .filter(h => h != null && String(h).length > 0)

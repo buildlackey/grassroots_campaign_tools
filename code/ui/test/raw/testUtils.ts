@@ -107,3 +107,53 @@ export function installConsoleErrorFail() {
         throw new Error(`Console error: ${msg}`);
     };
 }
+
+/**
+ * Builds a dialog model fixture using backend logic for preference resolution.
+ * Mirrors CampaignToolsModel.fromGAS and fallback logic.
+ */
+export function buildDialogModelFixture({
+    sheetTabNames,
+    sheetTabToColumnNames,
+    prefs
+}: {
+    sheetTabNames: string[];
+    sheetTabToColumnNames: Record<string, string[]>;
+    prefs: {
+        sheetTabName?: string;
+        addressColumn?: string;
+        mapsApiKey?: string;
+        showLatLong?: boolean;
+        debug?: boolean;
+    };
+}) {
+    // Preferred sheet tab logic
+    let preferredSheetTabName = prefs.sheetTabName && sheetTabNames.includes(prefs.sheetTabName)
+        ? prefs.sheetTabName
+        : (sheetTabNames[0] || "");
+
+    // Preferred address column logic
+    const headers = sheetTabToColumnNames[preferredSheetTabName] || [];
+    const cleanHeaders = headers.filter(h => h != null && String(h).length > 0).map(String);
+    let preferredAddressColumnName = "";
+    if (prefs.addressColumn && cleanHeaders.includes(prefs.addressColumn)) {
+        preferredAddressColumnName = prefs.addressColumn;
+    } else {
+        const match = cleanHeaders.find(h => /address/i.test(h));
+        preferredAddressColumnName = match || cleanHeaders[0] || "";
+    }
+
+    return {
+        sheetTabNames,
+        sheetTabToColumnNames,
+        prefs: {
+            sheetTabName: prefs.sheetTabName || "",
+            addressColumn: prefs.addressColumn || "",
+            mapsApiKey: prefs.mapsApiKey || "",
+            showLatLong: !!prefs.showLatLong,
+            debug: !!prefs.debug,
+        },
+        preferredSheetTabName,
+        preferredAddressColumnName,
+    };
+}

@@ -1,13 +1,5 @@
 log("[SettingsDialogActionCode] vA1 loading");
 
-/**
- * DialogModel: normalized state we pass between functions (incremental adoption).
- * {
- *   sheetTabNames: string[],
- *   headersBySheet: Record<string, string[]>,
- *   prefs: { mapsApiKey?: string, addressColumn?: string, sheetTabName?: string, showLatLong?: boolean, debug?: boolean }
- * }
- */
 
 // --- tiny logger ---
 declare var SDH: any;
@@ -16,7 +8,8 @@ declare var google: any;
 function isLoggingEnabled(): boolean {
     // Only enable logging if prefs.debug is explicitly true
     const prefs = (window as any).CAMPAIGN_TOOLS_UI && (window as any).CAMPAIGN_TOOLS_UI.model && (window as any).CAMPAIGN_TOOLS_UI.model.prefs;
-    return !!(prefs && prefs.debug);
+    //return !!(prefs && prefs.debug);
+    return true; // TODO - make this configurable
 }
 
 function log(...args: any[]) {
@@ -92,7 +85,18 @@ function onOpen(): void {
                 .join("");
             sheetSelect.value = model.preferredSheetTabName;
         }
-        if (addressSelect) addressSelect.value = model.preferredAddressColumnName;
+        // Populate address column select list
+        if (addressSelect && sheetSelect) {
+            const columns = (model.sheetTabToColumnNames && model.sheetTabToColumnNames[sheetSelect.value]) || [];
+            log("addressSelect: element present?", !!addressSelect);
+            log("sheetSelect.value:", sheetSelect.value);
+            log("model.sheetTabToColumnNames:", model.sheetTabToColumnNames);
+            log("columns for selected sheet:", columns);
+            log("model.preferredAddressColumnName:", model.preferredAddressColumnName);
+            addressSelect.innerHTML = columns.map((col: string) => `<option value="${col}">${col}</option>`).join("");
+            addressSelect.value = model.preferredAddressColumnName;
+            log("addressSelect.value just set to:", model.preferredAddressColumnName, "DOM value now:", addressSelect.value);
+        }
         if (mapsApiKey) mapsApiKey.value = prefs.mapsApiKey;
         if (showLatLng) showLatLng.checked = !!prefs.showLatLong;
         if (debugChk) debugChk.checked = !!prefs.debug;
@@ -183,7 +187,7 @@ function saveSettings(model: any, _evt?: Event) {
     const showLL    = !!((document.getElementById("showLatLng") as HTMLInputElement | null)?.checked);
     const debug     = !!((document.getElementById("debug") as HTMLInputElement | null)?.checked);
 
-    const columns = (model.headersBySheet && model.headersBySheet[sheetName]) || [];
+    const columns = (model.sheetTabToColumnNames && model.sheetTabToColumnNames[sheetName]) || [];
 
     const payload = {
         sheetTabName: sheetName,

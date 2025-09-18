@@ -4,19 +4,19 @@ import {Preferences} from "../../../common/src/PreferenceSvc";
 
 class CampaignToolsModel {
     sheetTabNames: string[];
-    headersBySheet: Record<string, string[]>;
+    sheetTabToColumnNames: Record<string, string[]>;
     prefs: Preferences;
 
     constructor(initData: CampaignToolsModelState) {
         this.sheetTabNames = initData.sheetTabNames || [];
-        this.headersBySheet = initData.sheetTabToColumnNames || {};
+        this.sheetTabToColumnNames = initData.sheetTabToColumnNames || {};
         this.prefs = initData.prefs;
     }
 
     getModelState(): CampaignToolsModelState {
         return {
             sheetTabNames: this.sheetTabNames,
-            sheetTabToColumnNames: this.headersBySheet,
+            sheetTabToColumnNames: this.sheetTabToColumnNames,
             prefs: this.prefs,
             preferredSheetTabName: this.preferredSheetTabName,
             preferredAddressColumnName: this.preferredAddressColumnName,
@@ -35,7 +35,7 @@ class CampaignToolsModel {
     }
 
     get preferredAddressColumnName(): string {
-        const headers = this.headersBySheet[this.preferredSheetTabName] || [];
+        const headers = this.sheetTabToColumnNames[this.preferredSheetTabName] || [];
         const clean = headers.filter(h => h != null && String(h).length > 0).map(String);
 
         // Logging: show headers and clean list
@@ -60,7 +60,7 @@ class CampaignToolsModel {
     }
 
     get headersForPreferredSheet(): string[] {
-        return this.headersBySheet[this.preferredSheetTabName] || [];
+        return this.sheetTabToColumnNames[this.preferredSheetTabName] || [];
     }
 
     /** Factory: build a model from GAS sheet utils + caller-supplied prefs */

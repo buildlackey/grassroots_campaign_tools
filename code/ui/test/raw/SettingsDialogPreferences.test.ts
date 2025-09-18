@@ -50,10 +50,7 @@ describe("SettingsDialog preference resolution (sheet & address)", () => {
         const initData = {
             sheetTabNames: ["Sheet1"],
             sheetTabToColumnNames,
-            headersBySheet: sheetTabToColumnNames,
             prefs: {},
-            preferredSheetTabName: "Sheet1",
-            preferredAddressColumnName: "address",
         };
         await assertPreferredResolution(initData, "Sheet1", "address");
     });
@@ -66,11 +63,8 @@ describe("SettingsDialog preference resolution (sheet & address)", () => {
         };
         const initData = {
             sheetTabNames: ["a", "b", "c"],
-            sheetTabToColumnNames,
-            headersBySheet: sheetTabToColumnNames,
+            sheetTabToColumnNames: sheetTabToColumnNames,
             prefs: { mapsApiKey: "key1", sheetTabName: "notThere", addressColumn: "notThere" },
-            preferredSheetTabName: "a",
-            preferredAddressColumnName: "1",
         };
         await assertPreferredResolution(initData, "a", "1");
     });
@@ -83,11 +77,8 @@ describe("SettingsDialog preference resolution (sheet & address)", () => {
         };
         const initData = {
             sheetTabNames: ["a", "b", "c"],
-            sheetTabToColumnNames,
-            headersBySheet: sheetTabToColumnNames,
+            sheetTabToColumnNames: sheetTabToColumnNames,
             prefs: { mapsApiKey: "key1", sheetTabName: "notThere", addressColumn: "2" },
-            preferredSheetTabName: "a",
-            preferredAddressColumnName: "2",
         };
         await assertPreferredResolution(initData, "a", "2");
     });
@@ -100,11 +91,8 @@ describe("SettingsDialog preference resolution (sheet & address)", () => {
         };
         const initData = {
             sheetTabNames: ["a", "b", "c"],
-            sheetTabToColumnNames,
-            headersBySheet: sheetTabToColumnNames,
+            sheetTabToColumnNames: sheetTabToColumnNames,
             prefs: { mapsApiKey: "key1", sheetTabName: "b", addressColumn: "notThere" },
-            preferredSheetTabName: "b",
-            preferredAddressColumnName: "3",
         };
         await assertPreferredResolution(initData, "b", "3");
     });
@@ -117,11 +105,8 @@ describe("SettingsDialog preference resolution (sheet & address)", () => {
         };
         const initData = {
             sheetTabNames: ["a", "b", "c"],
-            sheetTabToColumnNames,
-            headersBySheet: sheetTabToColumnNames,
+            sheetTabToColumnNames: sheetTabToColumnNames,
             prefs: { mapsApiKey: "key1", sheetTabName: "b", addressColumn: "4" },
-            preferredSheetTabName: "b",
-            preferredAddressColumnName: "4",
         };
         await assertPreferredResolution(initData, "b", "4");
     });
@@ -134,11 +119,8 @@ describe("SettingsDialog preference resolution (sheet & address)", () => {
         };
         const initData = {
             sheetTabNames: ["a", "b", "c"],
-            sheetTabToColumnNames,
-            headersBySheet: sheetTabToColumnNames,
+            sheetTabToColumnNames: sheetTabToColumnNames,
             prefs: { mapsApiKey: "key1", sheetTabName: "c", addressColumn: "anything" },
-            preferredSheetTabName: "c",
-            preferredAddressColumnName: "",
         };
         await assertPreferredResolution(initData, "c", "");
     });
