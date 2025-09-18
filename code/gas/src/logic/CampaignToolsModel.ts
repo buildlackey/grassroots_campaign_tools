@@ -14,17 +14,13 @@ class CampaignToolsModel {
     }
 
     getModelState(): CampaignToolsModelState {
-        const state = {
+        return {
             sheetTabNames: this.sheetTabNames,
             sheetTabToColumnNames: this.headersBySheet,
             prefs: this.prefs,
             preferredSheetTabName: this.preferredSheetTabName,
             preferredAddressColumnName: this.preferredAddressColumnName,
         };
-        try {
-            console.log('[CampaignToolsModel] getModelState: return value =', state);
-        } catch (e) {}
-        return state;
     }
 
     get preferredSheetTabName(): string {
