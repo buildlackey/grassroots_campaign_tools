@@ -32,7 +32,7 @@ export async function bootDialog(htmlContent: string, initData: any) {
             (win as any).__IN_JEST__ = true;
 
             // Wire the 'ready' handshake before any page scripts run
-            win.document.addEventListener("sdh-ui-ready", () => {
+            win.document.addEventListener("ui-frosting-ready", () => {
                 if ((global as any).__SDH_READY_HANDLER__) {
                     (global as any).__SDH_READY_HANDLER__();
                 }
@@ -49,7 +49,7 @@ export async function bootDialog(htmlContent: string, initData: any) {
     // Wait for frosting's ready event
     const readyPromise = new Promise<void>((resolve, reject) => {
         const timer = setTimeout(
-            () => reject(new Error("timeout waiting for sdh-ui-ready")),
+            () => reject(new Error("timeout waiting for ui-frosting-ready")),
             2000
         );
         (global as any).__SDH_READY_HANDLER__ = () => {

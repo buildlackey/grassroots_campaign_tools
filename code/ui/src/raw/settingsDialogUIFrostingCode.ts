@@ -23,6 +23,11 @@ interface Window {
 declare const $: any;
 
 (function (global) {
+    // --- Namespace setup ---
+    global.CAMPAIGN_TOOLS = global.CAMPAIGN_TOOLS || {};
+    global.CAMPAIGN_TOOLS.UI = global.CAMPAIGN_TOOLS.UI || {};
+    global.CAMPAIGN_TOOLS_UI = global.CAMPAIGN_TOOLS.UI;
+
     // Enhanced logger
     function logUIFrosting(msg: string, ...args: any[]): void {
         const debug =
@@ -35,15 +40,14 @@ declare const $: any;
         }
     }
 
-    var SDH = global.SDH = global.SDH || {};
-    SDH.UI = SDH.UI || {};
-    SDH.UI.state = SDH.UI.state || {
+    var UI = global.CAMPAIGN_TOOLS.UI;
+    UI.state = UI.state || {
         sheetTabToColumnNames: {},
         preferences: { addressColumn: {} }
     };
 
     // Spinner control
-    SDH.UI.showSpinner = function () {
+    UI.showSpinner = function () {
         try {
             const overlay = document.getElementById("loading-overlay");
             if (overlay) overlay.style.display = "flex";
@@ -51,7 +55,7 @@ declare const $: any;
             console.warn("[safeShowLoading] failed:", e);
         }
     };
-    SDH.UI.hideSpinner = function () {
+    UI.hideSpinner = function () {
         try {
             const overlay = document.getElementById("loading-overlay");
             if (overlay) overlay.style.display = "none";
@@ -61,13 +65,13 @@ declare const $: any;
     };
 
     // API key visibility
-    SDH.UI.showApiKeyOnFocus = function () {
+    UI.showApiKeyOnFocus = function () {
         const el = document.getElementById("mapsApiKey") as HTMLInputElement | null;
         if (!el) return;
         el.setAttribute("type", "text");
         logUIFrosting("[showApiKeyOnFocus] unmasked mapsApiKey field");
     };
-    SDH.UI.hideApiKeyOnBlur = function () {
+    UI.hideApiKeyOnBlur = function () {
         const el = document.getElementById("mapsApiKey") as HTMLInputElement | null;
         if (!el) return;
         if (el.value && el.value.trim().length > 0) {
@@ -77,7 +81,7 @@ declare const $: any;
             el.setAttribute("type", "text");
         }
     };
-    SDH.UI.toggleApiKeyVisibility = function (checkboxEl: HTMLInputElement) {
+    UI.toggleApiKeyVisibility = function (checkboxEl: HTMLInputElement) {
         const el = document.getElementById("mapsApiKey") as HTMLInputElement | null;
         if (!el) return;
         if (checkboxEl && checkboxEl.checked) {
@@ -93,7 +97,7 @@ declare const $: any;
     };
 
     // Tooltips
-    SDH.UI.initTooltips = function () {
+    UI.initTooltips = function () {
         var $target = $(".help-icon:not(.popover-help)");
         if ($target.length === 0) return;
         $target.tooltip({
@@ -112,10 +116,10 @@ declare const $: any;
             hide: { delay: 100, duration: 80 }
         });
     };
-    SDH.UI.waitForTooltipReady = function (maxMs, intervalMs) {
+    UI.waitForTooltipReady = function (maxMs, intervalMs) {
         var start = Date.now();
         (function tick() {
-            if (window.jQuery && $.fn && $.fn.tooltip) { SDH.UI.initTooltips(); return; }
+            if (window.jQuery && $.fn && $.fn.tooltip) { UI.initTooltips(); return; }
             if (Date.now() - start >= maxMs) return;
             setTimeout(tick, intervalMs);
         })();
@@ -140,7 +144,7 @@ declare const $: any;
         pop.style.left = left + "px";
         pop.style.top  = top  + "px";
     }
-    SDH.UI.initMapsPopover = function () {
+    UI.initMapsPopover = function () {
         function wire() {
             var btn = document.getElementById("maps-help-btn");
             var pop = document.getElementById("maps-help-popover");
@@ -186,19 +190,19 @@ declare const $: any;
 
     // Bootstrap head logic
     (function () {
-        SDH.UI._headBootstrapped = SDH.UI._headBootstrapped || false;
-        SDH.UI.bootstrapHead = function () {
-            if (SDH.UI._headBootstrapped) return;
-            SDH.UI._headBootstrapped = true;
+        UI._headBootstrapped = UI._headBootstrapped || false;
+        UI.bootstrapHead = function () {
+            if (UI._headBootstrapped) return;
+            UI._headBootstrapped = true;
             try {
-                window.addEventListener("error", function () { SDH.UI.hideSpinner(); });
-                window.addEventListener("unhandledrejection", function () { SDH.UI.hideSpinner(); });
+                window.addEventListener("error", function () { UI.hideSpinner(); });
+                window.addEventListener("unhandledrejection", function () { UI.hideSpinner(); });
             } catch (_){}
-            SDH.UI.showSpinner();
-            SDH.UI.waitForTooltipReady(5000, 50);
-            SDH.UI.initMapsPopover();
+            UI.showSpinner();
+            UI.waitForTooltipReady(5000, 50);
+            UI.initMapsPopover();
         };
-        function runBootstrap() { SDH.UI.bootstrapHead(); }
+        function runBootstrap() { UI.bootstrapHead(); }
         if (document.readyState === "complete") {
             runBootstrap();
         } else {
@@ -211,7 +215,7 @@ declare const $: any;
 
     logUIFrosting("[SettingsDialogUIFrostingCode] loading");
     /* === updateSaveButtonState === */
-    SDH.UI.updateSaveButtonState = function () {
+    UI.updateSaveButtonState = function () {
         var btn = document.getElementById("saveBtn") as HTMLButtonElement | null;
         if (!btn) {
             console.warn("[updateSaveButtonState] Save button not found");
@@ -226,12 +230,12 @@ declare const $: any;
     };
 
     /* === renderHeadersFor (now accepts optional ctx/model) === */
-    SDH.UI.renderHeadersFor = function (name: string, ctx?: any) {
+    UI.renderHeadersFor = function (name: string, ctx?: any) {
         function formatOption(h: string) {
             return '<option value="%s">%s</option>'.replace(/%s/g, h);
         }
         logUIFrosting("[renderHeadersFor] start", name);
-        var sheetTabToColumnNames = (ctx && ctx.sheetTabToColumnNames) || (SDH.UI.state.sheetTabToColumnNames || {});
+        var sheetTabToColumnNames = (ctx && ctx.sheetTabToColumnNames) || (UI.state.sheetTabToColumnNames || {});
         var headers = (sheetTabToColumnNames && sheetTabToColumnNames[name]) || [];
         var clean = headers.filter((h: any) => h != null && String(h).length > 0).map((h: any) => String(h));
         var select = document.getElementById("addressSelect") as HTMLSelectElement | null;
@@ -242,28 +246,25 @@ declare const $: any;
         select.innerHTML = clean.map(formatOption).join('');
         select.value = ctx ? ctx.preferredAddressColumnName : "";
         logUIFrosting("[renderHeadersFor] selected:", select.value);
-        if (typeof SDH.UI.updateSaveButtonState === "function") {
-            SDH.UI.updateSaveButtonState();
+        if (typeof UI.updateSaveButtonState === "function") {
+            UI.updateSaveButtonState();
         }
         logUIFrosting("[renderHeadersFor] exit", { count: clean.length, selected: select.value });
     };
 
     /* === onSheetChange (now forwards optional ctx/model) === */
-    SDH.UI.onSheetChange = function (ctx?: any) {
+    UI.onSheetChange = function (ctx?: any) {
         var sel = document.getElementById("sheetSelect") as HTMLSelectElement | null;
         var name = sel ? sel.value : "";
         logUIFrosting("[onSheetChange] ->", name);
-        SDH.UI.renderHeadersFor(name, ctx);
+        UI.renderHeadersFor(name, ctx);
     };
 
-    // Publish SDH before firing the ready event (prevents ReferenceError in listeners)
-    global.SDH = SDH;
-
     // Sentinel ready
-    SDH.UI.ready = true;
+    UI.ready = true;
     try {
         var ev = document.createEvent("Event");
-        ev.initEvent("sdh-ui-ready", true, true);
+        ev.initEvent("ui-frosting-ready", true, true);
         document.dispatchEvent(ev);
     } catch (e) { }
     logUIFrosting("[SettingsDialogUIFrostingCode] sentinel set");

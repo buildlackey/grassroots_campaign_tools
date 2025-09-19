@@ -1,13 +1,12 @@
 log("[SettingsDialogActionCode] vA1 loading");
 
+declare var CAMPAIGN_TOOLS: any;
 
-// --- tiny logger ---
-declare var SDH: any;
 declare var google: any;
 
 function isLoggingEnabled(): boolean {
     // Only enable logging if prefs.debug is explicitly true
-    const prefs = (window as any).CAMPAIGN_TOOLS_UI && (window as any).CAMPAIGN_TOOLS_UI.model && (window as any).CAMPAIGN_TOOLS_UI.model.prefs;
+    const prefs = (window as any).CAMPAIGN_TOOLS.UI && (window as any).CAMPAIGN_TOOLS.UI.model && (window as any).CAMPAIGN_TOOLS.UI.model.prefs;
     //return !!(prefs && prefs.debug);
     return true; // TODO - make this configurable
 }
@@ -43,16 +42,20 @@ function bindRequired(id: string, event: string, handler: EventListener): HTMLEl
     return el;
 }
 
-// ========= Event-driven readiness (simplified) =========
+// --- Namespace setup ---
+(window as any).CAMPAIGN_TOOLS = (window as any).CAMPAIGN_TOOLS || {};
+(window as any).CAMPAIGN_TOOLS.UI = (window as any).CAMPAIGN_TOOLS.UI || {};
+(window as any).CAMPAIGN_TOOLS_UI = (window as any).CAMPAIGN_TOOLS.UI;
+
 function waitForUIHelpers(): Promise<void> {
-    // Resolves as soon as frosting dispatches sdh-ui-ready
+    // Resolves as soon as frosting dispatches ui-frosting-ready
     return new Promise((resolve: () => void) => {
         try {
-            if ((window as any).SDH && (window as any).SDH.UI && (window as any).SDH.UI.ready === true) {
+            if ((window as any).CAMPAIGN_TOOLS && (window as any).CAMPAIGN_TOOLS.UI && (window as any).CAMPAIGN_TOOLS.UI.ready === true) {
                 resolve();
                 return;
             }
-            document.addEventListener("sdh-ui-ready", () => resolve(), { once: true });
+            document.addEventListener("ui-frosting-ready", () => resolve(), { once: true });
         } catch (_) {
             resolve(); // fail-safe: don't block if something unexpected happens
         }
@@ -110,37 +113,33 @@ function onOpen(): void {
 
     function wireUpEventHandlers(model: any) {
         bindRequired("sheetSelect", "change", function (this: HTMLElement, _evt: Event) {
-            SDH.UI.onSheetChange(model);
+            CAMPAIGN_TOOLS.UI.onSheetChange(model);
         });
-
         bindRequired("saveBtn", "click", function (_evt: Event) {
             saveSettings(model);
         });
-
         bindRequired("showApiKey", "change", function (this: HTMLElement, _evt: Event) {
-            SDH.UI.toggleApiKeyVisibility(this);
+            CAMPAIGN_TOOLS.UI.toggleApiKeyVisibility(this);
         });
-        bindRequired("mapsApiKey", "blur", function (_evt: Event) { SDH.UI.hideApiKeyOnBlur(); });
-        bindRequired("mapsApiKey", "focus", function (_evt: Event) { SDH.UI.showApiKeyOnFocus(); });
-        bindRequired("mapsApiKey", "input", function (_evt: Event) { SDH.UI.updateSaveButtonState(); });
-
-        bindRequired("addressSelect", "change", function (_evt: Event) { SDH.UI.updateSaveButtonState(); });
+        bindRequired("mapsApiKey", "blur", function (_evt: Event) { CAMPAIGN_TOOLS.UI.hideApiKeyOnBlur(); });
+        bindRequired("mapsApiKey", "focus", function (_evt: Event) { CAMPAIGN_TOOLS.UI.showApiKeyOnFocus(); });
+        bindRequired("mapsApiKey", "input", function (_evt: Event) { CAMPAIGN_TOOLS.UI.updateSaveButtonState(); });
+        bindRequired("addressSelect", "change", function (_evt: Event) { CAMPAIGN_TOOLS.UI.updateSaveButtonState(); });
     }
 
     /** Pass the model into renderers */
     function renderSelectorForAddressColumn(model: any, preferredSheetSelect: HTMLSelectElement | null) {
         if (model.sheetTabNames.length > 0 && preferredSheetSelect) {
-            SDH.UI.renderHeadersFor(preferredSheetSelect.value, model);
+            CAMPAIGN_TOOLS.UI.renderHeadersFor(preferredSheetSelect.value, model);
         }
-        SDH.UI.updateSaveButtonState();
-
-        SDH.UI.hideSpinner();
+        CAMPAIGN_TOOLS.UI.updateSaveButtonState();
+        CAMPAIGN_TOOLS.UI.hideSpinner();
         log("onOpen processing DONE");
     }
 
     // Main entry point
     log("ENTER onOpen");
-    SDH.UI.showSpinner();
+    CAMPAIGN_TOOLS.UI.showSpinner();
     const chain =
         google.script.run
             .withSuccessHandler(function (responseFromRemote: any) {
@@ -157,7 +156,7 @@ function onOpen(): void {
             })
             .withFailureHandler(function (e: any) {
                 console.error("❌ Failed to fetch init data:", e);
-                SDH.UI.hideSpinner();
+                CAMPAIGN_TOOLS.UI.hideSpinner();
             });
     chain.getInitData();
 }
@@ -236,3 +235,4 @@ function cancelDialog() {
     }
     window.addEventListener('keydown', onKeydown, true);
 })();
+
