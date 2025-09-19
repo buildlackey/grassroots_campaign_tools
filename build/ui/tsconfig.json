@@ -7,7 +7,8 @@
     "strict": true,
     "noEmitOnError": true,
     "types": [],
-    "lib": ["dom", "es2019"]
+    "lib": ["dom", "es2019"],
+    "allowJs": true     // ✅ NEW: allow raw JS in .ts/.js files
   },
   "include": [
     "../../code/ui/src/raw/*.ts"
@@ -18,3 +19,4 @@
     "../../dist/ui/gas_safe_staging"
   ]
 }
+
