@@ -2,10 +2,10 @@
 
 // Declare global extensions for window and jQuery
 // This is necessary because the codebase relies on certain global objects and libraries,
-// such as CAMPAIGN_TOOLS_UI and jQuery, which are not natively recognized by TypeScript.
+// such as CAMPAIGN_UI and jQuery, which are not natively recognized by TypeScript.
 //
 interface Window {
-    CAMPAIGN_TOOLS_UI?: {
+    CAMPAIGN_UI?: {
         model?: {
             prefs?: {
                 debug?: boolean;
@@ -24,23 +24,23 @@ declare const $: any;
 
 (function (global) {
     // --- Namespace setup ---
-    global.CAMPAIGN_TOOLS = global.CAMPAIGN_TOOLS || {};
-    global.CAMPAIGN_TOOLS.UI = global.CAMPAIGN_TOOLS.UI || {};
-    global.CAMPAIGN_TOOLS_UI = global.CAMPAIGN_TOOLS.UI;
+    global.CAMPAIGN = global.CAMPAIGN || {};
+    global.CAMPAIGN.UI = global.CAMPAIGN.UI || {};
+    global.CAMPAIGN_UI = global.CAMPAIGN.UI;
 
     // Enhanced logger
     function logUIFrosting(msg: string, ...args: any[]): void {
         const debug =
-            (window.CAMPAIGN_TOOLS_UI &&
-                window.CAMPAIGN_TOOLS_UI.model &&
-                window.CAMPAIGN_TOOLS_UI.model.prefs &&
-                window.CAMPAIGN_TOOLS_UI.model.prefs.debug);
+            (window.CAMPAIGN_UI &&
+                window.CAMPAIGN_UI.model &&
+                window.CAMPAIGN_UI.model.prefs &&
+                window.CAMPAIGN_UI.model.prefs.debug);
         if (debug) {
             console.log("[SettingsDialogUIFrostingCode]", msg, ...args);
         }
     }
 
-    var UI = global.CAMPAIGN_TOOLS.UI;
+    var UI = global.CAMPAIGN.UI;
     UI.state = UI.state || {
         sheetTabToColumnNames: {},
         preferences: { addressColumn: {} }

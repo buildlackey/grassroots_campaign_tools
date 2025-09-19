@@ -121,7 +121,7 @@ Setting up distance tools on new google account (e.g., a test account for dev pu
 2.  link to billing acct
     export TEST_ACCOUNT_EMAIL={email of your new test account}
     bash link_to_main_acct_billing.sh  $GOOGLE_ACCT $TEST_ACCOUNT_EMAIL
-(master) /home/chris/grassroots_campaign_tools  > 
+(master) /home/chris/grassroots_CAMPAIGN  > 
 
 
 

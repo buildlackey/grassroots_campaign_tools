@@ -58,5 +58,5 @@ class SheetLayout {
 }
 
 /* Export to GAS global */
-(globalThis as any).CAMPAIGN_TOOLS = (globalThis as any).CAMPAIGN_TOOLS || {};
-(globalThis as any).CAMPAIGN_TOOLS.SheetLayout = SheetLayout;
+(globalThis as any).CAMPAIGN = (globalThis as any).CAMPAIGN || {};
+(globalThis as any).CAMPAIGN.SheetLayout = SheetLayout;

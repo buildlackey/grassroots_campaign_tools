@@ -5,5 +5,5 @@ class HelloSvc {
 }
 
 // Export into GAS global namespace
-(globalThis as any).CAMPAIGN_TOOLS = (globalThis as any).CAMPAIGN_TOOLS || {};
-(globalThis as any).CAMPAIGN_TOOLS.HelloSvc = HelloSvc;
+(globalThis as any).CAMPAIGN = (globalThis as any).CAMPAIGN || {};
+(globalThis as any).CAMPAIGN.HelloSvc = HelloSvc;

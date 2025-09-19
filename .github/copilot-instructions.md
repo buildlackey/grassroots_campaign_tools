@@ -37,10 +37,10 @@ No implementation files
 
 ### TypeScript / GAS (`code/gas/src/logic`)
 
-- Always export classes into `globalThis.CAMPAIGN_TOOLS` for GAS runtime access.  
+- Always export classes into `globalThis.CAMPAIGN` for GAS runtime access.  
   ```ts
-  (globalThis as any).CAMPAIGN_TOOLS = (globalThis as any).CAMPAIGN_TOOLS || {};
-  (globalThis as any).CAMPAIGN_TOOLS.MyClass = MyClass;
+  (globalThis as any).CAMPAIGN = (globalThis as any).CAMPAIGN || {};
+  (globalThis as any).CAMPAIGN.MyClass = MyClass;
 
 
 ### Naming Conventions for .html files
@@ -82,7 +82,7 @@ in browser for quick ad hoc testing without deploying all the way to GAS environ
 
 - When writing new GAS services, copy the pattern from `PreferenceSvc.ts` or `SheetLayout.ts`
 - When modifying dialogs, keep frosting and action code separate
-- Always assume GAS runtime = no imports, no ES modules, only `globalThis.CAMPAIGN_TOOLS`
+- Always assume GAS runtime = no imports, no ES modules, only `globalThis.CAMPAIGN`
 - For tests, mock GAS APIs via `setupMock.js` or `testUtils.ts`
 
 ## 🚫 Anti-patterns

@@ -72,11 +72,11 @@ try {
                     className = match.replace(/(?:^|\n)class\s+/, '');
                 }
 
-                return `(globalThis as any).CAMPAIGN_TOOLS = (globalThis as any).CAMPAIGN_TOOLS || {};\n(globalThis as any).CAMPAIGN_TOOLS.${className} = ${className};`;
+                return `(globalThis as any).CAMPAIGN = (globalThis as any).CAMPAIGN || {};\n(globalThis as any).CAMPAIGN.${className} = ${className};`;
             }).join('\n');
 
             // Add global assignments at the end
-            if (!content.includes('globalThis.CAMPAIGN_TOOLS')) {
+            if (!content.includes('globalThis.CAMPAIGN')) {
                 content += '\n\n// Global namespace assignments\n' + assignments;
             }
         }

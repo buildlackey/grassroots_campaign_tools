@@ -10,7 +10,7 @@ module.exports = {
         path: path.resolve(__dirname, "../../dist/gas/gas_safe_staging"),
         filename: "gas_bundle.js",
         // GAS requires functions to live on the global object
-        library: { type: "assign", name: "globalThis.CAMPAIGN_TOOLS" },
+        library: { type: "assign", name: "globalThis.CAMPAIGN" },
         pathinfo: true,
     },
     target: ["web", "es5"],   // ensures Apps Script-compatible output

@@ -70,10 +70,10 @@ export async function bootDialog(htmlContent: string, initData: any) {
 function isDebugEnabled(doc: Document, prefs?: any): boolean {
     // Prefer explicit prefs argument
     if (prefs && typeof prefs.debug !== "undefined") return !!prefs.debug;
-    // Try to get from window.CAMPAIGN_TOOLS_UI.model.prefs
+    // Try to get from window.CAMPAIGN_UI.model.prefs
     try {
         const win = (doc.defaultView || window) as any; // Cast to any to avoid TS2339
-        return !!(win.CAMPAIGN_TOOLS_UI && win.CAMPAIGN_TOOLS_UI.model && win.CAMPAIGN_TOOLS_UI.model.prefs && win.CAMPAIGN_TOOLS_UI.model.prefs.debug);
+        return !!(win.CAMPAIGN_UI && win.CAMPAIGN_UI.model && win.CAMPAIGN_UI.model.prefs && win.CAMPAIGN_UI.model.prefs.debug);
     } catch (e) {}
     return false;
 }

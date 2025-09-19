@@ -11,8 +11,8 @@
 
     function setupMock(win) {
         // Attach CampaignToolsLogger to global for tests
-        if (!win.CAMPAIGN_TOOLS) win.CAMPAIGN_TOOLS = {};
-        win.CAMPAIGN_TOOLS.CampaignToolsLogger = class {
+        if (!win.CAMPAIGN) win.CAMPAIGN = {};
+        win.CAMPAIGN.CampaignToolsLogger = class {
             constructor(debug) { this.isEnabled = !!debug; }
             log(msg, ...args) { if (this.isEnabled) console.log(msg, ...args); }
         };

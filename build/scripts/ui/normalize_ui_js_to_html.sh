@@ -12,7 +12,7 @@
 # - Some build tools or bundlers (like Webpack) may output code wrapped in an IIFE
 #   to avoid polluting the global scope.
 # - Google Apps Script (GAS) requires all exported classes and functions to be
-#   attached to globalThis.CAMPAIGN_TOOLS (see .github/copilot-instructions.md),
+#   attached to globalThis.CAMPAIGN (see .github/copilot-instructions.md),
 #   not hidden inside an IIFE.
 # - If your code is wrapped in an IIFE, it will not be accessible in the GAS runtime,
 #   and your dialogs/services will break.
@@ -20,7 +20,7 @@
 # Why you should NOT use IIFE for GAS:
 # ------------------------------------
 # - GAS does not support ES modules or imports/exports.
-# - All logic must be attached to the global object (globalThis.CAMPAIGN_TOOLS).
+# - All logic must be attached to the global object (globalThis.CAMPAIGN).
 # - Wrapping code in an IIFE hides your classes/functions from the global scope,
 #   making them inaccessible to GAS includes and runtime.
 # -----------------------------------------------------------------------------

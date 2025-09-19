@@ -67,20 +67,20 @@ export class CampaignToolsModel {
 }
 
 /* ===== UMD-ish export: attach to globalThis for GAS runtime ===== */
-(globalThis as any).CAMPAIGN_TOOLS = (globalThis as any).CAMPAIGN_TOOLS || {};
-(globalThis as any).CAMPAIGN_TOOLS.CampaignToolsModel = CampaignToolsModel;
+(globalThis as any).CAMPAIGN = (globalThis as any).CAMPAIGN || {};
+(globalThis as any).CAMPAIGN.CampaignToolsModel = CampaignToolsModel;
 
 // GAS-only static method for runtime
-(globalThis as any).CAMPAIGN_TOOLS.CampaignToolsModel.fromGAS = function(prefs: Preferences) {
+(globalThis as any).CAMPAIGN.CampaignToolsModel.fromGAS = function(prefs: Preferences) {
     const effectivePrefs =
          prefs ||
-         ((globalThis as any).CAMPAIGN_TOOLS &&
-          (globalThis as any).CAMPAIGN_TOOLS.PreferenceSvc &&
-          (globalThis as any).CAMPAIGN_TOOLS.PreferenceSvc.create().getPreferences());
+         ((globalThis as any).CAMPAIGN &&
+          (globalThis as any).CAMPAIGN.PreferenceSvc &&
+          (globalThis as any).CAMPAIGN.PreferenceSvc.create().getPreferences());
     if (!effectivePrefs) {
         throw new Error("Preferences unavailable: must pass prefs or have PreferenceSvc loaded");
     }
-    const sheetLayout = new (globalThis as any).CAMPAIGN_TOOLS.SheetLayout();
+    const sheetLayout = new (globalThis as any).CAMPAIGN.SheetLayout();
     const layout = sheetLayout.discover();
 
     return new CampaignToolsModel({

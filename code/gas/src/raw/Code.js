@@ -41,8 +41,8 @@ function savePreferences(prefs, columns) {
     Logger.log("📥 [Code.js:savePreferences] called prefs=%s columns=%s",
                JSON.stringify(prefs), JSON.stringify(columns));
 
-    if (globalThis.CAMPAIGN_TOOLS && globalThis.CAMPAIGN_TOOLS.PreferenceSvc) {
-        const result = globalThis.CAMPAIGN_TOOLS.PreferenceSvc.create().savePreferences(prefs, columns);
+    if (globalThis.CAMPAIGN && globalThis.CAMPAIGN.PreferenceSvc) {
+        const result = globalThis.CAMPAIGN.PreferenceSvc.create().savePreferences(prefs, columns);
         Logger.log("🔔 [Code.js:savePreferences] about to toast");
         SpreadsheetApp.getActiveSpreadsheet().toast("✅ Settings saved", "Campaign Tools", 3);
         Logger.log("✅ [Code.js:savePreferences] completed");
@@ -68,7 +68,7 @@ function savePreferences(prefs, columns) {
  * <p>Specifically, it can reveal:</p>
  * <ul>
  *   <li><b>Runtime linkage errors</b> — for example, if a namespace or global export
- *       wasn’t attached correctly (e.g. <code>globalThis.CAMPAIGN_TOOLS.PreferenceSvc</code>
+ *       wasn’t attached correctly (e.g. <code>globalThis.CAMPAIGN.PreferenceSvc</code>
  *       is undefined).</li>
  *   <li><b>Transpilation/packaging surprises</b> — if the bundler emitted code that
  *       Apps Script accepts syntactically but fails to execute at runtime.</li>
@@ -83,11 +83,11 @@ function savePreferences(prefs, columns) {
  */
 function smokeTest() {
     Logger.log("🧪 [Code.js/smokeTest] ENTER");
-    if (!globalThis.CAMPAIGN_TOOLS || !globalThis.CAMPAIGN_TOOLS.PreferenceSvc) {
-        throw new Error("Bundle not loaded: PreferenceSvc is missing from CAMPAIGN_TOOLS");
+    if (!globalThis.CAMPAIGN || !globalThis.CAMPAIGN.PreferenceSvc) {
+        throw new Error("Bundle not loaded: PreferenceSvc is missing from CAMPAIGN");
     }
 
-    var svc = globalThis.CAMPAIGN_TOOLS.PreferenceSvc.create();
+    var svc = globalThis.CAMPAIGN.PreferenceSvc.create();
 
     var key = "TEST_KEY_" + Math.random().toString(36).slice(2);
     svc.clearPreferences({ document: false, user: true });
@@ -108,8 +108,8 @@ function smokeTest() {
 }
 
 function verifyMapsApiKeySaved() {
-    if (globalThis.CAMPAIGN_TOOLS && globalThis.CAMPAIGN_TOOLS.PreferenceSvc) {
-        var svc = globalThis.CAMPAIGN_TOOLS.PreferenceSvc.create();
+    if (globalThis.CAMPAIGN && globalThis.CAMPAIGN.PreferenceSvc) {
+        var svc = globalThis.CAMPAIGN.PreferenceSvc.create();
         var prefs = svc.getPreferences();
         var msg = prefs && prefs.mapsApiKey
             ? "✅ Maps API key stored: " + prefs.mapsApiKey
@@ -126,16 +126,16 @@ function showToastInSheets(msg) {
 
 
 function getInitData() {
-    const svc = globalThis.CAMPAIGN_TOOLS.PreferenceSvc.create();
+    const svc = globalThis.CAMPAIGN.PreferenceSvc.create();
     const prefs = svc.getPreferences();
 
-    const model = globalThis.CAMPAIGN_TOOLS.CampaignToolsModel.fromGAS(prefs);
+    const model = globalThis.CAMPAIGN.CampaignToolsModel.fromGAS(prefs);
     return model.getModelState();
 }
 
 function logicPing() {
-  if (!globalThis.CAMPAIGN_TOOLS || !globalThis.CAMPAIGN_TOOLS.HelloSvc) {
+  if (!globalThis.CAMPAIGN || !globalThis.CAMPAIGN.HelloSvc) {
     throw new Error("HelloSvc not found");
   }
-  return globalThis.CAMPAIGN_TOOLS.HelloSvc.ping();
+  return globalThis.CAMPAIGN.HelloSvc.ping();
 }

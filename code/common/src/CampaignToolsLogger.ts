@@ -17,5 +17,5 @@ class CampaignToolsLogger {
     }
 }
 
-(globalThis as any).CAMPAIGN_TOOLS = (globalThis as any).CAMPAIGN_TOOLS || {};
-(globalThis as any).CAMPAIGN_TOOLS.CampaignToolsLogger = CampaignToolsLogger;
+(globalThis as any).CAMPAIGN = (globalThis as any).CAMPAIGN || {};
+(globalThis as any).CAMPAIGN.CampaignToolsLogger = CampaignToolsLogger;

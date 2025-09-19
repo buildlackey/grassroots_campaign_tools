@@ -149,5 +149,5 @@ class PreferenceSvc {
 
 
 // === Namespace exposure only (no global function shims) ===
-(globalThis as any).CAMPAIGN_TOOLS = (globalThis as any).CAMPAIGN_TOOLS || {};
-(globalThis as any).CAMPAIGN_TOOLS.PreferenceSvc = PreferenceSvc;
+(globalThis as any).CAMPAIGN = (globalThis as any).CAMPAIGN || {};
+(globalThis as any).CAMPAIGN.PreferenceSvc = PreferenceSvc;
