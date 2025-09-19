@@ -10,7 +10,14 @@
 }(typeof self !== "undefined" ? self : this, function () {
 
     function setupMock(win) {
+        // Attach CampaignToolsLogger to global for tests
+        if (!win.CAMPAIGN_TOOLS) win.CAMPAIGN_TOOLS = {};
+        win.CAMPAIGN_TOOLS.CampaignToolsLogger = class {
+            constructor(debug) { this.isEnabled = !!debug; }
+            log(msg, ...args) { if (this.isEnabled) console.log(msg, ...args); }
+        };
         // ✅ Built-in default dataset for manual browser usage
+        // Restore original mock data
         const sheets = { Sheet1: ["someColumnHeader"], Sheet2: ["altAddr"], Sheet3: [] };
         const names = Object.keys(sheets);
 

@@ -1,22 +1,23 @@
-log("[SettingsDialogActionCode] vA1 loading");
-
-declare var CAMPAIGN_TOOLS: any;
-
-declare var google: any;
-
-function isLoggingEnabled(): boolean {
-    // Only enable logging if prefs.debug is explicitly true
-    const prefs = (window as any).CAMPAIGN_TOOLS.UI && (window as any).CAMPAIGN_TOOLS.UI.model && (window as any).CAMPAIGN_TOOLS.UI.model.prefs;
-    //return !!(prefs && prefs.debug);
-    return true; // TODO - make this configurable
+// Fallback logger for test environments
+if (typeof window !== "undefined") {
+    window.CAMPAIGN_TOOLS = window.CAMPAIGN_TOOLS || {};
+    if (!window.CAMPAIGN_TOOLS.CampaignToolsLogger) {
+        class FallbackLogger {
+            isEnabled: boolean;
+            constructor(debug: boolean) { this.isEnabled = !!debug; }
+            log(msg: string, ...args: any[]) { if (this.isEnabled) console.log(msg, ...args); }
+        }
+        window.CAMPAIGN_TOOLS.CampaignToolsLogger = FallbackLogger;
+    }
 }
 
-function log(...args: any[]) {
-    if (!isLoggingEnabled()) return;
-    try {
-        args.unshift("[SettingsDialog]");
-        console.log.apply(console, args);
-    } catch (_) { }
+declare var CAMPAIGN_TOOLS: any;
+declare var google: any;
+
+/** TypeScript type declaration for CampaignToolsLogger */
+declare class CampaignToolsLogger {
+    constructor(debug: boolean);
+    log(message: string, ...args: any[]): void;
 }
 
 // --- DOM helpers ---
@@ -34,11 +35,11 @@ function hasAddressSelection(): boolean {
 }
 
 // Bind + assert presence
-function bindRequired(id: string, event: string, handler: EventListener): HTMLElement {
+function bindRequired(id: string, event: string, handler: EventListener, logger: CampaignToolsLogger): HTMLElement {
     var el = document.getElementById(id);
     if (!el) throw new Error(`Missing required element #${id}`);
     el.addEventListener(event, handler);
-    log("bindRequired OK", { id, event });
+    logger.log("bindRequired OK", { id, event });
     return el;
 }
 
@@ -71,7 +72,8 @@ window.addEventListener("load", onOpen);
 function onOpen(): void {
     /** Consume model instead of raw data */
     function populateDialogFields(model: any): HTMLSelectElement | null {
-        log("populateDialogFields → model =", model);
+        const logger = new (window as any).CAMPAIGN_TOOLS.CampaignToolsLogger(model.prefs && model.prefs.debug);
+        logger.log("populateDialogFields → model =", model);
         const prefs = model.prefs || {};
 
         // Grab all required DOM elements up front
@@ -91,54 +93,55 @@ function onOpen(): void {
         // Populate address column select list
         if (addressSelect && sheetSelect) {
             const columns = (model.sheetTabToColumnNames && model.sheetTabToColumnNames[sheetSelect.value]) || [];
-            log("addressSelect: element present?", !!addressSelect);
-            log("sheetSelect.value:", sheetSelect.value);
-            log("model.sheetTabToColumnNames:", model.sheetTabToColumnNames);
-            log("columns for selected sheet:", columns);
-            log("model.preferredAddressColumnName:", model.preferredAddressColumnName);
+            logger.log("addressSelect: element present?", !!addressSelect);
+            logger.log("sheetSelect.value:", sheetSelect.value);
+            logger.log("model.sheetTabToColumnNames:", model.sheetTabToColumnNames);
+            logger.log("columns for selected sheet:", columns);
+            logger.log("model.preferredAddressColumnName:", model.preferredAddressColumnName);
             addressSelect.innerHTML = columns.map((col: string) => `<option value="${col}">${col}</option>`).join("");
             addressSelect.value = model.preferredAddressColumnName;
-            log("addressSelect.value just set to:", model.preferredAddressColumnName, "DOM value now:", addressSelect.value);
+            logger.log("addressSelect.value just set to:", model.preferredAddressColumnName, "DOM value now:", addressSelect.value);
         }
         if (mapsApiKey) mapsApiKey.value = prefs.mapsApiKey;
         if (showLatLng) showLatLng.checked = !!prefs.showLatLong;
         if (debugChk) debugChk.checked = !!prefs.debug;
 
-        log("populateDialogFields → sheetSelect.value =", sheetSelect ? sheetSelect.value : null);
-        log("populateDialogFields → addressSelect.value =", addressSelect ? addressSelect.value : null);
+        logger.log("populateDialogFields → sheetSelect.value =", sheetSelect ? sheetSelect.value : null);
+        logger.log("populateDialogFields → addressSelect.value =", addressSelect ? addressSelect.value : null);
 
         return sheetSelect;
     }
 
 
-    function wireUpEventHandlers(model: any) {
+    function wireUpEventHandlers(model: any, logger: CampaignToolsLogger) {
         bindRequired("sheetSelect", "change", function (this: HTMLElement, _evt: Event) {
             CAMPAIGN_TOOLS.UI.onSheetChange(model);
-        });
+        }, logger);
         bindRequired("saveBtn", "click", function (_evt: Event) {
-            saveSettings(model);
-        });
+            saveSettings(model, logger);
+        }, logger);
         bindRequired("showApiKey", "change", function (this: HTMLElement, _evt: Event) {
             CAMPAIGN_TOOLS.UI.toggleApiKeyVisibility(this);
-        });
-        bindRequired("mapsApiKey", "blur", function (_evt: Event) { CAMPAIGN_TOOLS.UI.hideApiKeyOnBlur(); });
-        bindRequired("mapsApiKey", "focus", function (_evt: Event) { CAMPAIGN_TOOLS.UI.showApiKeyOnFocus(); });
-        bindRequired("mapsApiKey", "input", function (_evt: Event) { CAMPAIGN_TOOLS.UI.updateSaveButtonState(); });
-        bindRequired("addressSelect", "change", function (_evt: Event) { CAMPAIGN_TOOLS.UI.updateSaveButtonState(); });
+        }, logger);
+        bindRequired("mapsApiKey", "blur", function (_evt: Event) { CAMPAIGN_TOOLS.UI.hideApiKeyOnBlur(); }, logger);
+        bindRequired("mapsApiKey", "focus", function (_evt: Event) { CAMPAIGN_TOOLS.UI.showApiKeyOnFocus(); }, logger);
+        bindRequired("mapsApiKey", "input", function (_evt: Event) { CAMPAIGN_TOOLS.UI.updateSaveButtonState(); }, logger);
+        bindRequired("addressSelect", "change", function (_evt: Event) { CAMPAIGN_TOOLS.UI.updateSaveButtonState(); }, logger);
     }
 
     /** Pass the model into renderers */
-    function renderSelectorForAddressColumn(model: any, preferredSheetSelect: HTMLSelectElement | null) {
+    function renderSelectorForAddressColumn(model: any, preferredSheetSelect: HTMLSelectElement | null, logger: CampaignToolsLogger) {
         if (model.sheetTabNames.length > 0 && preferredSheetSelect) {
             CAMPAIGN_TOOLS.UI.renderHeadersFor(preferredSheetSelect.value, model);
         }
         CAMPAIGN_TOOLS.UI.updateSaveButtonState();
         CAMPAIGN_TOOLS.UI.hideSpinner();
-        log("onOpen processing DONE");
+        logger.log("onOpen processing DONE");
     }
 
     // Main entry point
-    log("ENTER onOpen");
+    const logger = new (window as any).CAMPAIGN_TOOLS.CampaignToolsLogger(false);
+    logger.log("ENTER onOpen");
     CAMPAIGN_TOOLS.UI.showSpinner();
     const chain =
         google.script.run
@@ -146,12 +149,13 @@ function onOpen(): void {
                 // Set the model globally for logging and event handlers
                 (window as any).CAMPAIGN_TOOLS_UI = (window as any).CAMPAIGN_TOOLS_UI || {};
                 (window as any).CAMPAIGN_TOOLS_UI.model = responseFromRemote;
-                log("getInitData success", responseFromRemote);
+                const logger = new (window as any).CAMPAIGN_TOOLS.CampaignToolsLogger(responseFromRemote.prefs && responseFromRemote.prefs.debug);
+                logger.log("getInitData success", responseFromRemote);
 
                 const sheetSelect = populateDialogFields(responseFromRemote);
                 waitForUIHelpers().then(function () {
-                    wireUpEventHandlers(responseFromRemote);
-                    renderSelectorForAddressColumn(responseFromRemote, sheetSelect);
+                    wireUpEventHandlers(responseFromRemote, logger);
+                    renderSelectorForAddressColumn(responseFromRemote, sheetSelect, logger);
                 });
             })
             .withFailureHandler(function (e: any) {
@@ -162,8 +166,8 @@ function onOpen(): void {
 }
 
 // ===== dialog controls =====
-function closeDialog() {
-    log("closeDialog");
+function closeDialog(logger: CampaignToolsLogger) {
+    logger.log("closeDialog");
     try {
         if (google && google.script && google.script.host && typeof google.script.host.close === 'function') {
             google.script.host.close();
@@ -175,8 +179,8 @@ function closeDialog() {
 }
 
 // ===== actions =====
-function saveSettings(model: any, _evt?: Event) {
-    log("ENTER saveSettingsWith(model)");
+function saveSettings(model: any, logger: CampaignToolsLogger, _evt?: Event) {
+    logger.log("ENTER saveSettingsWith(model)");
     const btn = document.getElementById('saveBtn') as HTMLButtonElement | null;
     if (btn) btn.disabled = true;
 
@@ -195,7 +199,7 @@ function saveSettings(model: any, _evt?: Event) {
         showLatLong: showLL,
         debug: debug
     };
-    log("saveSettingsWith payload", payload, { columns });
+    logger.log("saveSettingsWith payload", payload, { columns });
 
     if (!mapsKey || !address) {
         if (btn) btn.disabled = true;
@@ -206,8 +210,8 @@ function saveSettings(model: any, _evt?: Event) {
 
     google.script.run
         .withSuccessHandler(function () {
-            log("saveSettingsWith success → closing dialog");
-            closeDialog();
+            logger.log("saveSettingsWith success → closing dialog");
+            closeDialog(logger);
         })
         .withFailureHandler(function (e: any) {
             console.error("❌ Failed to save preferences:", e);
@@ -218,21 +222,21 @@ function saveSettings(model: any, _evt?: Event) {
         .savePreferences(payload, columns);
 }
 
-function cancelDialog() {
-    log("cancelDialog");
-    closeDialog();
+function cancelDialog(logger: CampaignToolsLogger) {
+    logger.log("cancelDialog");
+    closeDialog(logger);
 }
 
 // ===== keyboard: ESC closes dialog =====
 (function () {
     function onKeydown(e: KeyboardEvent) {
+        const logger = new (window as any).CAMPAIGN_TOOLS.CampaignToolsLogger(false);
         if (e && (e.key === 'Escape' || e.key === 'Esc')) {
             e.preventDefault();
             e.stopPropagation();
-            log("keyboard escape → cancelDialog");
-            cancelDialog();
+            logger.log("keyboard escape → cancelDialog");
+            cancelDialog(logger);
         }
     }
     window.addEventListener('keydown', onKeydown, true);
 })();
-
