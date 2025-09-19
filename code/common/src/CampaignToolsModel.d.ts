@@ -1,4 +1,4 @@
-import type { Preferences } from 'PreferenceSvc';
+import type { Preferences } from './PreferenceSvc';
 
 export interface CampaignToolsModelState {
   sheetTabNames: string[];
