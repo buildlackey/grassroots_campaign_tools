@@ -10,14 +10,10 @@
 }(typeof self !== "undefined" ? self : this, function () {
 
     function setupMock(win) {
-        // Attach CampaignToolsLogger to global for tests
         if (!win.CAMPAIGN) win.CAMPAIGN = {};
-        win.CAMPAIGN.CampaignToolsLogger = class {
-            constructor(debug) { this.isEnabled = !!debug; }
-            log(msg, ...args) { if (this.isEnabled) console.log(msg, ...args); }
-        };
+        // Do not instantiate win.CAMPAIGN.logger here; let dialog code handle it.
+
         // ✅ Built-in default dataset for manual browser usage
-        // Restore original mock data
         const sheets = { Sheet1: ["someColumnHeader"], Sheet2: ["altAddr"], Sheet3: [] };
         const names = Object.keys(sheets);
 
@@ -33,8 +29,8 @@
                                         sheetTabNames: names,
                                         sheetTabToColumnNames: sheets,
                                         prefs: {
-                                            mapsApiKey: "mockKey123",   // non-empty by default
-                                            sheetTabName: names[0],     // "Sheet1"
+                                            mapsApiKey: "mockKey123",
+                                            sheetTabName: names[0],
                                             addressColumn: sheets[names[0]][0] || "",
                                             showLatLong: false,
                                             debug: false,
@@ -46,7 +42,7 @@
                             },
                             savePreferences: function (prefs) {
                                 try {
-                                    console.log("💾 Saved preferences", prefs);
+                                    win.CAMPAIGN.logger.log("💾 Saved preferences", prefs);
                                     successHandler();
                                 } catch (e) {
                                     console.error("Mock failure:", e);
@@ -58,7 +54,7 @@
                 }
             },
             host: {
-                close: function () { console.log("🔒 Dialog closed"); }
+                close: function () { win.CAMPAIGN.logger.log("🔒 Dialog closed"); }
             }
         };
     }

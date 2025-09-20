@@ -121,6 +121,12 @@
 </div>
 
 
+<!-- Order is important -- this must load before anything that uses logging -->
+<script>
+    <?!= include('CampaignToolsLogger') ?>
+    //# sourceURL=SettingsDialogUIFrostingCode.js
+</script>
+
 <!-- Order is important -- this must load before SettingsDialogActionCode -->
 <script>
     <?!= include('SettingsDialogUIFrostingCode') ?>

@@ -49,6 +49,9 @@ build_ui() {
   else
     echo "⚠️ Skipping UI: directory not found at $BUILD_UI_DIR"
   fi
+
+  echo UI - tree listing
+  tree /home/chris/grassroots_campaign_tools/dist
 }
 
 build_gas() {
@@ -64,6 +67,10 @@ build_gas() {
 
   echo "LISTING after demodulify:"
   ls "$GIT_ROOT/dist/gas/gas_safe_staging"
+
+
+  echo GAS - tree listing
+  tree /home/chris/grassroots_campaign_tools/dist
 }
 
 build_common() {
@@ -80,6 +87,9 @@ build_common() {
   else
     echo "⚠️ Skipping Common: directory not found at $BUILD_COMMON_DIR"
   fi
+
+  echo common - tree listing
+  tree /home/chris/grassroots_campaign_tools/dist
 }
 
 # === Build selected targets ===
@@ -94,6 +104,7 @@ esac
 # === Stage & Push ===
 echo "🚧 Working in: $WORKING_PUSH_FOLDER"
 cd "$WORKING_PUSH_FOLDER"
+tree /home/chris/grassroots_campaign_tools/dist
 
 # 1) Validate scriptId alignment
 jq --arg pid "$PROJECT_ID" '.projectId=$pid' .clasp.json > .clasp.tmp && mv .clasp.tmp .clasp.json
@@ -140,8 +151,19 @@ fi
 sed -i "s|\"GOOGLE_MAPS_API_KEY\"|\"${GOOGLE_MAPS_API_KEY}\"|g" "$WORKING_PUSH_FOLDER/Code.js"
 
 # 4) Push
+
+# === Remove duplicate JS files if HTML version exists ===
+for htmlfile in "$WORKING_PUSH_FOLDER"/*.html; do
+  jsfile="${htmlfile%.html}.js"
+  if [[ -f "$jsfile" ]]; then
+    echo "⚠️ Duplicate detected: $(basename "$htmlfile") and $(basename "$jsfile") -- removing JS file to avoid GAS push conflict."
+    rm "$jsfile"
+  fi
+done
+
 echo "🚀 Pushing project to Apps Script"
 "$LOCAL_CLASP" push --force
+
 
 # 5) Optional remote smoke test
 echo "🏁 Running remote smokeTest (expects SUCCESS)"
@@ -151,3 +173,4 @@ else
   echo "❌ smoke test failed"
   exit 1
 fi
+

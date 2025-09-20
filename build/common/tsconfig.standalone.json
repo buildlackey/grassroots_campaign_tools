@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "none",
+    "target": "ES5",
+    "outDir": "../../dist/common/gas_safe_staging/",
+    "removeComments": false,
+    "noEmitHelpers": true,
+    "noImplicitAny": false
+  },
+  "include": ["../../code/common/src/CampaignToolsLogger.ts"]
+}
+

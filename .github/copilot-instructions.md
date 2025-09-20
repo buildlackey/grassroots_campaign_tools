@@ -89,6 +89,11 @@ in browser for quick ad hoc testing without deploying all the way to GAS environ
 
 ❌ **Do not use async/await in GAS logic** (Apps Script runtime doesn't support it)  
 ❌ **Do not introduce external NPM deps in GAS logic**  
-❌ **Do not emit ES module syntax in final GAS bundle**  
+❌ **Do not emit ES module syntax in final GAS bundle**
 
+## 🛠️ Build System Organization
 
+- All build scripts and configuration files (e.g., for transpilation, bundling, normalization) must live under the `build/` directory.
+- Source code lives under `code/` (e.g., `code/common/src/`, `code/gas/src/logic/`, `code/ui/src/raw/`).
+- Build scripts and configs in `build/FOO/` operate on source code in `code/FOO/src/` and output to the appropriate `dist/` directory.
+- Do not place build scripts or configs in any `src/` directory.

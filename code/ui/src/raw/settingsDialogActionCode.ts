@@ -1,24 +1,5 @@
-// Fallback logger for test environments
-if (typeof window !== "undefined") {
-    window.CAMPAIGN = window.CAMPAIGN || {};
-    if (!window.CAMPAIGN.CampaignToolsLogger) {
-        class FallbackLogger {
-            isEnabled: boolean;
-            constructor(debug: boolean) { this.isEnabled = !!debug; }
-            log(msg: string, ...args: any[]) { if (this.isEnabled) console.log(msg, ...args); }
-        }
-        window.CAMPAIGN.CampaignToolsLogger = FallbackLogger;
-    }
-}
-
 declare var CAMPAIGN: any;
 declare var google: any;
-
-/** TypeScript type declaration for CampaignToolsLogger */
-declare class CampaignToolsLogger {
-    constructor(debug: boolean);
-    log(message: string, ...args: any[]): void;
-}
 
 // --- DOM helpers ---
 function getSaveBtn(): HTMLButtonElement | null { return document.getElementById("saveBtn") as HTMLButtonElement | null; }
@@ -43,10 +24,14 @@ function bindRequired(id: string, event: string, handler: EventListener): HTMLEl
     return el;
 }
 
-// --- Namespace setup ---
+// --- Namespace setup ---      // TODO -- this should go up top with the declarations !
 (window as any).CAMPAIGN = (window as any).CAMPAIGN || {};
 (window as any).CAMPAIGN.UI = (window as any).CAMPAIGN.UI || {};
 (window as any).CAMPAIGN_UI = (window as any).CAMPAIGN.UI;
+
+// Instantiate logger at the top and verify availability with ping()
+CAMPAIGN.logger = new (window as any).CAMPAIGN.CampaignToolsLogger();
+console.log('Logger ping:', CAMPAIGN.logger.ping());
 
 function waitForUIHelpers(): Promise<void> {
     // Resolves as soon as frosting dispatches ui-frosting-ready
@@ -72,7 +57,6 @@ window.addEventListener("load", onOpen);
 function onOpen(): void {
     /** Consume model instead of raw data */
     function populateDialogFields(model: any): HTMLSelectElement | null {
-        CAMPAIGN.logger = new (window as any).CAMPAIGN.CampaignToolsLogger(model.prefs && model.prefs.debug);
         CAMPAIGN.logger.log("populateDialogFields → model =", model);
         const prefs = model.prefs || {};
 
@@ -140,7 +124,6 @@ function onOpen(): void {
     }
 
     // Main entry point
-    CAMPAIGN.logger = new (window as any).CAMPAIGN.CampaignToolsLogger(false);
     CAMPAIGN.logger.log("ENTER onOpen");
     CAMPAIGN.UI.showSpinner();
     const chain =
@@ -149,7 +132,6 @@ function onOpen(): void {
                 // Set the model globally for logging and event handlers
                 (window as any).CAMPAIGN_UI = (window as any).CAMPAIGN_UI || {};
                 (window as any).CAMPAIGN_UI.model = responseFromRemote;
-                CAMPAIGN.logger = new (window as any).CAMPAIGN.CampaignToolsLogger(responseFromRemote.prefs && responseFromRemote.prefs.debug);
                 CAMPAIGN.logger.log("getInitData success", responseFromRemote);
 
                 const sheetSelect = populateDialogFields(responseFromRemote);

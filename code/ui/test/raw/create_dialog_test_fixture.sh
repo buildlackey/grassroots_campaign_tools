@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Rationale: dist/ui/gas_safe_staging/ (DIST_DIR) is currently the "collection point" for all UI and shared JS artifacts
+# that need to be renamed to .html for GAS compatibility. This is practical because:
+#   - All UI code expects to include fragments -- regardless of origin (common, or uiartifacts) -- from this directory.
+#   - The normalization/renaming script only needs to operate in one place.
+#   - The test fixture and deployment scripts can reliably find all needed fragments here.
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
 BUILT_UI_DIR="$PROJECT_ROOT/dist/ui"
@@ -53,6 +59,9 @@ while IFS= read -r line; do
       ;;
     *"include('FooCode')"*)
       cat_fragment "$RAW_DIR/FooCode.html" "$FOO" >> "$OUT_HTML"
+      ;;
+    *"include('CampaignToolsLogger')"*)
+      cat_fragment "$RAW_DIR/CampaignToolsLogger.html" "$DIST_DIR/CampaignToolsLogger.html" >> "$OUT_HTML"
       ;;
     *)
       echo "$line" >> "$OUT_HTML"
