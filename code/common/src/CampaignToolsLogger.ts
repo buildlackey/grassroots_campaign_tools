@@ -11,7 +11,13 @@ class CampaignToolsLogger {
         } else if (this.clientMode) {
             this.isEnabled = CampaignToolsLogger.isLoggingEnabledFromLocalConfig();
         } else {
-            this.isEnabled = false;
+            // GAS environment: get debug from PreferenceSvc
+            var svc = (globalThis as any).CAMPAIGN && (globalThis as any).CAMPAIGN.PreferenceSvc;
+            if (!svc || typeof svc.create !== "function") {
+                throw new Error("PreferenceSvc is not defined in GAS environment. Cannot determine logging preference.");
+            }
+            var prefs = svc.create().getPreferences();
+            this.isEnabled = !!(prefs && prefs.debug);
         }
     }
 

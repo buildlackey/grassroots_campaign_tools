@@ -29,13 +29,23 @@ import * as fs from "fs";
 import * as path from "path";
 
 function getLoggingFlag(): boolean {
-    // 1. Check environment variable
-    if (typeof process !== "undefined" && process.env && typeof process.env.CAMPAIGN_TOOLS_ENABLE_LOGGING !== "undefined") {
-        console.log("CHECK env var case");
-        return process.env.CAMPAIGN_TOOLS_ENABLE_LOGGING === "true";
+    try {
+        const configPath = path.resolve(__dirname, "./testConfig.json");
+        if (fs.existsSync(configPath)) {
+            const raw = fs.readFileSync(configPath, "utf8");
+            if (raw.trim()) {
+                const config = JSON.parse(raw);
+                if (typeof config.CAMPAIGN_TOOLS_ENABLE_LOGGING !== "undefined") {
+                    console.log("CHECK: testConfig.json case");
+                    return !!config.CAMPAIGN_TOOLS_ENABLE_LOGGING;
+                }
+            }
+        }
+    } catch (e) {
+        console.log("CHECK: error reading testConfig.json", e);
     }
-
-    console.log("CHECK: default ");
+    // 3. Default
+    console.log("CHECK: default");
     return false;
 }
 
