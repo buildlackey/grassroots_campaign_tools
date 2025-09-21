@@ -1,16 +1,18 @@
+declare var Logger: any;
+
+
 class CampaignToolsLogger {
     private clientMode: boolean;
     private isEnabled: boolean;
 
     static getEmitLogsFromConfig(): boolean {
-        // Only works in Node/Jest, not GAS/browser
         try {
             if (typeof require === "function" && typeof process !== "undefined" && process.env && process.env.HOME) {
-                var fs = require("fs");
-                var path = require("path");
-                var configPath = path.join(process.env.HOME, ".campaign", "test-config.json");
-                var raw = fs.readFileSync(configPath, "utf8");
-                var cfg = JSON.parse(raw);
+                const fs = require("fs");
+                const path = require("path");
+                const configPath = path.join(process.env.HOME, ".campaign", "test-config.json");
+                const raw = fs.readFileSync(configPath, "utf8");
+                const cfg = JSON.parse(raw);
                 return !!cfg.emitLogs;
             }
         } catch (e) {}
@@ -22,29 +24,31 @@ class CampaignToolsLogger {
         this.isEnabled = !!debug;
     }
 
-    log(message: string, args?: any[]) {
+    log(message: string, args?: any[]): void {
         if (!this.isEnabled) return;
         if (this.clientMode) {
-            var allArgs = [message];
+            console.log(message);
             if (args && args.length) {
-                for (var i = 0; i < args.length; i++) {
-                    allArgs.push(args[i]);
-                }
+                args.forEach((arg: any) => {
+                    console.log(arg);
+                });
             }
-            console.log.apply(console, allArgs);
         } else {
+            let fullMsg = message;
             if (args && args.length) {
-                Logger.log(message + " " + args.join(" "));
-            } else {
-                Logger.log(message);
+                args.forEach((arg: any) => {
+                    fullMsg += " " + arg;
+                });
             }
+            Logger.log(fullMsg);
         }
     }
 
-    ping() {
+    ping(): string {
         return 'success';
     }
 }
 
+// Type assertion for global assignment
 (globalThis as any).CAMPAIGN = (globalThis as any).CAMPAIGN || {};
 (globalThis as any).CAMPAIGN.CampaignToolsLogger = CampaignToolsLogger;
