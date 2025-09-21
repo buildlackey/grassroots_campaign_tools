@@ -28,17 +28,10 @@ declare const $: any;
     global.CAMPAIGN.UI = global.CAMPAIGN.UI || {};
     global.CAMPAIGN_UI = global.CAMPAIGN.UI;
 
-    // Enhanced logger
-    function logUIFrosting(msg: string, ...args: any[]): void {
-        const debug =
-            (window.CAMPAIGN_UI &&
-                window.CAMPAIGN_UI.model &&
-                window.CAMPAIGN_UI.model.prefs &&
-                window.CAMPAIGN_UI.model.prefs.debug);
-        if (debug) {
-            console.log("[SettingsDialogUIFrostingCode]", msg, ...args);
-        }
-    }
+    // Deprecate logUIFrosting and replace with CampaignToolsLogger
+    // Remove logUIFrosting definition
+    // Create a CampaignToolsLogger instance (logging off by default)
+    const logger = new global.CAMPAIGN.CampaignToolsLogger();
 
     var UI = global.CAMPAIGN.UI;
     UI.state = UI.state || {
@@ -69,14 +62,14 @@ declare const $: any;
         const el = document.getElementById("mapsApiKey") as HTMLInputElement | null;
         if (!el) return;
         el.setAttribute("type", "text");
-        logUIFrosting("[showApiKeyOnFocus] unmasked mapsApiKey field");
+        logger.log("[showApiKeyOnFocus] unmasked mapsApiKey field");
     };
     UI.hideApiKeyOnBlur = function () {
         const el = document.getElementById("mapsApiKey") as HTMLInputElement | null;
         if (!el) return;
         if (el.value && el.value.trim().length > 0) {
             el.setAttribute("type", "password");
-            logUIFrosting("[hideApiKeyOnBlur] masked mapsApiKey field");
+            logger.log("[hideApiKeyOnBlur] masked mapsApiKey field");
         } else {
             el.setAttribute("type", "text");
         }
@@ -93,7 +86,7 @@ declare const $: any;
                 el.setAttribute("type", "text");
             }
         }
-        logUIFrosting("[toggleApiKeyVisibility] type now:", el.getAttribute("type"));
+        logger.log("[toggleApiKeyVisibility] type now:", el.getAttribute("type"));
     };
 
     // Tooltips
@@ -213,7 +206,7 @@ declare const $: any;
         }
     })();
 
-    logUIFrosting("[SettingsDialogUIFrostingCode] loading");
+    logger.log("[SettingsDialogUIFrostingCode] loading");
     /* === updateSaveButtonState === */
     UI.updateSaveButtonState = function () {
         var btn = document.getElementById("saveBtn") as HTMLButtonElement | null;
@@ -226,7 +219,7 @@ declare const $: any;
         var addrEl = document.getElementById("addressSelect") as HTMLSelectElement | null;
         var addr = (addrEl && typeof addrEl.value === "string") ? addrEl.value : "";
         btn.disabled = !(key.length > 0 && addr !== "");
-        logUIFrosting("[updateSaveButtonState] disabled?", btn.disabled);
+        logger.log("[updateSaveButtonState] disabled?", btn.disabled);
     };
 
     /* === renderHeadersFor (now accepts optional ctx/model) === */
@@ -234,7 +227,7 @@ declare const $: any;
         function formatOption(h: string) {
             return '<option value="%s">%s</option>'.replace(/%s/g, h);
         }
-        logUIFrosting("[renderHeadersFor] start", name);
+        logger.log("[renderHeadersFor] start", name);
         var sheetTabToColumnNames = (ctx && ctx.sheetTabToColumnNames) || (UI.state.sheetTabToColumnNames || {});
         var headers = (sheetTabToColumnNames && sheetTabToColumnNames[name]) || [];
         var clean = headers.filter((h: any) => h != null && String(h).length > 0).map((h: any) => String(h));
@@ -245,18 +238,18 @@ declare const $: any;
         }
         select.innerHTML = clean.map(formatOption).join('');
         select.value = ctx ? ctx.preferredAddressColumnName : "";
-        logUIFrosting("[renderHeadersFor] selected:", select.value);
+        logger.log("[renderHeadersFor] selected:", select.value);
         if (typeof UI.updateSaveButtonState === "function") {
             UI.updateSaveButtonState();
         }
-        logUIFrosting("[renderHeadersFor] exit", { count: clean.length, selected: select.value });
+        logger.log("[renderHeadersFor] exit", { count: clean.length, selected: select.value });
     };
 
     /* === onSheetChange (now forwards optional ctx/model) === */
     UI.onSheetChange = function (ctx?: any) {
         var sel = document.getElementById("sheetSelect") as HTMLSelectElement | null;
         var name = sel ? sel.value : "";
-        logUIFrosting("[onSheetChange] ->", name);
+        logger.log("[onSheetChange] ->", name);
         UI.renderHeadersFor(name, ctx);
     };
 
@@ -267,5 +260,5 @@ declare const $: any;
         ev.initEvent("ui-frosting-ready", true, true);
         document.dispatchEvent(ev);
     } catch (e) { }
-    logUIFrosting("[SettingsDialogUIFrostingCode] sentinel set");
+    logger.log("[SettingsDialogUIFrostingCode] sentinel set");
 })(window);
