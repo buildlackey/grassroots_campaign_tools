@@ -7,3 +7,7 @@ export interface CampaignToolsModelState {
   preferredSheetTabName?: string;
   preferredAddressColumnName?: string;
 }
+
+declare global {
+  var CAMPAIGN_TOOLS_ENABLE_LOGGING: boolean | undefined;
+}

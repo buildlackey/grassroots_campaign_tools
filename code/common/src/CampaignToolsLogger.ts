@@ -15,22 +15,17 @@ class CampaignToolsLogger {
         }
     }
 
+
     static isLoggingEnabledFromLocalConfig(): boolean {
         try {
-            if (typeof require === "function" && typeof process !== "undefined" && process.env && process.env.HOME) {
-                var fs = require("fs");
-                var path = require("path");
-                var configPath = path.join(process.env.HOME, ".campaign", "test-config.json");
-                var raw = fs.readFileSync(configPath, "utf8");
-                var cfg = JSON.parse(raw);
-                return !!cfg.emitLogs;
-            }
-        } catch (e) {}
-        return false;
+            return !!(globalThis as any).CAMPAIGN_TOOLS_ENABLE_LOGGING;
+        } catch (e) {
+            return false;
+        }
     }
 
 
-    log(message: string, args?: any[]): void {
+    log(message: string): void {
         if (!this.isEnabled) return;
         let callSite = '';
         try {
@@ -42,16 +37,19 @@ class CampaignToolsLogger {
                 }
             }
         } catch (e) {}
-        function buildFullMsg(baseMsg: string, args?: any[]): string {
-            let fullMsg = baseMsg;
-            if (args && args.length) {
-                args.forEach(function(arg: any) {
-                    fullMsg += ' ' + arg;
-                });
-            }
+        var argsArr = Array.prototype.slice.call(arguments);
+        function buildFullMsg(args: any[]): string {
+            let fullMsg = '[' + callSite + ']';
+            args.forEach(function(arg: any) {
+                if (Array.isArray(arg)) {
+                    fullMsg += ' ' + JSON.stringify(arg);
+                } else {
+                    fullMsg += ' ' + String(arg);
+                }
+            });
             return fullMsg;
         }
-        const logMsg = buildFullMsg('[' + callSite + '] ' + message, args);
+        const logMsg = buildFullMsg(argsArr);
         if (this.clientMode) {
             console.log(logMsg);
         } else {

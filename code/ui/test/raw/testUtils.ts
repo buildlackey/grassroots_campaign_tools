@@ -1,3 +1,14 @@
+// TypeScript global declaration for test logging flag
+export {};
+declare global {
+  interface GlobalThis {
+    CAMPAIGN_TOOLS_ENABLE_LOGGING?: boolean;
+  }
+}
+
+// Enable logging for all Jest tests
+globalThis.CAMPAIGN_TOOLS_ENABLE_LOGGING = false;
+
 // code/ui/test/raw/testUtils.ts
 import { JSDOM } from "jsdom";
 import { CampaignToolsModel } from "../../../gas/src/logic/CampaignToolsModel";
@@ -27,6 +38,9 @@ export async function bootDialog(htmlContent: string, initData: any) {
         resources: "usable",
         pretendToBeVisual: true,
         beforeParse(win) {
+            // Enable logging for all JSDOM tests
+            (win as any).CAMPAIGN_TOOLS_ENABLE_LOGGING = true;
+
             // ✅ Prevent inline setupMock.js (at end of the HTML) from running in tests.
             // That inline mock only runs when !window.__IN_JEST__.
             (win as any).__IN_JEST__ = true;
@@ -102,9 +116,10 @@ export function dumpState(tag: string, doc: Document, prefs?: any) {
 export function installConsoleErrorFail() {
     const origError = console.error;
     console.error = (...args: any[]) => {
-        const msg = args.join(" ");
+        const arr = Array.isArray(args) ? args : [args];
+        const msg = arr.map(String).join(" ");
         if (msg.includes("Could not load")) return; // ignore CSS fetch failures
-        origError(...args);
+        origError(...arr);
         throw new Error(`Console error: ${msg}`);
     };
 }
@@ -141,4 +156,3 @@ export function buildDialogModelFixture({
     });
     return model.getModelState();
 }
-
