@@ -6,11 +6,13 @@ export class CampaignToolsModel {
     sheetTabNames: string[];
     sheetTabToColumnNames: Record<string, string[]>;
     prefs: Preferences;
+    private logger: any;
 
     constructor(initData: CampaignToolsModelState) {
         this.sheetTabNames = initData.sheetTabNames || [];
         this.sheetTabToColumnNames = initData.sheetTabToColumnNames || {};
         this.prefs = initData.prefs;
+        this.logger = (globalThis as any).CAMPAIGN && (globalThis as any).CAMPAIGN.CampaignToolsLogger ? new (globalThis as any).CAMPAIGN.CampaignToolsLogger(true) : null;
     }
 
     getModelState(): CampaignToolsModelState {
@@ -35,27 +37,35 @@ export class CampaignToolsModel {
     }
 
     get preferredAddressColumnName(): string {
-        const headers = this.sheetTabToColumnNames[this.preferredSheetTabName] || [];
-        const clean = headers.filter(h => h != null && String(h).length > 0).map(String);
+        var headers = this.sheetTabToColumnNames[this.preferredSheetTabName] || [];
+        var clean = headers.filter(function(h) { return h != null && String(h).length > 0; }).map(String);
 
         // Logging: show headers and clean list
         try {
-            console.log('[CampaignToolsModel] preferredAddressColumnName: headers =', headers);
-            console.log('[CampaignToolsModel] preferredAddressColumnName: clean =', clean);
-            console.log('[CampaignToolsModel] preferredAddressColumnName: prefs.addressColumn =', this.prefs.addressColumn);
+            if (this.logger) {
+                this.logger.log('[CampaignToolsModel] preferredAddressColumnName: headers =', headers);
+                this.logger.log('[CampaignToolsModel] preferredAddressColumnName: clean =', clean);
+                this.logger.log('[CampaignToolsModel] preferredAddressColumnName: prefs.addressColumn =', [this.prefs.addressColumn]);
+            }
         } catch (e) {}
 
-        if (this.prefs.addressColumn && clean.includes(this.prefs.addressColumn)) {
-            try { console.log('[CampaignToolsModel] preferredAddressColumnName: returning prefs.addressColumn'); } catch (e) {}
+        if (this.prefs.addressColumn && clean.indexOf(this.prefs.addressColumn) !== -1) {
+            try { if (this.logger) { this.logger.log('[CampaignToolsModel] preferredAddressColumnName: returning prefs.addressColumn', [this.prefs.addressColumn]); } } catch (e) {}
             return this.prefs.addressColumn;
         }
-        const match = clean.find(h => /address/i.test(h));
+        var match = null;
+        for (var i = 0; i < clean.length; i++) {
+            if (/address/i.test(clean[i])) {
+                match = clean[i];
+                break;
+            }
+        }
         if (match) {
-            try { console.log('[CampaignToolsModel] preferredAddressColumnName: returning match =', match); } catch (e) {}
+            try { if (this.logger) { this.logger.log('[CampaignToolsModel] preferredAddressColumnName: returning match =', [match]); } } catch (e) {}
             return match;
         }
 
-        try { console.log('[CampaignToolsModel] preferredAddressColumnName: returning clean[0] =', clean[0] || ''); } catch (e) {}
+        try { if (this.logger) { this.logger.log('[CampaignToolsModel] preferredAddressColumnName: returning clean[0] =', [clean[0] || '']); } } catch (e) {}
         return clean[0] || "";
     }
 
@@ -89,5 +99,3 @@ export class CampaignToolsModel {
       prefs: effectivePrefs,
     });
 };
-
-

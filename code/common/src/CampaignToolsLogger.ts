@@ -29,27 +29,8 @@ class CampaignToolsLogger {
         return false;
     }
 
-    log(message: string, args?: any[]): void {
-        if (!this.isEnabled) return;
-        if (this.clientMode) {
-            console.log(message);
-            if (args && args.length) {
-                args.forEach(function(arg: any) {
-                    console.log(arg);
-                });
-            }
-        } else {
-            var fullMsg = message;
-            if (args && args.length) {
-                args.forEach(function(arg: any) {
-                    fullMsg += " " + arg;
-                });
-            }
-            Logger.log(fullMsg);
-        }
-    }
 
-    log2(message: string, args?: any[]): void {
+    log(message: string, args?: any[]): void {
         if (!this.isEnabled) return;
         let callSite = '';
         try {

@@ -31,7 +31,6 @@ function bindRequired(id: string, event: string, handler: EventListener): HTMLEl
 
 // Instantiate logger at the top and verify availability with ping()
 CAMPAIGN.logger = new (window as any).CAMPAIGN.CampaignToolsLogger();
-console.log('Logger ping:', CAMPAIGN.logger.ping());
 
 function waitForUIHelpers(): Promise<void> {
     // Resolves as soon as frosting dispatches ui-frosting-ready
