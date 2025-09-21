@@ -1,54 +1,76 @@
 declare var Logger: any;
 
 
-class CampaignToolsLogger {
-    private clientMode: boolean;
-    private isEnabled: boolean;
-
-    static getEmitLogsFromConfig(): boolean {
-        try {
-            if (typeof require === "function" && typeof process !== "undefined" && process.env && process.env.HOME) {
-                const fs = require("fs");
-                const path = require("path");
-                const configPath = path.join(process.env.HOME, ".campaign", "test-config.json");
-                const raw = fs.readFileSync(configPath, "utf8");
-                const cfg = JSON.parse(raw);
-                return !!cfg.emitLogs;
-            }
-        } catch (e) {}
-        return false;
-    }
-
-    constructor(debug: boolean) {
-        this.clientMode = (typeof Logger === "undefined");
-        this.isEnabled = !!debug;
-    }
-
-    log(message: string, args?: any[]): void {
-        if (!this.isEnabled) return;
-        if (this.clientMode) {
-            console.log(message);
-            if (args && args.length) {
-                args.forEach((arg: any) => {
-                    console.log(arg);
-                });
-            }
-        } else {
-            let fullMsg = message;
-            if (args && args.length) {
-                args.forEach((arg: any) => {
-                    fullMsg += " " + arg;
-                });
-            }
-            Logger.log(fullMsg);
-        }
-    }
-
-    ping(): string {
-        return 'success';
+function CampaignToolsLogger(debug) {
+    this.clientMode = (typeof Logger === "undefined");
+    if (typeof debug === "boolean") {
+        this.isEnabled = debug;
+    } else if (this.clientMode) {
+        this.isEnabled = CampaignToolsLogger.isLoggingEnabledFromLocalConfig();
+    } else {
+        this.isEnabled = false;
     }
 }
 
-// Type assertion for global assignment
-(globalThis as any).CAMPAIGN = (globalThis as any).CAMPAIGN || {};
-(globalThis as any).CAMPAIGN.CampaignToolsLogger = CampaignToolsLogger;
+CampaignToolsLogger.isLoggingEnabledFromLocalConfig = function() {
+    try {
+        if (typeof require === "function" && typeof process !== "undefined" && process.env && process.env.HOME) {
+            var fs = require("fs");
+            var path = require("path");
+            var configPath = path.join(process.env.HOME, ".campaign", "test-config.json");
+            var raw = fs.readFileSync(configPath, "utf8");
+            var cfg = JSON.parse(raw);
+            return !!cfg.emitLogs;
+        }
+    } catch (e) {}
+    return false;
+};
+
+CampaignToolsLogger.prototype.log = function(message, args) {
+    if (!this.isEnabled) return;
+    if (this.clientMode) {
+        console.log(message);
+        if (args && args.length) {
+            for (var i = 0; i < args.length; i++) {
+                console.log(args[i]);
+            }
+        }
+    } else {
+        var fullMsg = message;
+        if (args && args.length) {
+            for (var j = 0; j < args.length; j++) {
+                fullMsg += " " + args[j];
+            }
+        }
+        Logger.log(fullMsg);
+    }
+};
+
+CampaignToolsLogger.prototype.log2 = function(message, args) {
+    if (!this.isEnabled) return;
+    var callSite = '';
+    // Avoid stack parsing for GAS
+    if (this.clientMode) {
+        console.log(message);
+        if (args && args.length) {
+            args.forEach(function(arg) {
+                console.log(arg);
+            });
+        }
+    } else {
+        var fullMsg = message;
+        if (args && args.length) {
+            args.forEach(function(arg) {
+                fullMsg += " " + arg;
+            });
+        }
+        Logger.log(fullMsg);
+    }
+};
+
+CampaignToolsLogger.prototype.ping = function() {
+    return 'success';
+};
+
+(window as any).CAMPAIGN = (window as any).CAMPAIGN || {};
+(window as any).CAMPAIGN.CampaignToolsLogger = CampaignToolsLogger;

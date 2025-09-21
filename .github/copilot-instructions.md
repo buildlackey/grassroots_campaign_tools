@@ -97,3 +97,7 @@ in browser for quick ad hoc testing without deploying all the way to GAS environ
 - Source code lives under `code/` (e.g., `code/common/src/`, `code/gas/src/logic/`, `code/ui/src/raw/`).
 - Build scripts and configs in `build/FOO/` operate on source code in `code/FOO/src/` and output to the appropriate `dist/` directory.
 - Do not place build scripts or configs in any `src/` directory.
+
+### GAS Array Iteration Guidance
+
+- Prefer using `forEach` for array iteration in GAS logic. Classic `for` loops may trigger non-GAS-compliant code emission during transpilation. Use function expressions (not arrow functions) with `forEach` for maximum compatibility.
