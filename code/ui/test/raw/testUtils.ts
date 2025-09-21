@@ -1,17 +1,47 @@
 // TypeScript global declaration for test logging flag
 export {};
+/**
+ * Logging flag configuration for tests
+ *
+ * - LOGGING_ENABLED is set once at module load, based on environment variable or config file.
+ * - globalThis.CAMPAIGN_TOOLS_ENABLE_LOGGING is set for Node.js/Jest tests (non-browser).
+ * - (win as any).CAMPAIGN_TOOLS_ENABLE_LOGGING is set for JSDOM/browser-like tests in bootDialog.
+ *
+ * This ensures logging is consistently enabled/disabled for all test environments.
+ *
+ * Usage:
+ *   - Set CAMPAIGN_TOOLS_ENABLE_LOGGING=true in your environment, or
+ *   - Add { "CAMPAIGN_TOOLS_ENABLE_LOGGING": true } to testConfig.json
+ *
+ * Node/Jest tests use globalThis.
+ * JSDOM/browser-like tests use window (set via beforeParse).
+ */
 declare global {
   interface GlobalThis {
     CAMPAIGN_TOOLS_ENABLE_LOGGING?: boolean;
   }
 }
 
-// Enable logging for all Jest tests
-globalThis.CAMPAIGN_TOOLS_ENABLE_LOGGING = false;
-
 // code/ui/test/raw/testUtils.ts
 import { JSDOM } from "jsdom";
 import { CampaignToolsModel } from "../../../gas/src/logic/CampaignToolsModel";
+import * as fs from "fs";
+import * as path from "path";
+
+function getLoggingFlag(): boolean {
+    // 1. Check environment variable
+    if (typeof process !== "undefined" && process.env && typeof process.env.CAMPAIGN_TOOLS_ENABLE_LOGGING !== "undefined") {
+        console.log("CHECK env var case");
+        return process.env.CAMPAIGN_TOOLS_ENABLE_LOGGING === "true";
+    }
+
+    console.log("CHECK: default ");
+    return false;
+}
+
+// Enable logging for all Jest tests (configurable)
+const LOGGING_ENABLED = getLoggingFlag();
+globalThis.CAMPAIGN_TOOLS_ENABLE_LOGGING = LOGGING_ENABLED;
 
 export function setupGoogleMock(win: any, initData: any) {
     // Always return the fixture passed in via initData
@@ -38,8 +68,8 @@ export async function bootDialog(htmlContent: string, initData: any) {
         resources: "usable",
         pretendToBeVisual: true,
         beforeParse(win) {
-            // Enable logging for all JSDOM tests
-            (win as any).CAMPAIGN_TOOLS_ENABLE_LOGGING = true;
+            // Use the cached logging flag for all JSDOM tests
+            (win as any).CAMPAIGN_TOOLS_ENABLE_LOGGING = LOGGING_ENABLED;
 
             // ✅ Prevent inline setupMock.js (at end of the HTML) from running in tests.
             // That inline mock only runs when !window.__IN_JEST__.
