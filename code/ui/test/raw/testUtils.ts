@@ -23,27 +23,14 @@ declare global {
 }
 
 // code/ui/test/raw/testUtils.ts
-import { JSDOM } from "jsdom";
-import { CampaignToolsModel } from "../../../gas/src/logic/CampaignToolsModel";
+import {JSDOM} from "jsdom";
+import {CampaignToolsModel} from "../../../gas/src/logic/CampaignToolsModel";
 import * as fs from "fs";
 import * as path from "path";
 
-function getLoggingFlag(): boolean {
-
-    // Dump all environment variables for debugging
-    if (typeof process !== "undefined" && process.env) {
-        console.log("process.env dump:", JSON.stringify(process.env, null, 2));
-    }
-
-
-
-    let home = process.env.HOME;
-
-    console.log("home:" + home);
-
+export function getLoggingFlag(): boolean {
     try {
-        const homeDir = home || process.env.USERPROFILE;
-
+        const homeDir = process.env.HOME || process.env.USERPROFILE;
         console.log("homeDir:" + homeDir);
 
         if (homeDir) {
@@ -218,4 +205,3 @@ export function buildDialogModelFixture({
     });
     return model.getModelState();
 }
-

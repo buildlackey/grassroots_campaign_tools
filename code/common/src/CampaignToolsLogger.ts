@@ -1,10 +1,18 @@
 declare var Logger: any;
 
 class CampaignToolsLogger {
-    public clientMode: boolean;
-    public isEnabled: boolean;
+    private clientMode: boolean;
+    private isEnabled: boolean;
+    private static _instance: CampaignToolsLogger | null = null;
 
-    constructor(debug?: boolean) {
+    static getInstance(debug?: boolean): CampaignToolsLogger {
+        if (!CampaignToolsLogger._instance) {
+            CampaignToolsLogger._instance = new CampaignToolsLogger(debug);
+        }
+        return CampaignToolsLogger._instance.refreshEnabled();
+    }
+
+    private constructor(debug?: boolean) {
         this.clientMode = (typeof Logger === "undefined");
         if (typeof debug === "boolean") {
             this.isEnabled = debug;
@@ -21,14 +29,46 @@ class CampaignToolsLogger {
         }
     }
 
+    setEnabled(enabled: boolean) {
+        this.isEnabled = enabled;
+    }
+
+
+    getEnabled(): boolean {
+        return this.isEnabled;
+    }
+
+    refreshEnabled() {
+        if (this.clientMode) {
+            this.isEnabled = CampaignToolsLogger.isLoggingEnabledClientSideCheck();
+        } else {
+            var svc = (globalThis as any).CAMPAIGN && (globalThis as any).CAMPAIGN.PreferenceSvc;
+            if (!svc || typeof svc.create !== "function") {
+                throw new Error("PreferenceSvc is not defined in GAS environment. Cannot determine logging preference.");
+            }
+            var prefs = svc.create().getPreferences();
+            this.isEnabled = !!(prefs && prefs.debug);
+        }
+
+        return this;
+    }
+
 
     static isLoggingEnabledClientSideCheck(): boolean {
         try {
-            return !!(globalThis as any).CAMPAIGN_TOOLS_ENABLE_LOGGING;
+            // Prefer localStorage in browser
+            if (typeof localStorage !== "undefined" && localStorage.getItem("CAMPAIGN_TOOLS_ENABLE_LOGGING") !== null) {
+                console.log("using local storage");
+                return localStorage.getItem("CAMPAIGN_TOOLS_ENABLE_LOGGING") === "true";
+            }
+
         } catch (e) {
-            return false;
+            console.log("isLoggingEnabledClientSideCheck error!");
         }
+        console.log("Fallback to globalThis for test/Jest");
+        return !!(globalThis as any).CAMPAIGN_TOOLS_ENABLE_LOGGING;
     }
+
 
 
     log(message: string): void {

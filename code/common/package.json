@@ -1,1 +1,16 @@
+{
+  "name": "@app/common",
+  "private": true,
+  "scripts": {
+    "test": "jest",
+    "build": "if [ \"$SKIP_TESTS\" != \"true\" ]; then npm run test; fi",
+    "dist": "npm run build"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "@types/jest": "^29.5.14",
+    "typescript": "^5.4.0"
+  }
+}
 

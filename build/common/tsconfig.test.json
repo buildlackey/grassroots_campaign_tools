@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ES2019"
+  },
+  "include": [
+    "../../code/common/test/**/*.ts",
+    "../../code/common/src/CampaignToolsLogger.ts"
+  ]
+}
+
