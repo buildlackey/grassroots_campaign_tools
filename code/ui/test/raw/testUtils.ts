@@ -29,22 +29,44 @@ import * as fs from "fs";
 import * as path from "path";
 
 function getLoggingFlag(): boolean {
+
+    // Dump all environment variables for debugging
+    if (typeof process !== "undefined" && process.env) {
+        console.log("process.env dump:", JSON.stringify(process.env, null, 2));
+    }
+
+
+
+    let home = process.env.HOME;
+
+    console.log("home:" + home);
+
     try {
-        const configPath = path.resolve(__dirname, "./testConfig.json");
-        if (fs.existsSync(configPath)) {
-            const raw = fs.readFileSync(configPath, "utf8");
-            if (raw.trim()) {
-                const config = JSON.parse(raw);
-                if (typeof config.CAMPAIGN_TOOLS_ENABLE_LOGGING !== "undefined") {
-                    console.log("CHECK: testConfig.json case");
-                    return !!config.CAMPAIGN_TOOLS_ENABLE_LOGGING;
+        const homeDir = home || process.env.USERPROFILE;
+
+        console.log("homeDir:" + homeDir);
+
+        if (homeDir) {
+            const configPath = path.resolve(homeDir, ".campaign", "test-config.json");
+
+            console.log("configPath:" + configPath);
+
+            if (fs.existsSync(configPath)) {
+                const raw = fs.readFileSync(configPath, "utf8");
+                console.log("raw:" + raw);
+                if (raw.trim()) {
+                    const config = JSON.parse(raw);
+                    if (typeof config.CAMPAIGN_TOOLS_ENABLE_LOGGING !== "undefined") {
+                        console.log("CHECK: $HOME/.campaign/test-config.json case");
+                        return !!config.CAMPAIGN_TOOLS_ENABLE_LOGGING;
+                    }
                 }
             }
         }
     } catch (e) {
-        console.log("CHECK: error reading testConfig.json", e);
+        console.log("CHECK: error reading $HOME/.campaign/test-config.json", e);
     }
-    // 3. Default
+
     console.log("CHECK: default");
     return false;
 }
@@ -196,3 +218,4 @@ export function buildDialogModelFixture({
     });
     return model.getModelState();
 }
+

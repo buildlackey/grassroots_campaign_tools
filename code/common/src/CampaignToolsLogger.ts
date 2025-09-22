@@ -9,7 +9,7 @@ class CampaignToolsLogger {
         if (typeof debug === "boolean") {
             this.isEnabled = debug;
         } else if (this.clientMode) {
-            this.isEnabled = CampaignToolsLogger.isLoggingEnabledFromLocalConfig();
+            this.isEnabled = CampaignToolsLogger.isLoggingEnabledClientSideCheck();
         } else {
             // GAS environment: get debug from PreferenceSvc
             var svc = (globalThis as any).CAMPAIGN && (globalThis as any).CAMPAIGN.PreferenceSvc;
@@ -22,7 +22,7 @@ class CampaignToolsLogger {
     }
 
 
-    static isLoggingEnabledFromLocalConfig(): boolean {
+    static isLoggingEnabledClientSideCheck(): boolean {
         try {
             return !!(globalThis as any).CAMPAIGN_TOOLS_ENABLE_LOGGING;
         } catch (e) {
