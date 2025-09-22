@@ -30,7 +30,7 @@ function bindRequired(id: string, event: string, handler: EventListener): HTMLEl
 (window as any).CAMPAIGN_UI = (window as any).CAMPAIGN.UI;
 
 // Instantiate logger at the top and verify availability with ping()
-CAMPAIGN.logger = new (window as any).CAMPAIGN.CampaignToolsLogger();
+CAMPAIGN.logger = (window as any).CAMPAIGN.CampaignToolsLogger.getInstance();
 
 function waitForUIHelpers(): Promise<void> {
     // Resolves as soon as frosting dispatches ui-frosting-ready
@@ -173,15 +173,6 @@ function saveSettings(model: any, _evt?: Event) {
 
     const columns = (model.sheetTabToColumnNames && model.sheetTabToColumnNames[sheetName]) || [];
 
-    const payload = {
-        sheetTabName: sheetName,
-        addressColumn: address,
-        mapsApiKey: mapsKey,
-        showLatLong: showLL,
-        debug: debug
-    };
-    CAMPAIGN.logger.log("saveSettingsWith payload", payload, { columns });
-
     if (!mapsKey || !address) {
         if (btn) btn.disabled = true;
         console.error("❌ Missing required input(s):", { hasMapsKey: !!mapsKey, hasAddress: !!address });
@@ -189,13 +180,31 @@ function saveSettings(model: any, _evt?: Event) {
         return;
     }
 
+    const payload = {
+        sheetTabName: sheetName,
+        addressColumn: address,
+        mapsApiKey: mapsKey,
+        showLatLong: showLL,
+        debug: debug
+    };
+
+    // Update localStorage logging flag in browser/client mode
+    if (typeof localStorage !== "undefined") {
+        console.log("SET ***");
+        localStorage.setItem("CAMPAIGN_TOOLS_ENABLE_LOGGING", debug ? "true" : "false");
+        CAMPAIGN.logger.setEnabled(debug);
+    } else {
+        console.log("failed to SET ***");
+    }
+    CAMPAIGN.logger.log("saveSettingsWith payload", payload, { columns });
+
     google.script.run
         .withSuccessHandler(function () {
             CAMPAIGN.logger.log("saveSettingsWith success → closing dialog");
             closeDialog();
         })
         .withFailureHandler(function (e: any) {
-            console.error("❌ Failed to save preferences:", e);
+            console.error("❌ Failed to save preferences: " +  e.message);
             const btn = document.getElementById('saveBtn') as HTMLButtonElement | null;
             if (btn) btn.disabled = false;
             alert("Failed to save preferences.");

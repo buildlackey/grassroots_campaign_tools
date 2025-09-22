@@ -1,54 +1,54 @@
 function include(filename) {
-    Logger.log("📥 [Code.js/include] filename=%s", filename);
+    Logger.log("_sys_logger: 📥 [Code.js/include] filename=%s", filename);
     return HtmlService.createHtmlOutputFromFile(filename).getContent();
 }
 
 function onOpen() {
-    Logger.log("🚪 [Code.js/onOpen] ENTER");
+    Logger.log("_sys_logger: 🚪 [Code.js/onOpen] ENTER");
     SpreadsheetApp.getUi()
         .createMenu('📣 Campaign')  // bullhorn icon
         .addItem('⚙️ Settings', 'showSettingsDialog')
         .addItem('🌎 Distance Filter', 'showFilterDialog')  // was placeholderFilterDistance
         .addToUi();
-    Logger.log("🚪 [Code.js/onOpen] EXIT");
+    Logger.log("_sys_logger: 🚪 [Code.js/onOpen] EXIT");
 }
 
 
 function showFilterDialog() {
-    Logger.log("🪟 [Code.js/showFilterDialog] ENTER");
+    Logger.log("_sys_logger: 🪟 [Code.js/showFilterDialog] ENTER");
     var html = HtmlService
         .createTemplateFromFile('FilterDialog')
         .evaluate()
         .setWidth(450)
         .setHeight(430);
     SpreadsheetApp.getUi().showModalDialog(html, ' ');
-    Logger.log("🪟 [Code.js/showFilterDialog] EXIT");
+    Logger.log("_sys_logger: 🪟 [Code.js/showFilterDialog] EXIT");
 }
 
 
 function showSettingsDialog() {
-    Logger.log("🪟 [Code.js/showSettingsDialog] ENTER");
+    Logger.log("_sys_logger: 🪟 [Code.js/showSettingsDialog] ENTER");
     var html = HtmlService
         .createTemplateFromFile('SettingsDialog')
         .evaluate()
         .setWidth(420)
         .setHeight(410);
     SpreadsheetApp.getUi().showModalDialog(html, ' ');
-    Logger.log("🪟 [Code.js/showSettingsDialog] EXIT");
+    Logger.log("_sys_logger: 🪟 [Code.js/showSettingsDialog] EXIT");
 }
 
 function savePreferences(prefs, columns) {
-    Logger.log("📥 [Code.js:savePreferences] called prefs=%s columns=%s",
-               JSON.stringify(prefs), JSON.stringify(columns));
+    Logger.log("_sys_logger: 📥 [Code.js:savePreferences] called prefs=%s columns=%s",
+        JSON.stringify(prefs), JSON.stringify(columns));
 
     if (globalThis.CAMPAIGN && globalThis.CAMPAIGN.PreferenceSvc) {
         const result = globalThis.CAMPAIGN.PreferenceSvc.create().savePreferences(prefs, columns);
-        Logger.log("🔔 [Code.js:savePreferences] about to toast");
+        Logger.log("_sys_logger: 🔔 [Code.js:savePreferences] about to toast");
         SpreadsheetApp.getActiveSpreadsheet().toast("✅ Settings saved", "Campaign Tools", 3);
-        Logger.log("✅ [Code.js:savePreferences] completed");
+        Logger.log("_sys_logger: ✅ [Code.js:savePreferences] completed");
         return result;
     }
-    Logger.log("❌ [Code.js:savePreferences] PreferenceSvc unavailable");
+    Logger.log("_sys_logger: ❌ [Code.js:savePreferences] PreferenceSvc unavailable");
     throw new Error("PreferenceSvc unavailable in runtime");
 }
 
@@ -82,7 +82,7 @@ function savePreferences(prefs, columns) {
  * @return {string} "SUCCESS" token to indicate the bundle is alive.
  */
 function smokeTest() {
-    Logger.log("🧪 [Code.js/smokeTest] ENTER");
+    Logger.log("_sys_logger: 🧪 [Code.js/smokeTest] ENTER");
     if (!globalThis.CAMPAIGN || !globalThis.CAMPAIGN.PreferenceSvc) {
         throw new Error("Bundle not loaded: PreferenceSvc is missing from CAMPAIGN");
     }
@@ -101,7 +101,7 @@ function smokeTest() {
     // real API key is injected by push script
     svc.savePreferences({ mapsApiKey: "GOOGLE_MAPS_API_KEY"}, []);
     // The real API key will be dynamically injected by our push to workspace script (since we don't want this in git)
-    Logger.log("🧪 [Code.js/smokeTest] EXIT success");
+    Logger.log("_sys_logger: 🧪 [Code.js/smokeTest] EXIT success");
 
 
     return "INTEGRATION SUCCESS";
@@ -120,7 +120,7 @@ function verifyMapsApiKeySaved() {
 }
 
 function showToastInSheets(msg) {
-    Logger.log("🔔 [Code.js/showToastInSheets] %s", msg);
+    Logger.log("_sys_logger: 🔔 [Code.js/showToastInSheets] %s", msg);
     SpreadsheetApp.getActiveSpreadsheet().toast(msg, "Campaign Tools", 3);
 }
 
@@ -134,8 +134,8 @@ function getInitData() {
 }
 
 function logicPing() {
-  if (!globalThis.CAMPAIGN || !globalThis.CAMPAIGN.HelloSvc) {
-    throw new Error("HelloSvc not found");
-  }
-  return globalThis.CAMPAIGN.HelloSvc.ping();
+    if (!globalThis.CAMPAIGN || !globalThis.CAMPAIGN.HelloSvc) {
+        throw new Error("HelloSvc not found");
+    }
+    return globalThis.CAMPAIGN.HelloSvc.ping();
 }

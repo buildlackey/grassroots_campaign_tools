@@ -12,7 +12,7 @@ export class CampaignToolsModel {
         this.sheetTabNames = initData.sheetTabNames || [];
         this.sheetTabToColumnNames = initData.sheetTabToColumnNames || {};
         this.prefs = initData.prefs;
-        this.logger = (globalThis as any).CAMPAIGN && (globalThis as any).CAMPAIGN.CampaignToolsLogger ? new (globalThis as any).CAMPAIGN.CampaignToolsLogger(true) : null;
+        this.logger = (globalThis as any).CAMPAIGN && (globalThis as any).CAMPAIGN.CampaignToolsLogger ? (globalThis as any).CAMPAIGN.CampaignToolsLogger.getInstance() : null;
     }
 
     getModelState(): CampaignToolsModelState {
@@ -43,6 +43,8 @@ export class CampaignToolsModel {
         // Logging: show headers and clean list
         try {
             if (this.logger) {
+                var logEnabled = this.logger.getEnabled();
+                console.log("enabled? %s", logEnabled);
                 this.logger.log('[CampaignToolsModel] preferredAddressColumnName: headers =', headers);
                 this.logger.log('[CampaignToolsModel] preferredAddressColumnName: clean =', clean);
                 this.logger.log('[CampaignToolsModel] preferredAddressColumnName: prefs.addressColumn =', [this.prefs.addressColumn]);

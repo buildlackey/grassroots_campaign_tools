@@ -30,6 +30,13 @@ class CampaignToolsLogger {
     }
 
     setEnabled(enabled: boolean) {
+        // log input arg value with the correct statement for GAS environment or client-side
+        if (this.clientMode) {
+            console.log("CampaignToolsLogger - client: setEnabled called with", enabled);
+        } else {
+            Logger.log("_sys_logger: CampaignToolsLogger - server: setEnabled called with %s", enabled);
+        }
+
         this.isEnabled = enabled;
     }
 
@@ -110,3 +117,7 @@ class CampaignToolsLogger {
 
 (globalThis as any).CAMPAIGN = (globalThis as any).CAMPAIGN || {};
 (globalThis as any).CAMPAIGN.CampaignToolsLogger = CampaignToolsLogger;
+if (typeof Logger !== "undefined") {
+    Logger.log("_sys_logger: ✅ CampaignToolsLogger loaded and attached to globalThis.CAMPAIGN");
+}
+
