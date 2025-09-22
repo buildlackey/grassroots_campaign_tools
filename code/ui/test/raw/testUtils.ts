@@ -27,40 +27,7 @@ import {JSDOM} from "jsdom";
 import {CampaignToolsModel} from "../../../gas/src/logic/CampaignToolsModel";
 import * as fs from "fs";
 import * as path from "path";
-
-export function getLoggingFlag(): boolean {
-    try {
-        const homeDir = process.env.HOME || process.env.USERPROFILE;
-        console.log("homeDir:" + homeDir);
-
-        if (homeDir) {
-            const configPath = path.resolve(homeDir, ".campaign", "test-config.json");
-
-            console.log("configPath:" + configPath);
-
-            if (fs.existsSync(configPath)) {
-                const raw = fs.readFileSync(configPath, "utf8");
-                console.log("raw:" + raw);
-                if (raw.trim()) {
-                    const config = JSON.parse(raw);
-                    if (typeof config.CAMPAIGN_TOOLS_ENABLE_LOGGING !== "undefined") {
-                        console.log("CHECK: $HOME/.campaign/test-config.json case");
-                        return !!config.CAMPAIGN_TOOLS_ENABLE_LOGGING;
-                    }
-                }
-            }
-        }
-    } catch (e) {
-        console.log("CHECK: error reading $HOME/.campaign/test-config.json", e);
-    }
-
-    console.log("CHECK: default");
-    return false;
-}
-
-// Enable logging for all Jest tests (configurable)
-const LOGGING_ENABLED = getLoggingFlag();
-globalThis.CAMPAIGN_TOOLS_ENABLE_LOGGING = LOGGING_ENABLED;
+import { getLoggingFlag } from '../../../common/test/testUtils';
 
 export function setupGoogleMock(win: any, initData: any) {
     // Always return the fixture passed in via initData
@@ -88,7 +55,7 @@ export async function bootDialog(htmlContent: string, initData: any) {
         pretendToBeVisual: true,
         beforeParse(win) {
             // Use the cached logging flag for all JSDOM tests
-            (win as any).CAMPAIGN_TOOLS_ENABLE_LOGGING = LOGGING_ENABLED;
+            (win as any).CAMPAIGN_TOOLS_ENABLE_LOGGING = getLoggingFlag();
 
             // ✅ Prevent inline setupMock.js (at end of the HTML) from running in tests.
             // That inline mock only runs when !window.__IN_JEST__.
