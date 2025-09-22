@@ -16,11 +16,6 @@ export {};
  * Node/Jest tests use globalThis.
  * JSDOM/browser-like tests use window (set via beforeParse).
  */
-declare global {
-  interface GlobalThis {
-    CAMPAIGN_TOOLS_ENABLE_LOGGING?: boolean;
-  }
-}
 
 // code/ui/test/raw/testUtils.ts
 import { JSDOM } from "jsdom";
@@ -29,16 +24,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 function getLoggingFlag(): boolean {
-
-    // Dump all environment variables for debugging
-    if (typeof process !== "undefined" && process.env) {
-        console.log("process.env dump:", JSON.stringify(process.env, null, 2));
-    }
-
-
-
     let home = process.env.HOME;
-
     console.log("home:" + home);
 
     try {

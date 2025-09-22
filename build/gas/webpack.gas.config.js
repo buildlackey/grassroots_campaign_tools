@@ -3,9 +3,12 @@ const path = require("path");
 const glob = require("glob");
 const GasPlugin = require("gas-webpack-plugin");
 
+const campaignToolsLoggerPath = path.resolve(__dirname, '../../code/common/src/CampaignToolsLogger.ts');
+const logicFiles = glob.sync(path.resolve(__dirname, '../../code/gas/src/logic/*.ts'));
+
 module.exports = {
     mode: "development", // keep dev mode to avoid tree-shaking/minification
-    entry: glob.sync(path.resolve(__dirname, "../../code/gas/src/logic/*.ts")),
+    entry: [campaignToolsLoggerPath, ...logicFiles],
     output: {
         path: path.resolve(__dirname, "../../dist/gas/gas_safe_staging"),
         filename: "gas_bundle.js",

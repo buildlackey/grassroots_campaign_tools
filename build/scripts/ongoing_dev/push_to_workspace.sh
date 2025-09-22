@@ -162,4 +162,3 @@ else
   echo "❌ smoke test failed"
   exit 1
 fi
-

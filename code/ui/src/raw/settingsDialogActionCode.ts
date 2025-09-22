@@ -165,6 +165,9 @@ function saveSettings(model: any, _evt?: Event) {
     const btn = document.getElementById('saveBtn') as HTMLButtonElement | null;
     if (btn) btn.disabled = true;
 
+
+
+
     const sheetName = (document.getElementById("sheetSelect") as HTMLSelectElement | null)?.value || "";
     const address   = (document.getElementById("addressSelect") as HTMLSelectElement | null)?.value || "";
     const mapsKey   = (document.getElementById("mapsApiKey") as HTMLInputElement | null)?.value || "";
@@ -180,6 +183,15 @@ function saveSettings(model: any, _evt?: Event) {
         showLatLong: showLL,
         debug: debug
     };
+
+
+
+    // Update localStorage logging flag in browser/client mode
+    if (typeof localStorage !== "undefined") {
+        console.log("SET ***");
+        localStorage.setItem("CAMPAIGN_TOOLS_ENABLE_LOGGING", debug ? "true" : "false");
+    }
+
     CAMPAIGN.logger.log("saveSettingsWith payload", payload, { columns });
 
     if (!mapsKey || !address) {
