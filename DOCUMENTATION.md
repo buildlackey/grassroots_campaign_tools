@@ -46,4 +46,31 @@ You can reveal these columns at any time by selecting:
 
 This helps you identify problematic rows (e.g., invalid or partial addresses), copy/paste them into the **type-ahead address field**, and find a corrected format that yields a successful Maps lookup.
 
+---
+
+## Speeding Up GAS Deployment: Skipping Unit Tests
+
+To accelerate your pushes to Google Apps Script (GAS), you can programmatically disable unit tests during the build process. 
+
+### How It Works
+
+- The build scripts and package.json are configured to check for an environment variable called `SKIP_TESTS`.
+- If `SKIP_TESTS` is set to `true`, unit tests are skipped during the build.
+- This applies to UI and GAS logic builds.
+
+### Usage
+
+**To skip tests and speed up deployment:**
+```sh
+SKIP_TESTS=true npm run build
+```
+Or for a full dist build:
+```sh
+SKIP_TESTS=true npm run dist
+```
+
+**To run tests as usual:**
+```sh
+npm run build
+```
 

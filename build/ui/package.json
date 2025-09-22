@@ -19,7 +19,7 @@
     "rename:html": "bash ../../build/scripts/ui/normalize_ui_js_to_html.sh",
     "build:ui": "npm run tsc:ui && npm run rename:html",
     "setup:fixture": "npm run build:ui && bash ../../code/ui/test/raw/create_dialog_test_fixture.sh SettingsDialog",
-    "build": "npm run setup:fixture && jest --config=jest.config.js",
+    "build": "npm run setup:fixture && if [ \"$SKIP_TESTS\" != \"true\" ]; then jest --config=jest.config.js; fi",
     "predist": "mkdir -p ../../dist/ui/gas_safe_staging",
     "dist": "npm run build && cp -a ../../code/ui/src/raw/*.html ../../dist/ui/gas_safe_staging/"
   },
