@@ -1,0 +1,2 @@
+
+how about a video of a globe with different map points on it  and lines from those points to a stylized rendering of a document,   an icon appears that represents CampaignTools (filter dialog)..  an address is typed and when finishe we connect a dotted line to someplace on the globe.. as we move the slider more and more pinned icons .. centered around the target address are included within a yellow bounding circle

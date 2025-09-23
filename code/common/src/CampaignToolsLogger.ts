@@ -65,48 +65,50 @@ class CampaignToolsLogger {
         try {
             // Prefer localStorage in browser
             if (typeof localStorage !== "undefined" && localStorage.getItem("CAMPAIGN_TOOLS_ENABLE_LOGGING") !== null) {
-                console.log("using local storage");
                 return localStorage.getItem("CAMPAIGN_TOOLS_ENABLE_LOGGING") === "true";
             }
 
         } catch (e) {
             console.log("isLoggingEnabledClientSideCheck error!");
         }
-        console.log("Fallback to globalThis for test/Jest");
+
         return !!(globalThis as any).CAMPAIGN_TOOLS_ENABLE_LOGGING;
     }
 
-
-
-    log(message: string): void {
-        if (!this.isEnabled) return;
-        let callSite = '';
+    private static getCallSite(depth: number = 3): string {
         try {
             const err = new Error();
             if (err.stack) {
                 const stackLines = err.stack.split('\n');
-                if (stackLines.length > 2) {
-                    callSite = stackLines[2].trim();
+                if (stackLines.length > depth) {
+                    return stackLines[depth].trim();
                 }
             }
         } catch (e) {}
-        var argsArr = Array.prototype.slice.call(arguments);
-        function buildFullMsg(args: any[]): string {
-            let fullMsg = '[' + callSite + ']';
-            args.forEach(function(arg: any) {
+        return '';
+    }
+
+    log(message: string, stackDepth?: number): void {
+        if (!this.isEnabled) return;
+        const depth = typeof stackDepth === 'number' ? stackDepth : 3;
+        const callSite = CampaignToolsLogger.getCallSite(depth);
+        // Always include the message in the output
+        let fullMsg = '[' + callSite + '] ' + String(message);
+        if (arguments.length > 2) {
+            // If there are extra arguments, include them
+            for (let i = 2; i < arguments.length; ++i) {
+                const arg = arguments[i];
                 if (Array.isArray(arg)) {
                     fullMsg += ' ' + JSON.stringify(arg);
                 } else {
                     fullMsg += ' ' + String(arg);
                 }
-            });
-            return fullMsg;
+            }
         }
-        const logMsg = buildFullMsg(argsArr);
         if (this.clientMode) {
-            console.log(logMsg);
+            console.log(fullMsg);
         } else {
-            Logger.log(logMsg);
+            Logger.log(fullMsg);
         }
     }
 
@@ -120,4 +122,3 @@ class CampaignToolsLogger {
 if (typeof Logger !== "undefined") {
     Logger.log("_sys_logger: ✅ CampaignToolsLogger loaded and attached to globalThis.CAMPAIGN");
 }
-

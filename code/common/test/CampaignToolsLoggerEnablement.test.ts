@@ -57,9 +57,6 @@ describe('CampaignToolsLogger enablement via CAMPAIGN_TOOLS_ENABLE_LOGGING', () 
     (globalThis as any).CAMPAIGN_TOOLS_ENABLE_LOGGING = getLoggingFlag();
     expect(getLoggingFlag()).toBe(true);
     const logger = (globalThis as any).CAMPAIGN.CampaignToolsLogger.getInstance();
-
-    console.log("1 Logger enabled state:", logger.getEnabled());
-
     const spy = jest.spyOn(console, 'log').mockImplementation(() => {});
     logger.log('test message');
     expect(spy).toHaveBeenCalled();
