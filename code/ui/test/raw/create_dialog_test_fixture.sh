@@ -18,6 +18,7 @@ TEMPLATE="$RAW_DIR/${DIALOG_NAME}.html"
 CSS="$RAW_DIR/${DIALOG_NAME}CSS.html"
 ACTION="$RAW_DIR/${DIALOG_NAME}ActionCode.html"
 FROSTING="$RAW_DIR/${DIALOG_NAME}UIFrostingCode.html"
+GENERIC_FROSTING="GenericUIFrostingCode.html"
 FOO="$DIST_DIR/FooCode.html"
 
 # Helper: cat fragment from raw, else fallback to dist
@@ -57,8 +58,8 @@ while IFS= read -r line; do
     *"include('${DIALOG_NAME}ActionCode')"*)
       cat_fragment "$ACTION" "$DIST_DIR/${DIALOG_NAME}ActionCode.html" >> "$OUT_HTML"
       ;;
-    *"include('FooCode')"*)
-      cat_fragment "$RAW_DIR/FooCode.html" "$FOO" >> "$OUT_HTML"
+    *"include('GenericUIFrostingCode')"*)
+      cat_fragment "$RAW_DIR/$GENERIC_FROSTING" "$DIST_DIR/GenericUIFrostingCode.html" >> "$OUT_HTML"
       ;;
     *"include('CampaignToolsLogger')"*)
       cat_fragment "$RAW_DIR/CampaignToolsLogger.html" "$DIST_DIR/CampaignToolsLogger.html" >> "$OUT_HTML"

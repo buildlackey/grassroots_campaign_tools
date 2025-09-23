@@ -90,33 +90,6 @@ declare const $: any;
     };
 
     // Tooltips
-    UI.initTooltips = function () {
-        var $target = $(".help-icon:not(.popover-help)");
-        if ($target.length === 0) return;
-        $target.tooltip({
-            appendTo: "body",
-            items: ".help-icon:not(.popover-help)",
-            content: function () { return $(this).attr("data-help"); },
-            position: {
-                my: "left+8 bottom-8",
-                at: "right top",
-                within: window,
-                collision: "flipfit"
-            },
-            tooltipClass: "custom-tooltip",
-            track: false,
-            show: { delay: 150, duration: 80 },
-            hide: { delay: 100, duration: 80 }
-        });
-    };
-    UI.waitForTooltipReady = function (maxMs, intervalMs) {
-        var start = Date.now();
-        (function tick() {
-            if (window.jQuery && $.fn && $.fn.tooltip) { UI.initTooltips(); return; }
-            if (Date.now() - start >= maxMs) return;
-            setTimeout(tick, intervalMs);
-        })();
-    };
 
     // Popover logic
     function clamp(v, min, max) {
