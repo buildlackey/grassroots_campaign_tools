@@ -205,7 +205,7 @@ export function buildDialogModelFixture({
     const sheetDefs = Object.entries(sheetTabToColumnNames).map(([name, headers]) => ({ name, headers }));
     const mockSpreadsheet = makeMockSpreadsheet(sheetDefs);
     // Use fromGAS factory method
-    const model = (globalThis as any).CAMPAIGN.CampaignToolsModel.fromGAS({
+    const model = CampaignToolsModel.fromGAS({
         sheetTabName: prefs.sheetTabName || "",
         addressColumn: prefs.addressColumn || "",
         mapsApiKey: prefs.mapsApiKey || "",

@@ -1,0 +1,85 @@
+Use Case Specification: Show Filter Dialog
+
+Use Case Name:      Show Filter Dialog
+Actor:              Spreadsheet User
+
+Preconditions
+
+- The active spreadsheet contains at least one sheet tab with address data.
+- The address column is identifiable either because:
+        * The column header is explicitly named “Address”, OR
+        * The user has previously selected a preferred address column in the Settings dialog.
+        * At least one row of data exists under the address column.
+
+Postconditions
+
+- Happy Path: Filter Dialog displayed to user: 
+    initial spreadsheet entry summary statistics (totalEntries, broken down as shown in UI Elements, below) 
+    filteredEntries shows as zero (since Filtering process yet to be initiated.)
+    Filter button is enabled 
+
+- Unhappy Path
+    Preconditions not met:
+        - UI shows error message explaining how to correct unmet condition
+        - Filter button is disabled 
+ 
+
+
+
+UI Elements: 
+
+FilterDialog
+    Inputs:
+      - targetAddress (type-ahead)
+      - radius (max distance beyond which a filter candidate will NOT be included)
+    Summary Statistics Panel:
+      - totalEntries           - how many address entries in the sheet
+          - geolocatedEntries  - how many were successfully geolocated and whose addres content unchanged
+          - pendingEntries     - how many entries have yet to be geoloc'd or have changed since geloc performed
+          - erroredEntries     - how many entries could not be geolocated due to missing/improper formatted address
+      - filteredEntries        - dynamically updated counter: how many entries are within the given radial distance
+    Actions:
+      - submit → onSubmitHandler
+
+
+
+
+
+Basic Flow (Happy Path)
+
+Spreadsheet User selects Show Filter Dialog from the Campaign Tools menu.
+System validates that the active sheet tab has an address column and at least one data row.
+Spinner initiates showing  'Fetching Data...'
+System computes Summary Statistics
+System displays Filter Dialog 
+Spinner hidden 
+
+
+
+System displays the Filter Dialog to the user.
+
+Alternate Flow 1 — No Address Column Found
+
+Extension of Step 2: If no column named “Address” exists and no preferred column is defined:
+
+System displays error message: “No address column detected. Please configure your sheet or update settings.”
+
+Use case ends.
+
+Alternate Flow 2 — Preferred Address Column Missing
+
+Extension of Step 2: If a preferred address column is configured but cannot be found in the current sheet:
+
+System prompts the user: “Preferred address column not found. Please select a new column in Settings.”
+
+Use case ends.
+
+Alternate Flow 3 — No Data Rows
+
+Extension of Step 2: If the address column exists but contains no rows:
+
+System displays warning: “No rows of data available to filter.”
+
+Filter Dialog is displayed but controls are disabled until data is added.
+
+✅ This keeps the precondition as the ideal entry state, while also handling unmet cases inside the same use case spec for clarity.

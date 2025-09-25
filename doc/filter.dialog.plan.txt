@@ -1,0 +1,96 @@
+This document describes some of the main classes and interactions supporting
+FilterDialog processing.
+
+UI Element:
+    FilterDialog
+
+        inputs:
+            targetAddress(type ahead)
+            radius
+        status fields:
+            total entries
+                geolocatedEntries
+                erroredEntries
+            filterEntries
+
+        Actions submit
+                bound to-> onSubmitHandler
+
+    
+onSubmitHandler
+    controller <-  new FilterJobController(targetAddress, radius, Constants.TIME_TO_WAIT_PER_BATCH)
+    
+                            ^
+                            |
+                        this runs on client side
+
+
+
+interface IProgressReport {
+    int totalToProcess
+    int processedSoFar
+    boolean  done()
+    boolean  failed()
+    boolean  succeeded()
+    Json     details
+}
+
+class AbstractChunkedTaskProcessor {
+    attributes
+    int totalToProcess
+    int chunkSize) => AbstractChunkedTaskProcessor (singleton)
+
+    // methods
+
+    createInstance(totalToProcess,  chunkSize) => AbstractChunkedTaskProcessor (singleton)
+
+    abstract processChunk(rangeStart, rangeEnd): void
+    abstract progressReporter(): IProgressReport
+
+    void process() {
+        int startIndex = 0
+        while(true) {
+            IProgressReport progress <= progressReporter()
+            if (progress.done()) 
+                break;
+            int end = Max(startIndex+step, totalToProcess)
+            processChunk(startIndex, endIndex)
+        } 
+
+    }
+}
+
+class GeolocationTaskProcessor extends AbstractChunkedTaskProcessor  {
+
+}
+
+class FilterJobClientController
+    start:
+        if ('Filtered' sheetTabName exists in sheetTabNames list)
+            query user:  overwrite existing sheet tab 'Filtered' ?
+            if (NO)
+                break
+            while(true) {
+                const progressReport  <---  remote call to:  createGeolocationProcessor()
+                if (progressReport.failed()) {
+                    displayError
+                    break;
+                }
+                updatePanel(progressReport)
+                if (progressReport.done())
+                    break
+                sleep(Constants.TIME_TO_WAIT_PER_BATCH)   
+            }
+
+    
+
+
+
+class Constants
+    // Chunked Task Processing
+    TIME_TO_WAIT_PER_BATCH = 5;
+
+    // Spreadsheet Layout related
+    MAX_SCAN_ROWS = 20;
+    MIN_NONEMPTY_CELLS = 1;
+

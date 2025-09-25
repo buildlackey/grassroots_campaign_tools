@@ -117,7 +117,8 @@ describe("SettingsDialog Save button enablement", () => {
         const sheetDefs = Object.entries(fixture.sheetTabToColumnNames)
             .map(([name, headers]) => ({ name, headers: headers as string[] }));
         const mockSpreadsheet = makeMockSpreadsheet(sheetDefs);
-        const model = (globalThis as any).CAMPAIGN.CampaignToolsModel.fromGAS(fixture.prefs, mockSpreadsheet);
+        // Use fromGAS to create model
+        const model = CampaignToolsModel.fromGAS(fixture.prefs, mockSpreadsheet);
         const initData = model.getModelState();
         const domWindowAndDoc = await bootDialog(htmlContent, initData);
 

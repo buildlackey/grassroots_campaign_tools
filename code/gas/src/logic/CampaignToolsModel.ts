@@ -18,6 +18,22 @@ export class CampaignToolsModel {
         this.logger = (globalThis as any).CAMPAIGN && (globalThis as any).CAMPAIGN.CampaignToolsLogger ? (globalThis as any).CAMPAIGN.CampaignToolsLogger.getInstance() : null;
     }
 
+    static fromGAS(prefs: Preferences, spreadsheet?: any): CampaignToolsModel {
+        const effectivePrefs =
+            prefs ||
+            ((globalThis as any).CAMPAIGN &&
+                (globalThis as any).CAMPAIGN.PreferenceSvc &&
+                (globalThis as any).CAMPAIGN.PreferenceSvc.create().getPreferences());
+        if (!effectivePrefs) {
+            throw new Error("Preferences unavailable: must pass prefs or have PreferenceSvc loaded");
+        }
+        const sheetLayout = spreadsheet
+            ? new (globalThis as any).CAMPAIGN.SheetLayout(spreadsheet)
+            : new (globalThis as any).CAMPAIGN.SheetLayout();
+        const layoutSummary: SheetLayoutSummary = sheetLayout.getLayoutSummary();
+        return new CampaignToolsModel(layoutSummary, effectivePrefs);
+    }
+
     getModelState(): CampaignToolsModelState {  // might rename this to getSettingsDialogState   CampaignToolsModelState -> SettingsDialogState
         return {
             sheetTabNames: this.sheetTabNames,
@@ -85,21 +101,3 @@ export class CampaignToolsModel {
 (globalThis as any).CAMPAIGN = (globalThis as any).CAMPAIGN || {};
 (globalThis as any).CAMPAIGN.CampaignToolsModel = CampaignToolsModel;
 
-
-// GAS-only static method for runtime       --  This should be part of the class.
-(globalThis as any).CAMPAIGN.CampaignToolsModel.fromGAS = function(prefs: Preferences, spreadsheet?: any) {
-    const effectivePrefs =
-         prefs ||
-         ((globalThis as any).CAMPAIGN &&
-          (globalThis as any).CAMPAIGN.PreferenceSvc &&
-          (globalThis as any).CAMPAIGN.PreferenceSvc.create().getPreferences());
-    if (!effectivePrefs) {
-        throw new Error("Preferences unavailable: must pass prefs or have PreferenceSvc loaded");
-    }
-    const sheetLayout = spreadsheet
-        ? new (globalThis as any).CAMPAIGN.SheetLayout(spreadsheet)
-        : new (globalThis as any).CAMPAIGN.SheetLayout();
-    const layoutSummary: SheetLayoutSummary = sheetLayout.getLayoutSummary();
-    // @ts-ignore
-    return new CampaignToolsModel(layoutSummary, effectivePrefs);
-};
