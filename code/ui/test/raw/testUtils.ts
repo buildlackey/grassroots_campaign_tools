@@ -1,3 +1,28 @@
+(globalThis as any).SpreadsheetApp = {
+    getActiveSpreadsheet: () => ({
+        getSheets: () => [
+            {
+                getName: () => "Sheet1",
+                getLastColumn: () => 2,
+                getLastRow: () => 1,
+                getRange: (_row: number, _col: number, _numRows: number, _numCols: number) => ({
+                    getValues: () => [["Address", "Name"]]
+                })
+            }
+        ]
+    })
+};
+
+
+// TypeScript ambient declaration for SpreadsheetApp (for test compile)
+declare var SpreadsheetApp: any;
+
+
+// Ensure GAS classes are loaded for tests
+require("../../../gas/src/logic/SheetLayout");
+require("../../../gas/src/logic/CampaignToolsModel");
+
+
 // TypeScript global declaration for test logging flag
 export {};
 /**
@@ -159,16 +184,33 @@ export function buildDialogModelFixture({
         debug?: boolean;
     };
 }) {
-    const model = new CampaignToolsModel({
-        sheetTabNames,
-        sheetTabToColumnNames,
-        prefs: {
-            sheetTabName: prefs.sheetTabName || "",
-            addressColumn: prefs.addressColumn || "",
-            mapsApiKey: prefs.mapsApiKey || "",
-            showLatLong: !!prefs.showLatLong,
-            debug: !!prefs.debug,
-        }
-    });
+    // Helper to create mock ISheet
+    function makeMockSheet(name: string, headers: string[]): any {
+        return {
+            getName: () => name,
+            getLastColumn: () => headers.length,
+            getLastRow: () => headers.length > 0 ? 1 : 0,
+            getRange: (_row: number, _col: number, _numRows: number, _numCols: number) => ({
+                getValues: () => [headers]
+            })
+        };
+    }
+    // Helper to create mock ISpreadsheet
+    function makeMockSpreadsheet(sheetDefs: {name: string, headers: string[]}[]): any {
+        return {
+            getSheets: () => sheetDefs.map(def => makeMockSheet(def.name, def.headers))
+        };
+    }
+    // Build mock spreadsheet from input
+    const sheetDefs = Object.entries(sheetTabToColumnNames).map(([name, headers]) => ({ name, headers }));
+    const mockSpreadsheet = makeMockSpreadsheet(sheetDefs);
+    // Use fromGAS factory method
+    const model = (globalThis as any).CAMPAIGN.CampaignToolsModel.fromGAS({
+        sheetTabName: prefs.sheetTabName || "",
+        addressColumn: prefs.addressColumn || "",
+        mapsApiKey: prefs.mapsApiKey || "",
+        showLatLong: !!prefs.showLatLong,
+        debug: !!prefs.debug,
+    }, mockSpreadsheet);
     return model.getModelState();
 }

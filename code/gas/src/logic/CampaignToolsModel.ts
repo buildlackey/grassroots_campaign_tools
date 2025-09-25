@@ -1,5 +1,8 @@
 import {CampaignToolsModelState} from "../../../common/src/CampaignToolsModel";
 import {Preferences} from "../../../common/src/PreferenceSvc";
+import {SheetLayoutSummary} from "./SheetLayout";
+
+require("../../../gas/src/logic/SheetLayout");
 
 
 export class CampaignToolsModel {
@@ -8,14 +11,14 @@ export class CampaignToolsModel {
     prefs: Preferences;
     private logger: any;
 
-    constructor(initData: CampaignToolsModelState) {
-        this.sheetTabNames = initData.sheetTabNames || [];
-        this.sheetTabToColumnNames = initData.sheetTabToColumnNames || {};
-        this.prefs = initData.prefs;
+    constructor(layoutSummary: SheetLayoutSummary, prefs: Preferences) {
+        this.sheetTabNames = layoutSummary.sheetTabNames || [];
+        this.sheetTabToColumnNames = layoutSummary.sheetTabToColumnNames || {};
+        this.prefs = prefs;
         this.logger = (globalThis as any).CAMPAIGN && (globalThis as any).CAMPAIGN.CampaignToolsLogger ? (globalThis as any).CAMPAIGN.CampaignToolsLogger.getInstance() : null;
     }
 
-    getModelState(): CampaignToolsModelState {
+    getModelState(): CampaignToolsModelState {  // might rename this to getSettingsDialogState   CampaignToolsModelState -> SettingsDialogState
         return {
             sheetTabNames: this.sheetTabNames,
             sheetTabToColumnNames: this.sheetTabToColumnNames,
@@ -82,8 +85,9 @@ export class CampaignToolsModel {
 (globalThis as any).CAMPAIGN = (globalThis as any).CAMPAIGN || {};
 (globalThis as any).CAMPAIGN.CampaignToolsModel = CampaignToolsModel;
 
-// GAS-only static method for runtime
-(globalThis as any).CAMPAIGN.CampaignToolsModel.fromGAS = function(prefs: Preferences) {
+
+// GAS-only static method for runtime       --  This should be part of the class.
+(globalThis as any).CAMPAIGN.CampaignToolsModel.fromGAS = function(prefs: Preferences, spreadsheet?: any) {
     const effectivePrefs =
          prefs ||
          ((globalThis as any).CAMPAIGN &&
@@ -92,12 +96,10 @@ export class CampaignToolsModel {
     if (!effectivePrefs) {
         throw new Error("Preferences unavailable: must pass prefs or have PreferenceSvc loaded");
     }
-    const sheetLayout = new (globalThis as any).CAMPAIGN.SheetLayout();
-    const layout = sheetLayout.discover();
-
-    return new CampaignToolsModel({
-      sheetTabNames: layout.sheetTabNames,
-      sheetTabToColumnNames: layout.sheetTabToColumnNames,
-      prefs: effectivePrefs,
-    });
+    const sheetLayout = spreadsheet
+        ? new (globalThis as any).CAMPAIGN.SheetLayout(spreadsheet)
+        : new (globalThis as any).CAMPAIGN.SheetLayout();
+    const layoutSummary: SheetLayoutSummary = sheetLayout.getLayoutSummary();
+    // @ts-ignore
+    return new CampaignToolsModel(layoutSummary, effectivePrefs);
 };

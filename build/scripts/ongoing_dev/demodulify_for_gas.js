@@ -40,6 +40,17 @@ try {
         content = content.replace(/^import\s+.*?from\s+['"][^'"]*['"];?\s*$/gm, '');
         content = content.replace(/^import\s+['"][^'"]*['"];?\s*$/gm, '');
 
+        // Remove Node-style require calls (GAS doesn’t support them)
+        // Handles:
+        //   const foo = require("bar");
+        //   var x = require("baz");
+        //   require("side-effect");
+        content = content.replace(
+            /(?:const|let|var)\s+\w+\s*=\s*require\([^)]*\);?/g,
+            ''
+        );
+        content = content.replace(/require\([^)]*\);?/g, '');
+
         // Remove export keywords but keep the declarations
         content = content.replace(/^export\s+(?=class|interface|type|const|let|var|function)/gm, '');
 

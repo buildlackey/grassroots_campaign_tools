@@ -92,13 +92,35 @@ const cases: Array<[string, any, boolean, string]> = [
 
 // Update test logic to use model's computed values
 
+function makeMockSheet(name: string, headers: string[]): any {
+    return {
+        getName: () => name,
+        getLastColumn: () => headers.length,
+        getLastRow: () => headers.length > 0 ? 1 : 0,
+        getRange: (_row: number, _col: number, _numRows: number, _numCols: number) => ({
+            getValues: () => [headers]
+        })
+    };
+}
+
+function makeMockSpreadsheet(sheetDefs: {name: string, headers: string[]}[]): any {
+    return {
+        getSheets: () => sheetDefs.map(def => makeMockSheet(def.name, def.headers))
+    };
+}
+
+require("../../../gas/src/logic/CampaignToolsModel");
+
 describe("SettingsDialog Save button enablement", () => {
     test.each(cases)("%s", async (_desc, fixture, expectedDisabled, expectedAddress) => {
-        // Compute preferred values using the model
-        const model = new CampaignToolsModel(fixture);
+        // Build mock spreadsheet from fixture
+        const sheetDefs = Object.entries(fixture.sheetTabToColumnNames)
+            .map(([name, headers]) => ({ name, headers: headers as string[] }));
+        const mockSpreadsheet = makeMockSpreadsheet(sheetDefs);
+        const model = (globalThis as any).CAMPAIGN.CampaignToolsModel.fromGAS(fixture.prefs, mockSpreadsheet);
         const initData = model.getModelState();
-
         const domWindowAndDoc = await bootDialog(htmlContent, initData);
+
         dom = domWindowAndDoc.dom;
         window = domWindowAndDoc.window;
         document = domWindowAndDoc.document;
