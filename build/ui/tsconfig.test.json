@@ -6,7 +6,6 @@
     "types": ["jest", "node"]
   },
   "include": [
-    "../../code/ui/test/raw/*.ts",
-    "../../code/ui/test/raw/gas-globals.d.ts"
+    "../../code/ui/test/raw/*.ts"
   ]
 }
