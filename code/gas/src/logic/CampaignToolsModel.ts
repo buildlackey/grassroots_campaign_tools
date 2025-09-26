@@ -2,7 +2,6 @@ import {CampaignToolsModelState} from "../../../common/src/CampaignToolsModel";
 import {Preferences} from "../../../common/src/PreferenceSvc";
 import {SheetLayoutSummary} from "./SheetLayout";
 
-require("../../../gas/src/logic/SheetLayout");
 
 
 export class CampaignToolsModel {
