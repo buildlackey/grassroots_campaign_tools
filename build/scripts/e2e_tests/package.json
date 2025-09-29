@@ -1,0 +1,12 @@
+{
+  "type": "module",
+  "scripts": {
+    "record-login": "NODE_OPTIONS='--loader ts-node/esm' node ./record_google_login_state.ts",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.0"
+  }
+}

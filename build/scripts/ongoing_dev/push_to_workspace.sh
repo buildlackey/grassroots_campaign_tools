@@ -20,11 +20,11 @@ done
 # === Standard Preamble  ===
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOGIN_SCRIPT_DIR=$SCRIPT_DIR
-GIT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
-COMMON_SCRIPTS_DIR=$GIT_ROOT/build/scripts/common
-BUILD_UI_DIR="$GIT_ROOT/build/ui"
-BUILD_GAS_DIR="$GIT_ROOT/build/gas"
-BUILD_COMMON_DIR="$GIT_ROOT/build/common"
+PROJECT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
+COMMON_SCRIPTS_DIR=$PROJECT_ROOT/build/scripts/common
+BUILD_UI_DIR="$PROJECT_ROOT/build/ui"
+BUILD_GAS_DIR="$PROJECT_ROOT/build/gas"
+BUILD_COMMON_DIR="$PROJECT_ROOT/build/common"
 
 .  "$COMMON_SCRIPTS_DIR/utils.sh"
 
@@ -37,7 +37,7 @@ popd
 $LOGIN_SCRIPT_DIR/clasp_login.sh
 "$LOCAL_CLASP" login --status >/dev/null || { echo "❌ clasp status failed "; exit 1; }
 
-cd "$GIT_ROOT"
+cd "$PROJECT_ROOT"
 
 # Helper: build one target if present
 build_ui() {
@@ -55,15 +55,15 @@ build_gas() {
   cd "$BUILD_GAS_DIR"
   npm run dist
   echo "LISTING after GAS build:"
-  ls "$GIT_ROOT/dist/gas/gas_safe_staging"
+  ls "$PROJECT_ROOT/dist/gas/gas_safe_staging"
 
   # === Apply demodulify post-processing ===
   echo "🔧 Running demodulify post-processing on GAS output..."
-  cd "$GIT_ROOT/dist/gas"
-  node "$GIT_ROOT/build/scripts/ongoing_dev/demodulify_for_gas.js"
+  cd "$PROJECT_ROOT/dist/gas"
+  node "$PROJECT_ROOT/build/scripts/ongoing_dev/demodulify_for_gas.js"
 
   echo "LISTING after demodulify:"
-  ls "$GIT_ROOT/dist/gas/gas_safe_staging"
+  ls "$PROJECT_ROOT/dist/gas/gas_safe_staging"
 }
 
 build_common() {
@@ -75,8 +75,8 @@ build_common() {
 
     # === Apply demodulify post-processing to common output ===
     echo "🔧 Running demodulify post-processing on Common output..."
-    cd "$GIT_ROOT/dist/common"
-    node "$GIT_ROOT/build/scripts/ongoing_dev/demodulify_for_gas.js"
+    cd "$PROJECT_ROOT/dist/common"
+    node "$PROJECT_ROOT/build/scripts/ongoing_dev/demodulify_for_gas.js"
   else
     echo "⚠️ Skipping Common: directory not found at $BUILD_COMMON_DIR"
   fi
@@ -117,7 +117,7 @@ END
 
 # === Stage build artifacts into working push folder ===
 echo "📦 Staging dist artifacts into $WORKING_PUSH_FOLDER"
-cp -a  $GIT_ROOT/dist/*/gas_safe_staging/*    "$WORKING_PUSH_FOLDER/"
+cp -a  $PROJECT_ROOT/dist/*/gas_safe_staging/*    "$WORKING_PUSH_FOLDER/"
 
 # Ensure gas_bundle is loaded first by Apps Script (alphabetical order)
 if [[ -f "$WORKING_PUSH_FOLDER/gas_bundle.js" ]]; then
@@ -154,7 +154,6 @@ echo "🚀 Pushing project to Apps Script"
 "$LOCAL_CLASP" push --force
 
 
-# 5) Optional remote smoke test
 echo "🏁 Running remote smokeTest (expects SUCCESS)"
 if "$LOCAL_CLASP" run smokeTest | grep -q SUCCESS; then
   echo "✅ smoke test passed"
@@ -162,4 +161,7 @@ else
   echo "❌ smoke test failed"
   exit 1
 fi
+
+
+"$PROJECT_ROOT/build/scripts/e2e_tests/run_e2e_tests.sh"
 

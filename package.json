@@ -8,6 +8,7 @@
   ],
   "devDependencies": {
     "@google/clasp": "2.5.0",
+    "@playwright/test": "^1.55.1",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.8.0",
     "@types/google-apps-script": "^1.0.99",
@@ -23,14 +24,17 @@
     "jest-environment-jsdom": "^29.7.0",
     "jquery": "^3.7.1",
     "jsdom": "26.1.0",
+    "playwright": "^1.55.1",
     "prettier": "3.5.3",
     "ts-jest": "29.4.1",
+    "ts-node": "^10.9.2",
     "typescript": "5.9.2",
     "webpack-cli": "^6.0.1"
   },
   "scripts": {
     "build:ui": "npm -w @app/ui run build",
     "clean:ui": "npm -w @app/ui run clean",
-    "test:ui": "npm -w @app/ui run test"
+    "test:ui": "npm -w @app/ui run test",
+    "test:e2e": "npx playwright test --config=build/scripts/e2e_tests/playwright.config.ts"
   }
 }
