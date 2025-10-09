@@ -23,3 +23,5 @@ echo "🧪 Running Playwright E2E tests..."
 cd $SCRIPT_DIR
 exec $LAUNCHER run test:e2e
 
+
+

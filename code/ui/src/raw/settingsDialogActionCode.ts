@@ -98,7 +98,7 @@ function onOpen(): void {
 
     function wireUpEventHandlers(model: any) {
         bindRequired("sheetSelect", "change", function (this: HTMLElement, _evt: Event) {
-            CAMPAIGN.UI.onSheetChange(model);
+            onSheetChange(model);
         });
         bindRequired("saveBtn", "click", function (_evt: Event) {
             saveSettings(model);
@@ -108,16 +108,16 @@ function onOpen(): void {
         });
         bindRequired("mapsApiKey", "blur", function (_evt: Event) { CAMPAIGN.UI.hideApiKeyOnBlur(); });
         bindRequired("mapsApiKey", "focus", function (_evt: Event) { CAMPAIGN.UI.showApiKeyOnFocus(); });
-        bindRequired("mapsApiKey", "input", function (_evt: Event) { CAMPAIGN.UI.updateSaveButtonState(); });
-        bindRequired("addressSelect", "change", function (_evt: Event) { CAMPAIGN.UI.updateSaveButtonState(); });
+        bindRequired("mapsApiKey", "input", function (_evt: Event) { updateSaveButtonState(); });
+        bindRequired("addressSelect", "change", function (_evt: Event) { updateSaveButtonState(); });
     }
 
     /** Pass the model into renderers */
     function renderSelectorForAddressColumn(model: any, preferredSheetSelect: HTMLSelectElement | null) {
         if (model.sheetTabNames.length > 0 && preferredSheetSelect) {
-            CAMPAIGN.UI.renderHeadersFor(preferredSheetSelect.value, model);
+            renderHeadersFor(preferredSheetSelect.value, model);
         }
-        CAMPAIGN.UI.updateSaveButtonState();
+        updateSaveButtonState();
         CAMPAIGN.UI.hideSpinner();
         CAMPAIGN.logger.log("onOpen processing DONE");
     }
@@ -229,3 +229,45 @@ function cancelDialog() {
     }
     window.addEventListener('keydown', onKeydown, true);
 })();
+
+function updateSaveButtonState() {
+    var btn = document.getElementById("saveBtn") as HTMLButtonElement | null;
+    if (!btn) {
+        console.warn("[updateSaveButtonState] Save button not found");
+        return;
+    }
+    var mapsEl = document.getElementById("mapsApiKey") as HTMLInputElement | null;
+    var key = (mapsEl && typeof mapsEl.value === "string") ? mapsEl.value.trim() : "";
+    var addrEl = document.getElementById("addressSelect") as HTMLSelectElement | null;
+    var addr = (addrEl && typeof addrEl.value === "string") ? addrEl.value : "";
+    btn.disabled = !(key.length > 0 && addr !== "");
+    CAMPAIGN.logger.log("[updateSaveButtonState] disabled?", btn.disabled);
+}
+
+function renderHeadersFor(name: string, ctx?: any) {
+    function formatOption(h: string) {
+        return '<option value="%s">%s</option>'.replace(/%s/g, h);
+    }
+    CAMPAIGN.logger.log("[renderHeadersFor] start", name);
+    var sheetTabToColumnNames = (ctx && ctx.sheetTabToColumnNames) || ((window as any).CAMPAIGN_UI?.model?.sheetTabToColumnNames || {});
+    var headers = (sheetTabToColumnNames && sheetTabToColumnNames[name]) || [];
+    var clean = headers.filter((h: any) => h != null && String(h).length > 0).map((h: any) => String(h));
+    var select = document.getElementById("addressSelect") as HTMLSelectElement | null;
+    if (!select) {
+        console.warn("[renderHeadersFor] addressSelect not found");
+        return;
+    }
+    select.innerHTML = clean.map(formatOption).join('');
+    select.value = ctx ? ctx.preferredAddressColumnName : "";
+    CAMPAIGN.logger.log("[renderHeadersFor] selected:", select.value);
+    updateSaveButtonState();
+    CAMPAIGN.logger.log("[renderHeadersFor] exit", { count: clean.length, selected: select.value });
+}
+
+function onSheetChange(ctx?: any) {
+    var sel = document.getElementById("sheetSelect") as HTMLSelectElement | null;
+    var name = sel ? sel.value : "";
+    CAMPAIGN.logger.log("[onSheetChange] ->", name);
+    renderHeadersFor(name, ctx);
+}
+
