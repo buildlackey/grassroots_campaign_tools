@@ -21,7 +21,11 @@ LAUNCHER="${PLAYWRIGHT_NPM_LAUNCHER:-npm}"
 # Run the E2E tests
 echo "🧪 Running Playwright E2E tests..."
 cd $SCRIPT_DIR
-exec $LAUNCHER run test:e2e
-
-
-
+$LAUNCHER run test:e2e
+status=$?
+if [ $status -eq 0 ]; then
+  echo "success: system tests passed"
+else
+  echo "system tests failed"
+fi
+exit $status

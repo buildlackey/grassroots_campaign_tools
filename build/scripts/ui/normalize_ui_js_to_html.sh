@@ -28,33 +28,39 @@
 
 set -e
 
-# Copy all .js files from dist/common/gas_safe_staging/ to dist/ui/gas_safe_staging/
-# Rationale: dist/ui/gas_safe_staging/ is the "collection point" for all UI and shared JS artifacts
-# that need to be renamed to .html for GAS compatibility. This is practical because:
-# - All UI code expects to include fragments from this directory.
-# - The normalization/renaming script only needs to operate in one place.
-# - The test fixture and deployment scripts can reliably find all needed fragments here.
-for f in ../../dist/common/gas_safe_staging/*.js; do
-  [ -e "$f" ] || continue
-  cp "$f" ../../dist/ui/gas_safe_staging/
-  echo "Copied shared JS artifact: $f -> ../../dist/ui/gas_safe_staging/"
-done
+# Check for .js files in dist/ui/gas_safe_staging
+js_count=$(find ../../dist/ui/gas_safe_staging/ -maxdepth 1 -name '*.js' | wc -l)
+if [ "$js_count" -eq 0 ]; then
+  echo "[INFO] No .js files to rename; Webpack already emitted .html files."
+else
+  # Copy all .js files from dist/common/gas_safe_staging/ to dist/ui/gas_safe_staging/
+  # Rationale: dist/ui/gas_safe_staging/ is the "collection point" for all UI and shared JS artifacts
+  # that need to be renamed to .html for GAS compatibility. This is practical because:
+  # - All UI code expects to include fragments from this directory.
+  # - The normalization/renaming script only needs to operate in one place.
+  # - The test fixture and deployment scripts can reliably find all needed fragments here.
+  for f in ../../dist/common/gas_safe_staging/*.js; do
+    [ -e "$f" ] || continue
+    cp "$f" ../../dist/ui/gas_safe_staging/
+    echo "Copied shared JS artifact: $f -> ../../dist/ui/gas_safe_staging/"
+  done
 
-for f in ../../dist/ui/gas_safe_staging/*.js; do
-  base=$(basename "$f" .js)
-  # Convert first character to uppercase (InitCap CamelCase)
-  camel=$(echo "$base" | sed -E 's/^([a-z])/\U\1/')
-  camel=$(echo "$camel" | sed 's/[()]//g')
-  out="../../dist/ui/gas_safe_staging/${camel}.html"
-  cat "$f" > "$out"
-  rm "$f"
-  echo "Renamed $f -> $out"
-done
+  for f in ../../dist/ui/gas_safe_staging/*.js; do
+    base=$(basename "$f" .js)
+    # Convert first character to uppercase (InitCap CamelCase)
+    camel=$(echo "$base" | sed -E 's/^([a-z])/\U\1/')
+    camel=$(echo "$camel" | sed 's/[()]//g')
+    out="../../dist/ui/gas_safe_staging/${camel}.html"
+    cat "$f" > "$out"
+    rm "$f"
+    echo "Renamed $f -> $out"
+  done
 
-# Final cleanup: ensure no stray .js files remain in dist/ui/gas_safe_staging/
-find ../../dist/ui/gas_safe_staging/ -maxdepth 1 -name '*.js' -exec rm -f {} +
+  # Final cleanup: ensure no stray .js files remain in dist/ui/gas_safe_staging/
+  find ../../dist/ui/gas_safe_staging/ -maxdepth 1 -name '*.js' -exec rm -f {} +
+fi
 
-# Validate all *Code.html files are raw JS (not wrapped in IIFE)
+# Always validate all *Code.html files are raw JS (not wrapped in IIFE)
 for f in ../../dist/ui/gas_safe_staging/*Code.html; do
   [ -e "$f" ] || continue  # skip if no match
   first_line=$(head -1 "$f" | tr -d '[:space:]')
@@ -63,4 +69,3 @@ for f in ../../dist/ui/gas_safe_staging/*Code.html; do
     exit 1
   fi
 done
-
