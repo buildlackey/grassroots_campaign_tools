@@ -70,11 +70,11 @@ class CampaignToolsLogger {
             }
 
         } catch (e) {
-            console.log("isLoggingEnabledClientSideCheck error!");
+            //console.log("isLoggingEnabledClientSideCheck error!");            // TODO - code this up so exception doesn't always happen
         }
-        console.log("Fallback to globalThis for test/Jest");
         return !!(globalThis as any).CAMPAIGN_TOOLS_ENABLE_LOGGING;
     }
+
 
 
 
@@ -120,4 +120,3 @@ class CampaignToolsLogger {
 if (typeof Logger !== "undefined") {
     Logger.log("_sys_logger: ✅ CampaignToolsLogger loaded and attached to globalThis.CAMPAIGN");
 }
-

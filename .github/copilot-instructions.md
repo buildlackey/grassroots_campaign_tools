@@ -3,6 +3,16 @@
 These instructions guide GitHub Copilot to generate 
 code consistent with this project’s architecture, build system, and testing strategy.
 
+
+TODO - we really should move this entire thing into readme and add instructions as follows
+(these are not valid yet - just notes for now):
+
+
+# Future - post move - Copilot Instructions
+
+For full project architecture, coding guidelines, and development notes, see [README.md](../README.md) in the project root.
+This file now defers to the main README for all ongoing development documentation.
+
 ---
 
 ## 📌 Project Overview

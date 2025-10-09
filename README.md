@@ -138,7 +138,40 @@ might need to do this because the latest versions (e.g. 2.4.2 and newer) introdu
 
     A regression where files downloaded as .gs (server default), but clasp confused them with .js locally, especially when both existed.
 
+# Logging Enablement
 
+Logging can be enabled for both backend (GAS) and frontend (UI) code. This section explains how to control logging in 
+production (when testing UI from GAS environment) and during local unit testing.
 
+## GAS Backend Logging
 
+To enable logging for backend processing, set the `debug` preference to `true` in your settings. This can be 
+done via the SettingsDialog in the UI. When `debug` is enabled, backend code will produce detailed logs 
+for troubleshooting and auditing.
 
+## Frontend (UI) Logging
+
+When you set `debug=true` and press the SettingsDialog SAVE button, the client-side handler will also set 
+the localStorage variable `CAMPAIGN_TOOLS_ENABLE_LOGGING` to `true`. This enables logging for all frontend UI code, 
+so you can see detailed logs in the browser console. This mechanism ensures that both backend 
+and frontend logging are enabled in production when the debug setting is active.
+
+## Logging During Testing
+
+For automated tests and local development, logging can be controlled via a configuration file. Place a file named 
+`test-config.json` in your `~/.campaign/` directory with the following content:
+
+```json
+{
+  "CAMPAIGN_TOOLS_ENABLE_LOGGING": true
+}
+```
+
+This will enable logging for all test runs. You can set the value to `false` to disable logging. The test harness 
+reads this file to determine whether to instrument logging in both backend and frontend code during tests.
+
+---
+
+**Summary:**
+- Set `debug=true` in SettingsDialog to enable logging for both backend and frontend in production.
+- During testing, use `~/.campaign/test-config.json` to control logging.

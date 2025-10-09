@@ -25,22 +25,7 @@ require("../../../gas/src/logic/CampaignToolsModel");
 
 // TypeScript global declaration for test logging flag
 export {};
-/**
- * Logging flag configuration for tests
- *
- * - LOGGING_ENABLED is set once at module load, based on environment variable or config file.
- * - globalThis.CAMPAIGN_TOOLS_ENABLE_LOGGING is set for Node.js/Jest tests (non-browser).
- * - (win as any).CAMPAIGN_TOOLS_ENABLE_LOGGING is set for JSDOM/browser-like tests in bootDialog.
- *
- * This ensures logging is consistently enabled/disabled for all test environments.
- *
- * Usage:
- *   - Set CAMPAIGN_TOOLS_ENABLE_LOGGING=true in your environment, or
- *   - Add { "CAMPAIGN_TOOLS_ENABLE_LOGGING": true } to testConfig.json
- *
- * Node/Jest tests use globalThis.
- * JSDOM/browser-like tests use window (set via beforeParse).
- */
+
 declare global {
   interface GlobalThis {
     CAMPAIGN_TOOLS_ENABLE_LOGGING?: boolean;
