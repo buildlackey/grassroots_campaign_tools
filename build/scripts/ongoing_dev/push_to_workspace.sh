@@ -119,11 +119,6 @@ END
 echo "📦 Staging dist artifacts into $WORKING_PUSH_FOLDER"
 cp -a  $PROJECT_ROOT/dist/*/gas_safe_staging/*    "$WORKING_PUSH_FOLDER/"
 
-# Ensure gas_bundle is loaded first by Apps Script (alphabetical order)
-if [[ -f "$WORKING_PUSH_FOLDER/gas_bundle.js" ]]; then
-  mv "$WORKING_PUSH_FOLDER/gas_bundle.js" "$WORKING_PUSH_FOLDER/AAA_load_first_gas_bundle.gs"
-fi
-
 
 # === Duplicate CampaignToolsModel for server + client ===
 if [[ -f "$WORKING_PUSH_FOLDER/CampaignToolsModel.js" ]]; then
@@ -164,4 +159,3 @@ fi
 
 
 "$PROJECT_ROOT/build/scripts/e2e_tests/run_e2e_tests.sh"
-

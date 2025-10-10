@@ -8,7 +8,7 @@ module.exports = {
     entry: glob.sync(path.resolve(__dirname, "../../code/gas/src/logic/*.ts")),
     output: {
         path: path.resolve(__dirname, "../../dist/gas/gas_safe_staging"),
-        filename: "gas_bundle.js",
+        filename: "AAA_load_first_gas_bundle.gs", // emits bundle with desired name
         // GAS requires functions to live on the global object
         library: { type: "assign", name: "globalThis.CAMPAIGN" },
         pathinfo: true,
