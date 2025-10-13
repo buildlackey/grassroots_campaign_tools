@@ -5,7 +5,8 @@
     "clean": "rm -rf ../../dist/common/gas_safe_staging",
     "test": "jest",
     "build": "npm run clean && tsc --project tsconfig.json",
-    "dist": "npm run build && if [ \"$SKIP_TESTS\" != \"true\" ]; then npm run test; fi"
+    "build:html": "webpack --config webpack.config.js",
+    "dist": "npm run build && npm run build:html && if [ \"$SKIP_TESTS\" != \"true\" ]; then npm run test; fi"
   },
   "devDependencies": {
     "jest": "^29.7.0",

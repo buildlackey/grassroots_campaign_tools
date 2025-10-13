@@ -143,6 +143,17 @@
     //# sourceURL=SettingsDialogActionCode.js
 </script>
 
+<script>
+    <?!= include('HelloWorld.html') ?>
+</script>
+<script>
+  if (globalThis.CAMPAIGN && typeof globalThis.CAMPAIGN.helloWorld === 'function') {
+    console.log('HelloWorld imported:', globalThis.CAMPAIGN.helloWorld());
+  } else {
+    console.error('HelloWorld import failed: globalThis.CAMPAIGN.helloWorld not found');
+  }
+</script>
+
 <!-- Container for tooltip 'within' and general scoping -->
 <div id="settings-dialog-container"></div>
 </body>
