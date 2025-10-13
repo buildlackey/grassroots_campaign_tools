@@ -120,17 +120,6 @@ echo "📦 Staging dist artifacts into $WORKING_PUSH_FOLDER"
 cp -a  $PROJECT_ROOT/dist/*/gas_safe_staging/*    "$WORKING_PUSH_FOLDER/"
 
 
-# === Duplicate CampaignToolsModel for server + client ===
-if [[ -f "$WORKING_PUSH_FOLDER/CampaignToolsModel.js" ]]; then
-  cp "$WORKING_PUSH_FOLDER/CampaignToolsModel.js" "$WORKING_PUSH_FOLDER/CampaignToolsModel.gs"
-  cp "$WORKING_PUSH_FOLDER/CampaignToolsModel.js" "$WORKING_PUSH_FOLDER/CampaignToolsModelCode.html"
-  rm "$WORKING_PUSH_FOLDER/CampaignToolsModel.js"
-  echo "📑 Created CampaignToolsModel.gs (server) and CampaignToolsModelCode.html (client include)"
-else
-  echo "⚠️ CampaignToolsModel.js not found in $WORKING_PUSH_FOLDER"
-fi
-
-
 # 3) 🔑 Inject real Maps API key into Code.js
 sed -i "s|\"GOOGLE_MAPS_API_KEY\"|\"${GOOGLE_MAPS_API_KEY}\"|g" "$WORKING_PUSH_FOLDER/Code.js"
 

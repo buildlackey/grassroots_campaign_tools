@@ -10,5 +10,5 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": ["../../code/common/src/**/*"]
+  "include": ["../../code/common/src/**/*.ts"]
 }
