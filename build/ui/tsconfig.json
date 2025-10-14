@@ -8,7 +8,8 @@
     "noEmitOnError": true,
     "types": ["jquery"],
     "lib": ["dom", "es5", "es2015"],
-    "allowJs": false // Only TypeScript files allowed
+    "allowJs": false,
+    "sourceMap": true
   },
   "include": [
     "../../code/ui/src/logic/*.ts"
