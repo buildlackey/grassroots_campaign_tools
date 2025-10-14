@@ -1,5 +1,5 @@
-function helloWorld() {
-  return "Hello, world!";
+export class HelloWorld {
+  static greet() {
+    return "Hello, world!";
+  }
 }
-(globalThis.CAMPAIGN = globalThis.CAMPAIGN || {});
-globalThis.CAMPAIGN.helloWorld = helloWorld;

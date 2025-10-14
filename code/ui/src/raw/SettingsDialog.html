@@ -122,35 +122,13 @@
 </div>
 
 
-<!-- Order is important -- this must load before anything that uses logging -->
-<script>
-    <?!= include('CampaignToolsLogger') ?>
-    //# sourceURL=SettingsDialogUIFrostingCode.js
-</script>
 
 <script>
-    <?!= include('GenericUIFrostingCode') ?>
-</script>
-
-<!-- Order is important -- this must load before SettingsDialogActionCode -->
-<script>
-    <?!= include('SettingsDialogUIFrostingCode') ?>
-    //# sourceURL=SettingsDialogUIFrostingCode.js
-</script>
-
-<script>
-    <?!= include('SettingsDialogActionCode') ?>
-    //# sourceURL=SettingsDialogActionCode.js
-</script>
-
-<script>
-    <?!= include('HelloWorld.html') ?>
-</script>
-<script>
-  if (globalThis.CAMPAIGN && typeof globalThis.CAMPAIGN.helloWorld === 'function') {
-    console.log('HelloWorld imported:', globalThis.CAMPAIGN.helloWorld());
+  <?!= include('HelloWorld.html') ?>
+  if (globalThis.CAMPAIGN && globalThis.CAMPAIGN.HelloWorld) {
+    console.log('HelloWorld imported:', globalThis.CAMPAIGN.HelloWorld.greet());
   } else {
-    console.error('HelloWorld import failed: globalThis.CAMPAIGN.helloWorld not found');
+    console.error('HelloWorld import failed: globalThis.CAMPAIGN.HelloWorld not found');
   }
 </script>
 

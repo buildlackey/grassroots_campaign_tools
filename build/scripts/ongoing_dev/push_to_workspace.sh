@@ -120,6 +120,8 @@ echo "📦 Staging dist artifacts into $WORKING_PUSH_FOLDER"
 cp -a  $PROJECT_ROOT/dist/*/gas_safe_staging/*    "$WORKING_PUSH_FOLDER/"
 
 
+echo foo 1
+
 # === Duplicate CampaignToolsModel for server + client ===
 if [[ -f "$WORKING_PUSH_FOLDER/CampaignToolsModel.js" ]]; then
   cp "$WORKING_PUSH_FOLDER/CampaignToolsModel.js" "$WORKING_PUSH_FOLDER/CampaignToolsModelCode.html"
@@ -129,9 +131,15 @@ else
   echo "⚠️ CampaignToolsModel.js not found in $WORKING_PUSH_FOLDER"
 fi
 
+echo foo 2
+
 
 # 3) 🔑 Inject real Maps API key into Code.js
 sed -i "s|\"GOOGLE_MAPS_API_KEY\"|\"${GOOGLE_MAPS_API_KEY}\"|g" "$WORKING_PUSH_FOLDER/Code.js"
+
+
+
+echo foo 3
 
 # 4) Push
 
@@ -144,8 +152,14 @@ for htmlfile in "$WORKING_PUSH_FOLDER"/*.html; do
   fi
 done
 
+
+echo foo 9
+
 echo "🚀 Pushing project to Apps Script"
 "$LOCAL_CLASP" push --force
+
+
+echo foo zoo
 
 
 echo "🏁 Running remote smokeTest (expects SUCCESS)"

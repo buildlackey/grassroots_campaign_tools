@@ -1,17 +1,17 @@
 {
   "compilerOptions": {
-    "target": "ES2019",
-    "module": "none",
+    "target": "ES5",
+    "module": "ESNext",
     "outDir": "../../dist/ui/gas_safe_staging",
-    "rootDir": "../../code/ui/src/raw",
+    "rootDir": "../../code/ui/src/logic",
     "strict": true,
     "noEmitOnError": true,
-    "types": [],
-    "lib": ["dom", "es2019"],
+    "types": ["jquery"],
+    "lib": ["dom", "es5", "es2015"],
     "allowJs": false // Only TypeScript files allowed
   },
   "include": [
-    "../../code/ui/src/raw/*.ts"
+    "../../code/ui/src/logic/*.ts"
   ],
   "exclude": [
     "../../code/ui/test/raw",

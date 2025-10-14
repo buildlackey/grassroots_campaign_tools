@@ -25,12 +25,15 @@ FOO="$DIST_DIR/FooCode.html"
 cat_fragment() {
   local raw_path="$1"
   local dist_path="$2"
+  local common_path="$PROJECT_ROOT/dist/common/gas_safe_staging/$(basename "$dist_path")"
   if [ -f "$raw_path" ]; then
     cat "$raw_path"
   elif [ -f "$dist_path" ]; then
     cat "$dist_path"
+  elif [ -f "$common_path" ]; then
+    cat "$common_path"
   else
-    echo "❌ ERROR: Fragment not found: $raw_path or $dist_path" >&2
+    echo "❌ ERROR: Fragment not found: $raw_path or $dist_path or $common_path" >&2
     exit 1
   fi
 }

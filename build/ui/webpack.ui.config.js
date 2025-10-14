@@ -1,48 +1,39 @@
 const path = require("path");
-const glob = require("glob");
 
-// Automatically find all *Code.ts files in the logic folder
-const entryFiles = glob.sync(path.resolve(__dirname, "../../code/ui/src/logic/*Code.ts"));
-const entries = {};
-entryFiles.forEach((file) => {
-    const name = path.basename(file, ".ts");
-    entries[name] = file;
-});
+const entryName = process.env.ENTRY_NAME; // passed by build script
+if (!entryName) {
+  throw new Error("ENTRY_NAME env var is required (e.g. ENTRY_NAME=SettingsDialogActionCode)");
+}
 
 module.exports = {
-    mode: "development",
-    entry: entries,
-    output: {
-        path: path.resolve(__dirname, "../../dist/ui/gas_safe_staging"),
-        filename: "[name].html", // Emit as .html for GAS includes
-        library: { type: "assign", name: "globalThis.CAMPAIGN" },
-        pathinfo: true,
+  mode: "development",
+  entry: path.resolve(__dirname, `../../code/ui/src/logic/${entryName}.ts`),
+  output: {
+    path: path.resolve(__dirname, "../../dist/ui/gas_safe_staging"),
+    filename: `${entryName}.html`, // GAS expects .html for includes
+    library: {
+      type: "assign",
+      name: `globalThis.CAMPAIGN.${entryName}`,
     },
-    target: ["web", "es5"],
-    devtool: "inline-source-map",
-    optimization: {
-        minimize: false,
-        concatenateModules: false,
-        mangleExports: false,
-        usedExports: false,
-    },
-    module: {
-        rules: [
-            {
-                test: /\.tsx?$/,
-                use: {
-                    loader: "ts-loader",
-                    options: {
-                        configFile: path.resolve(__dirname, "tsconfig.json"),
-                    },
-                },
-                exclude: /node_modules/,
-            },
-        ],
-    },
-    resolve: {
-        extensions: [".ts", ".tsx", ".js"],
-    },
-    stats: "errors-warnings",
-    infrastructureLogging: { level: "warn" },
+    pathinfo: true,
+  },
+  target: ["web", "es5"],
+  devtool: "inline-source-map",
+  optimization: {
+    minimize: false,
+    concatenateModules: false,
+  },
+  module: {
+    rules: [
+      {
+        test: /\.tsx?$/,
+        use: "ts-loader",
+        exclude: /node_modules/,
+      },
+    ],
+  },
+  resolve: {
+    extensions: [".ts", ".tsx", ".js"],
+  },
+  stats: "errors-warnings",
 };

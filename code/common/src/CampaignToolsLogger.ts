@@ -1,5 +1,3 @@
-declare var Logger: any;
-
 class CampaignToolsLogger {
     private clientMode: boolean;
     private isEnabled: boolean;

@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES5",
-    "module": "none",
+    "module": "commonjs",
     "rootDir": "../../code/common/src",
     "outDir": "../../dist/common/gas_safe_staging",
     "declaration": true,
@@ -10,12 +10,5 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": [
-    "../../code/common/src/*.d.ts",
-    "../../code/common/src/PreferenceSvc.d.ts",
-    "../../code/common/src/CampaignToolsModel.d.ts"
-  ],
-  "exclude": [
-    "../../code/common/src/HelloWorld.ts"
-  ]
+  "include": ["../../code/common/src/HelloWorld.ts"]
 }
