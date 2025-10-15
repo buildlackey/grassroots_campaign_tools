@@ -113,8 +113,4 @@ class CampaignToolsLogger {
     }
 }
 
-(globalThis as any).CAMPAIGN = (globalThis as any).CAMPAIGN || {};
-(globalThis as any).CAMPAIGN.CampaignToolsLogger = CampaignToolsLogger;
-if (typeof Logger !== "undefined") {
-    Logger.log("_sys_logger: ✅ CampaignToolsLogger loaded and attached to globalThis.CAMPAIGN");
-}
+export { CampaignToolsLogger };
