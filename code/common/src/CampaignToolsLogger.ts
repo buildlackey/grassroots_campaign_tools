@@ -113,4 +113,8 @@ class CampaignToolsLogger {
     }
 }
 
+// Attach CampaignToolsLogger to globalThis.CAMPAIGN for GAS runtime
+(globalThis as any).CAMPAIGN = (globalThis as any).CAMPAIGN || {};
+(globalThis as any).CAMPAIGN.CampaignToolsLogger = CampaignToolsLogger;
+
 export { CampaignToolsLogger };

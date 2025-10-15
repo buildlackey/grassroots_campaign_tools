@@ -12,6 +12,7 @@
     "sourceMap": true
   },
   "include": [
+    "../../code/common/src/GASGlobals.d.ts",
     "../../code/ui/src/logic/*.ts"
   ],
   "exclude": [

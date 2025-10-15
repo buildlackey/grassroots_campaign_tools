@@ -10,5 +10,8 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": ["../../code/common/src/HelloWorld.ts"]
+  "include": [
+    "../../code/common/src/*.ts",
+    "../../code/common/src/*.d.ts"
+  ]
 }
