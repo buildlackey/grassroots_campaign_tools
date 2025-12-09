@@ -1,0 +1,101 @@
+Updated Refactor Plan (with re-org steps):
+
+
+overall goals>
+
+
+retire demodulify_for_gas.js by authoring all code as modules, compiling with module: ESNext, and using Webpack to bundle and attach everything to globalThis.CAMPAIGN.
+
+Recommended Pattern for GAS-Compatible TypeScript Development
+Author all your .ts files using TypeScript modules
+Use export and import for classes, functions, and types.
+This gives you full editor support, type safety, and modularity.
+Use a TypeScript config for GAS builds:
+Set target: "ES5" (for maximum GAS compatibility).
+Set module: "ESNext" (so you can use modern module syntax).
+Example:
+{
+  "compilerOptions": {
+    "target": "ES5",
+    "module": "ESNext",
+    // ...other options...
+  }
+}
+Bundle with Webpack and attach to the global namespace:
+In your Webpack config, use:
+output: {
+  library: { type: 'assign', name: 'globalThis.CAMPAIGN' },
+  // ...other options...
+}
+This bundles all modules and attaches them to globalThis.CAMPAIGN, making them accessible in the GAS runtime.
+<hr></hr>
+Benefits of This Pattern
+No need for post-processing scripts like demodulify_for_gas.js.
+Consistent authoring experience: All code uses modules.
+GAS compatibility: Final output is plain JS, with all exports attached to the global namespace.
+Editor and tooling support: TypeScript modules enable navigation, refactoring, and type checking.
+
+
+
+
+<hr></hr>
+🛠️ Step-by-Step UI & GAS Build Refactor Plan  ... we did Step 1 correctly !
+
+Step 1: UI Output Rename to .html via Webpack
+Configure Webpack to emit UI logic as .html files.
+Bash script only acts if needed, otherwise emits info.
+
+
+Step 1.5:
+create a hello world.ts using our agreed on long term pattern.
+include that file in SettingsDialog.html 
+
+
+Step 2: Remove IIFE and Manual Namespace Assignments
+Refactor UI logic to use TypeScript exports.
+Webpack assigns exports to globalThis.CAMPAIGN.
+Step 3: Enable Source Maps
+Set up source maps in Webpack and tsconfig.
+Step 4: Migrate All UI Logic to TypeScript
+Convert any remaining JS UI logic to .ts.
+Step 5: UI Folder Re-Org
+Move all UI TypeScript logic to code/ui/src/logic/.
+Keep only static assets in code/ui/src/raw/.
+Update build scripts/configs to reference new locations.
+Step 6: GAS Folder Re-Org
+Migrate Code.js to Code.ts in code/gas/src/logic/.
+Remove code/gas/src/raw/ if it only held Code.js.
+Update build scripts/configs accordingly.
+Step 7: Unify Build Conventions
+Ensure both UI and GAS builds use similar Webpack config structure.
+Step 8: Remove Legacy Bash Logic
+Retire bash script once all responsibilities are handled by Webpack/TS.
+Step 9: Update Documentation
+Document new folder structure and build pipeline.
+<hr></hr>
+Summary:
+UI: logic/ for TypeScript, raw/ for assets.
+GAS: logic/ for TypeScript, remove raw/ after Code.js migration.
+All logic is TypeScript, all assets are in raw.
+Build pipeline is unified and maintainable.
+Would you like to begin with the UI folder re-org, or proceed with the Webpack config changes first?
+
+
+
+NOTE:
+
+4. Source File Styles
+You can use export/import in all your GAS logic files.
+You do not need to manually attach classes/functions to globalThis.CAMPAIGN in source files.
+Webpack will handle the global assignment in the output bundle.
+<hr></hr>
+5. Best Practice Moving Forward
+Author all code using TypeScript modules (export/import).
+Use "module": "ESNext" in your TypeScript config for GAS.
+Rely on Webpack to bundle and attach everything to globalThis.CAMPAIGN.
+Remove manual global assignments from source files over time.
+<hr></hr>
+6. Client-Side Includes
+For client-side includes (<?!= include(...) ?>), use the same approach:
+Author with modules.
+Use Webpack to bundle and attach to the global object.

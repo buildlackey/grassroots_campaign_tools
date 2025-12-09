@@ -122,14 +122,22 @@
 </div>
 
 
+<!-- Order is important -- this must load before anything that uses logging -->
+<script>
+    <?!= include('CampaignToolsLogger') ?>
+</script>
 
 <script>
-  <?!= include('HelloWorld.html') ?>
-  if (globalThis.CAMPAIGN && globalThis.CAMPAIGN.HelloWorld) {
-    console.log('HelloWorld imported:', globalThis.CAMPAIGN.HelloWorld.greet());
-  } else {
-    console.error('HelloWorld import failed: globalThis.CAMPAIGN.HelloWorld not found');
-  }
+    <?!= include('GenericUIFrostingCode') ?>
+</script>
+
+<!-- Order is important -- this must load before SettingsDialogActionCode -->
+<script>
+    <?!= include('SettingsDialogUIFrostingCode') ?>
+</script>
+
+<script>
+    <?!= include('SettingsDialogActionCode') ?>
 </script>
 
 <!-- Container for tooltip 'within' and general scoping -->

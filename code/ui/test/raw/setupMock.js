@@ -11,6 +11,15 @@
 
     function setupMock(win) {
         if (!win.CAMPAIGN) win.CAMPAIGN = {};
+        // Mock GAS Logger global for test/browser environments
+        if (typeof win.Logger === "undefined") {
+            win.Logger = {
+                log: function() {
+                    console.log("Logger.log called with:", ...arguments);
+                    console.log("Stack trace:", new Error().stack);
+                }
+            };
+        }
         // Do not instantiate win.CAMPAIGN.logger here; let dialog code handle it.
 
         // ✅ Built-in default dataset for manual browser usage

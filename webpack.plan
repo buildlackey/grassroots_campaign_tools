@@ -1,0 +1,122 @@
+
+
+following code references 
+(globalThis as any).CAMPAIGN.CampaignToolsLogger
+
+
+    CampaignToolsLoggerEnablementtests.ts
+    PreferenceSvc.ts
+
+should i change these to imports ?
+
+
+Short answer: it depends on where the code runs.
+UI/browser code (bundled by webpack) — use imports. Webpack builds a dependency graph, will dedupe and guarantee execution order for modules that import the logger. Prefer importing CampaignToolsLogger from the code/common/src module in UI modules and produce a single UI bundle (then remove manual <?!= include(...) ?> includes).
+
+GAS / server-side runtime code (code/gas/..., e.g. PreferenceSvc.ts) — do NOT convert to ES imports. Keep the pattern of exporting into globalThis.CAMPAIGN because GAS final bundle must be non-module code that exposes globals.
+Tests (CampaignToolsLoggerEnablementtests.ts) — pick based on test runner:
+If these are Jest/Node unit tests: convert them to imports and mock GAS globals as needed (use your test setup to provide globalThis.CAMPAIGN or mock Logger).
+If they are GAS integration/smoke tests that run in the Apps Script runtime: keep using globalThis.CAMPAIGN access.
+
+    For jest tests i think i'm ok.
+
+    Might need to delete import of CampaignToolsLogger from prefs  svc (since we use globalThis access.. - might dbl include)
+
+
+----
+Create a single UI bundle that contains all UI modules and CampaignToolsLogger so webpack emits it once and you only <?!= include(...) ?> the generated bundle. Steps: (1) add a small entry that imports every UI file (and ../../../common/src/CampaignToolsLogger), (2) change webpack entry to that file and set output.library/libraryTarget so exports attach to globalThis, (3) remove the manual <?!= include('CampaignToolsLogger') ?> include from your GAS HTML.
+Explanation: bundling everything eliminates duplicate runtime definitions because webpack deduplicates modules. The output.library / libraryTarget: 'this' makes the bundle attach to this (i.e. globalThis in GAS) so GAS code can access globalThis.CAMPAIGN if your modules set it.
+Files to add/update:
+
+// javascript
+// file: `build/webpack.ui.config.js` (example webpack config snippet)
+const path = require('path');
+
+module.exports = {
+  mode: 'production',
+  entry: {
+    ui: path.resolve(__dirname, '../../code/ui/src/logic/uiEntry.ts') // new entry
+  },
+  output: {
+    filename: 'SettingsUI.bundle.js',
+    path: path.resolve(__dirname, '../../dist/ui/gas_safe_staging'),
+    // export to the global scope so GAS can consume it
+    library: 'CAMPAIGN',
+    libraryTarget: 'this'
+  },
+  resolve: {
+    extensions: ['.ts', '.js']
+  },
+  module: {
+    rules: [
+      {
+        test: /\.ts$/,
+        use: 'ts-loader',
+        exclude: /node_modules/
+      }
+    ]
+  },
+  // optional: avoid bundling GAS-provided globals like Logger
+  externals: {
+    // Treat `Logger` as provided at runtime (GAS). Adjust if you expose it differently.
+    Logger: 'Logger'
+  }
+};
+
+
+
+// javascript (TypeScript entry file)
+// file: `code/ui/src/logic/uiEntry.ts`
+// Import all UI modules and shared common modules so webpack produces a single bundle.
+import './SettingsDialogUIFrostingCode';
+// import other UI frostings/actions here as needed:
+// import './OtherDialogUIFrostingCode';
+// import './OtherDialogActionCode';
+
+// Import common implementation so it's bundled once
+import '../../../common/src/CampaignToolsLogger';
+
+// ensure CAMPAIGN namespace exists (modules themselves should attach classes to it as needed)
+(globalThis as any).CAMPAIGN = (globalThis as any).CAMPAIGN || {};
+
+
+
+h
+
+
+Agree — dropping the manual include can work, but only if something in your UI bundle sets CAMPAIGN.logger before any code calls CAMPAIGN.logger.log. The simplest, minimal change is to create a single UI entry (or update your existing UI entry) that imports CampaignToolsLogger, ensures the class is loaded once, and attaches an instance to globalThis.CAMPAIGN.logger. That guarantees CAMPAIGN.logger exists for SettingsDialogActionCode and other UI modules.
+Explanation: the snippet below imports the guarded logger, initializes/reuses the singleton, and exposes it as CAMPAIGN.logger. Place it in code/ui/src/logic/uiEntry.ts (or update your existing entry). Webpack will execute this entry first and other UI modules will run after, so CAMPAIGN.logger will be defined.
+// typescript
+// file: `code/ui/src/logic/uiEntry.ts`
+import { CampaignToolsLogger } from '../../../common/src/CampaignToolsLogger';
+import './SettingsDialogUIFrostingCode';
+import './SettingsDialogActionCode';
+
+// Ensure CAMPAIGN namespace exists and attach a single logger instance.
+// Use existing instance if already attached (safe for incremental migration).
+const G: any = (globalThis as any).CAMPAIGN = (globalThis as any).CAMPAIGN || {};
+G.logger = G.logger || CampaignToolsLogger.getInstance();
+>>>
+
+// typescript
+// file: `code/ui/src/logic/uiEntry.ts`
+import { CampaignToolsLogger } from '../../../common/src/CampaignToolsLogger';
+import './SettingsDialogUIFrostingCode';
+import './SettingsDialogActionCode';
+
+// Ensure CAMPAIGN namespace exists and attach a single logger instance.
+// Use existing instance if already attached (safe for incremental migration).
+const G: any = (globalThis as any).CAMPAIGN = (globalThis as any).CAMPAIGN || {};
+G.logger = G.logger || CampaignToolsLogger.getInstance();
+
+
+
+One thing i coudl do: 
+    just cut out the logging except for one UI class.  This frees us from worrying about how CAMPAIGN.logger got into 
+    SettingsDialogActionCode.. then we gradually add the logging back !
+
+
+
+
+
+

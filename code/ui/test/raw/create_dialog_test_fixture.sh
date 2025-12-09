@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Rationale: dist/ui/gas_safe_staging/ (DIST_DIR) is currently the "collection point" for all UI and shared JS artifacts
-# that need to be renamed to .html for GAS compatibility. This is practical because:
-#   - All UI code expects to include fragments -- regardless of origin (common, or uiartifacts) -- from this directory.
-#   - The normalization/renaming script only needs to operate in one place.
-#   - The test fixture and deployment scripts can reliably find all needed fragments here.
+
+# TODO - consider making this even more data driven ..in that each included file must either live in a known location:
+# either raw or dist dirs.
+
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
@@ -16,31 +15,11 @@ RAW_DIR="$PROJECT_ROOT/code/ui/src/raw"
 DIST_DIR="$PROJECT_ROOT/dist/ui/gas_safe_staging"
 TEMPLATE="$RAW_DIR/${DIALOG_NAME}.html"
 CSS="$RAW_DIR/${DIALOG_NAME}CSS.html"
-ACTION="$RAW_DIR/${DIALOG_NAME}ActionCode.html"
-FROSTING="$RAW_DIR/${DIALOG_NAME}UIFrostingCode.html"
-GENERIC_FROSTING="GenericUIFrostingCode.html"
-FOO="$DIST_DIR/FooCode.html"
+ACTION="$DIST_DIR/${DIALOG_NAME}ActionCode.html"
+FROSTING="$DIST_DIR/${DIALOG_NAME}UIFrostingCode.html"
+GENERIC_FROSTING="$DIST_DIR/GenericUIFrostingCode.html"
 
-# Helper: cat fragment from raw, else fallback to dist
-cat_fragment() {
-  local raw_path="$1"
-  local dist_path="$2"
-  local common_path="$PROJECT_ROOT/dist/common/gas_safe_staging/$(basename "$dist_path")"
-  if [ -f "$raw_path" ]; then
-    cat "$raw_path"
-  elif [ -f "$dist_path" ]; then
-    cat "$dist_path"
-  elif [ -f "$common_path" ]; then
-    cat "$common_path"
-  else
-    echo "❌ ERROR: Fragment not found: $raw_path or $dist_path or $common_path" >&2
-    exit 1
-  fi
-}
-
-# 🔹 compiled common contracts (NOT GAS bundle)
 COMMON_DIR="$PROJECT_ROOT/dist/common/gas_safe_staging"
-
 OUT_HTML="$BUILT_UI_DIR/rendered_settings_dialog_test.html"
 SETUP_MOCK_JS="$PROJECT_ROOT/code/ui/test/raw/setupMock.js"
 
@@ -53,19 +32,19 @@ echo "📄 Reading template: $TEMPLATE"
 while IFS= read -r line; do
   case "$line" in
     *"include('${DIALOG_NAME}CSS')"*)
-      cat_fragment "$CSS" "$DIST_DIR/${DIALOG_NAME}CSS.html" >> "$OUT_HTML"
+      cat "$CSS" >> "$OUT_HTML"
       ;;
     *"include('${DIALOG_NAME}UIFrostingCode')"*)
-      cat_fragment "$FROSTING" "$DIST_DIR/${DIALOG_NAME}UIFrostingCode.html" >> "$OUT_HTML"
+      cat "$FROSTING" >> "$OUT_HTML"
       ;;
     *"include('${DIALOG_NAME}ActionCode')"*)
-      cat_fragment "$ACTION" "$DIST_DIR/${DIALOG_NAME}ActionCode.html" >> "$OUT_HTML"
+      cat "$ACTION" >> "$OUT_HTML"
       ;;
     *"include('GenericUIFrostingCode')"*)
-      cat_fragment "$RAW_DIR/$GENERIC_FROSTING" "$DIST_DIR/GenericUIFrostingCode.html" >> "$OUT_HTML"
+      cat "$GENERIC_FROSTING" >> "$OUT_HTML"
       ;;
     *"include('CampaignToolsLogger')"*)
-      cat_fragment "$RAW_DIR/CampaignToolsLogger.html" "$DIST_DIR/CampaignToolsLogger.html" >> "$OUT_HTML"
+      cat "$COMMON_DIR/CampaignToolsLogger.html" >> "$OUT_HTML"
       ;;
     *)
       echo "$line" >> "$OUT_HTML"
@@ -73,7 +52,6 @@ while IFS= read -r line; do
   esac
 
 done < "$TEMPLATE"
-
 
 # Inline setupMock.js at the very end for fixture-only manual browser usage
 cat >> "$OUT_HTML" <<'EOF'
