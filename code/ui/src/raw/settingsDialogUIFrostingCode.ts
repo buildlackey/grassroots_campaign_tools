@@ -196,7 +196,7 @@ declare const $: any;
     };
 
     /* === renderHeadersFor (now accepts optional ctx/model) === */
-    UI.renderHeadersFor = function (name: string, ctx?: any) {
+    UI.renderHeadersFor = function (name: string, ctx?: any) {              // TODO - move to ActionCode.html
         function formatOption(h: string) {
             return '<option value="%s">%s</option>'.replace(/%s/g, h);
         }
@@ -218,7 +218,7 @@ declare const $: any;
         logger.log("[renderHeadersFor] exit", { count: clean.length, selected: select.value });
     };
 
-    /* === onSheetChange (now forwards optional ctx/model) === */
+    /* === onSheetChange (now forwards optional ctx/model) === */              // TODO - move to ActionCode.html
     UI.onSheetChange = function (ctx?: any) {
         var sel = document.getElementById("sheetSelect") as HTMLSelectElement | null;
         var name = sel ? sel.value : "";
