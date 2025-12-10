@@ -8,16 +8,18 @@ application that you can use as a starting point for your own extensions.
 *End-to-end*, means we have extensively (to the extent possible given Google-imposed security restrictions) 
 automated, or at least documented both:
 
-- the  [initial account set-up steps](../build/scripts/init_setup/INIT_SETUP.md) required to support add-on development using Google Apps 
-  Script (GAS), the cloud CLI, oauth configuration, and linkage to billing 
-- and [ongoing development](../build/scripts/ongoing_dev/ONGOING_DEVELOPMENT.md), including transcompilation, 
+- the  [initial account set-up steps](../build/scripts/init_setup/INIT_SETUP.md) required to support add-on development 
+  using [Google Apps Script](https://workspace.google.com/products/apps-script/) (GAS), 
+  the [cloud CLI](https://cloud.google.com/cli), oauth configuration, and linkage to billing 
+-  and [ongoing development](../build/scripts/ongoing_dev/ONGOING_DEVELOPMENT.md), including transcompilation, 
   unit testing, bundling, deployment and integration testing of your application code.
 
 
 *Opinionated* means that we have made a number of architectural decisions that inform 
 the structure of a new project's code, as well as the flow of the 
 build and deployment process. We assume your code will be written in Typescript, tested 
-with jest and playwright, and integration tested via remote calls using the GAS execution API
+with [Jest](https://jestjs.io/) and [Playwright](https://playwright.dev/), and 
+integration tested via remote calls using the GAS execution API
 (which requires oauth set-up) to simulate end-to-end interaction. 
 Once tested, your code is 'GAS-ified' (i.e., adapted to the Google Apps Script runtime environment)
 via [webpack](https://webpack.js.org/), and then 
@@ -39,7 +41,7 @@ Source code is organized into three main areas under `code/`:
 - `gas/`
   - backend logic (executing in the Apps Script engionrment)
 - `ui/`
-  - dialogs, sidebar, client-side scripting (HTML/CSS/JS)
+  - dialogs,  client-side scripting (HTML/CSS/JS)
 - `common/`
   - services required by both gas and ui contexts (e.g., logging)
 
@@ -80,7 +82,7 @@ So .css files, .svg files for image icons and the like all get this extension.
 
 
 
-# Build Framework Structure
+# Build Framework 
 
 Each subsystem has its own build process in a parallel directory:
 
@@ -130,42 +132,6 @@ as in:
 
 
 
-
-DEVELOPER NOTES:
-
-
-End-to-end, means we have extensively (but not completely due to
-Google-imposed security restrictions) automated the account
-set-up steps required to support add-on development using
-Google Apps Script (GAS), the cloud CLI, and oauth, and linkage to billing.
-
-
-In order to run Google sheets extensions that invoke Google's metered for-pay services
-(e.g., the Maps API), we need to create a number of 'fixtures' such as a Google Project
-that has been granted requisite privileges to access those services, and an associated 
-spread sheet and script context to which we can push our extension code, test it, and debug it.
-
-For this purpose we include a number of scripts which automate the process of 
-establishing these fixtures to the extent possible.   For security reasons, 
-some of the steps in the set up of these fixtures can only be excuted through 
-Google's administratrion console screens (to prevent leakage of sensitive information such as 
-API keys and credentials.) Our scripts do their best to guide you through the UI configuration required
-at any such step.
-
-
-First time set-up (for new Google accounts never before used for development)  
-
-    1)
-    init_setup/billing_linked_new_project.sh
-        #   This is the first step in setting up a development environment: creates
-        #   the new Google Cloud project, with which our runtime code will be associated.
-
-
-    2)
-    ui/scripts/create_sheet_script_context.sh
-        # Creates a new Google Sheet and binds the above created Google Apps Script (GAS)
-        # project to it, and creates a new tmp staging folder from which transpiled, gas-ified  
-        # Javascript code can  be pushed to the GAS cloud environment to be run/tested.
 
 
 Important Details
