@@ -29,6 +29,7 @@ function getLoggingFlag(): boolean {
 
 describe('CampaignToolsLogger enablement via CAMPAIGN_TOOLS_ENABLE_LOGGING', () => {
   beforeAll(() => {
+    fs.mkdirSync(path.dirname(CONFIG_PATH), { recursive: true });
     if (fs.existsSync(CONFIG_PATH)) {
       configBackup = fs.readFileSync(CONFIG_PATH, 'utf8');
     }
